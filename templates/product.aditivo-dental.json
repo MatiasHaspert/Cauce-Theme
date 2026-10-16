@@ -11,19 +11,6 @@
   "sections": {
     "banda": {
       "type": "cauce-banda",
-      "settings": {
-        "color_scheme": "background-2",
-        "duracion": 35,
-        "repeticiones": 4,
-        "pausa_hover": true,
-        "negrita": true,
-        "texto_mobile": 13,
-        "texto_desktop": 15,
-        "espacio_mobile": 40,
-        "espacio_desktop": 72,
-        "padding_top": 14,
-        "padding_bottom": 14
-      },
       "blocks": {
         "m1": {
           "type": "mensaje",
@@ -51,7 +38,20 @@
         "m1",
         "m2",
         "m3"
-      ]
+      ],
+      "settings": {
+        "color_scheme": "background-2",
+        "duracion": 35,
+        "repeticiones": 4,
+        "pausa_hover": true,
+        "negrita": true,
+        "texto_mobile": 13,
+        "texto_desktop": 15,
+        "espacio_mobile": 40,
+        "espacio_desktop": 72,
+        "padding_top": 14,
+        "padding_bottom": 14
+      }
     },
     "main": {
       "type": "product-information",
@@ -64,6 +64,7 @@
             "media_columns": "one",
             "image_gap": 8,
             "large_first_image": false,
+            "icons_style": "arrow",
             "slideshow_controls_style": "thumbnails",
             "slideshow_mobile_controls_style": "dots",
             "thumbnail_position": "bottom",
@@ -187,9 +188,6 @@
                 "sin_ahorro": false,
                 "redondear": true,
                 "dias_unidad": 60,
-                "nota": "El precio tachado es lo que costarían esas botellas compradas de a una.",
-                "nota_icono": "info",
-                "boton_texto": "",
                 "cantidad_1": 1,
                 "etiqueta_1": "1 botella",
                 "detalle_1": "Rinde 60 días",
@@ -217,18 +215,25 @@
                 "cinta_4": "",
                 "descuento_4": 0,
                 "porcentaje_4": 0,
-                "tachado_4": true
+                "tachado_4": true,
+                "nota": "El precio tachado es lo que costarían esas botellas compradas de a una.",
+                "nota_icono": "info",
+                "boton_texto": ""
               },
               "blocks": {
                 "add-to-cart": {
                   "type": "add-to-cart",
                   "static": true,
                   "settings": {
-                    "style_class": "button"
+                    "style_class": "button",
+                    "custom_button_background": "{{ settings.color_palette.foreground }}",
+                    "custom_button_text": "{{ settings.color_palette.background }}",
+                    "custom_button_border": "{{ settings.color_palette.background }}"
                   },
                   "blocks": {}
                 }
-              }
+              },
+              "block_order": []
             },
             "pagos": {
               "type": "custom-liquid",
@@ -250,12 +255,12 @@
                 "titulo": "Ingredientes clave",
                 "etiqueta": "Más sobre el producto",
                 "titulo_1": "Cómo se usa",
-                "contenido_1": "<ol><li>Llená el bebedero como siempre.</li><li>Agregá una tapita (15 ml) por cada litro de agua. La tapa de la botella es la medida.</li><li>Repetilo cada vez que le cambiás el agua.</li></ol><p>Una botella de 1 litro rinde 60 días.</p>",
+                "contenido_1": "<ol>\n<li>Llená el bebedero como siempre.</li>\n<li>Agregá una tapita (15 ml) por cada litro de agua. La tapa de la botella es la medida.</li>\n<li>Repetilo cada vez que le cambiás el agua.</li>\n</ol><p>Una botella de 1 litro rinde 60 días.</p>",
                 "titulo_2": "Ingredientes clave",
                 "nosotros": "Hocico Fresh",
                 "otros": "Otros",
                 "titulo_3": "Beneficios del producto",
-                "contenido_3": "<h3 class=\"cauce-beneficios__titulo\">¿Le temes al cepillo de dientes? Hocico Fresh cuida la boca de tu perro sin esfuerzo</h3><ul class=\"cauce-beneficios\" role=\"list\"><li>Dientes más limpios en 30 días o menos con uso diario</li><li>Elimina placa y controla las bacterias que causan enfermedades orales</li><li>Refresca el aliento hasta por 12 horas sin necesidad de cepillado</li><li>Solo añade una tapa al agua cada vez que la cambies — ¡así de fácil!</li><li>100% ingredientes naturales. Seguro para perros adultos de todas las razas y tamaños</li><li>Previene enfermedades que pueden afectar corazón, pulmón e hígado</li></ul>"
+                "contenido_3": "<h3 class=\"cauce-beneficios__titulo\">¿Le temes al cepillo de dientes? Hocico Fresh cuida la boca de tu perro sin esfuerzo</h3><ul class=\"cauce-beneficios\" role=\"list\">\n<li>Dientes más limpios en 30 días o menos con uso diario</li>\n<li>Elimina placa y controla las bacterias que causan enfermedades orales</li>\n<li>Refresca el aliento hasta por 12 horas sin necesidad de cepillado</li>\n<li>Solo añade una tapa al agua cada vez que la cambies — ¡así de fácil!</li>\n<li>100% ingredientes naturales. Seguro para perros adultos de todas las razas y tamaños</li>\n<li>Previene enfermedades que pueden afectar corazón, pulmón e hígado</li>\n</ul>"
               },
               "blocks": {
                 "clave1": {
@@ -384,29 +389,6 @@
     },
     "problema": {
       "type": "cauce-media-lista",
-      "settings": {
-        "imagen": "shopify://shop_images/imagenPdp.avif",
-        "alt": "",
-        "foto_pendiente": "FOTO 16:9 — la boca de un perro con placa en los dientes. Foto real; no se presenta como un caso de cliente.",
-        "relacion": "16 / 9",
-        "posicion_imagen": "izquierda",
-        "epigrafe": "",
-        "volanta": "",
-        "titulo": "El 70% de las mascotas sufre enfermedad oral antes de los 3 años",
-        "titulo_acento": "",
-        "heading_size": "h1",
-        "bajada": "<p>Y la mayoría de dueños no lo saben hasta que el daño ya es irreversible. El mal aliento es la primera señal - y casi siempre se ignora.</p>",
-        "titulo_en": "media_abajo",
-        "estilo": "tarjetas",
-        "recuadro_titulo": "",
-        "recuadro_texto": "",
-        "boton_texto": "",
-        "boton_link": "",
-        "color_scheme": "inverse",
-        "ancho_maximo": 1200,
-        "padding_top": 72,
-        "padding_bottom": 72
-      },
       "blocks": {
         "i1": {
           "type": "item",
@@ -446,24 +428,33 @@
         "i1",
         "i2",
         "i3"
-      ]
+      ],
+      "settings": {
+        "imagen": "shopify://shop_images/imagenPdp.avif",
+        "alt": "",
+        "foto_pendiente": "FOTO 16:9 — la boca de un perro con placa en los dientes. Foto real; no se presenta como un caso de cliente.",
+        "relacion": "16 / 9",
+        "posicion_imagen": "izquierda",
+        "epigrafe": "",
+        "volanta": "",
+        "titulo": "El 70% de las mascotas sufre enfermedad oral antes de los 3 años",
+        "titulo_acento": "",
+        "heading_size": "h1",
+        "bajada": "<p>Y la mayoría de dueños no lo saben hasta que el daño ya es irreversible. El mal aliento es la primera señal - y casi siempre se ignora.</p>",
+        "titulo_en": "media_abajo",
+        "estilo": "tarjetas",
+        "recuadro_titulo": "",
+        "recuadro_texto": "",
+        "boton_texto": "",
+        "boton_link": "",
+        "color_scheme": "inverse",
+        "ancho_maximo": 1200,
+        "padding_top": 72,
+        "padding_bottom": 72
+      }
     },
     "respaldo": {
       "type": "cauce-respaldo",
-      "settings": {
-        "volanta": "",
-        "titulo": "La fórmula, a la vista",
-        "heading_size": "h1",
-        "bajada": "<p>Antes de ponerlo en el agua de tu perro, mirá qué lleva, qué no lleva y cómo se usa.</p>",
-        "ficha_titulo": "Hocico Fresh",
-        "lleva_titulo": "Qué lleva",
-        "no_lleva_titulo": "Qué no lleva",
-        "pie": "",
-        "color_scheme": "background-1",
-        "ancho_maximo": 1120,
-        "padding_top": 72,
-        "padding_bottom": 40
-      },
       "blocks": {
         "d1": {
           "type": "dato",
@@ -541,23 +532,24 @@
         "n1",
         "n2",
         "n3"
-      ]
+      ],
+      "settings": {
+        "volanta": "",
+        "titulo": "La fórmula, a la vista",
+        "heading_size": "h1",
+        "bajada": "<p>Antes de ponerlo en el agua de tu perro, mirá qué lleva, qué no lleva y cómo se usa.</p>",
+        "ficha_titulo": "Hocico Fresh",
+        "lleva_titulo": "Qué lleva",
+        "no_lleva_titulo": "Qué no lleva",
+        "pie": "",
+        "color_scheme": "background-1",
+        "ancho_maximo": 1120,
+        "padding_top": 72,
+        "padding_bottom": 40
+      }
     },
     "ingredientes": {
       "type": "cauce-fichas",
-      "settings": {
-        "volanta": "",
-        "titulo": "&nbsp;<strong>Ingredientes Activos - Lo que trabaja con cada sorbo</strong>&nbsp;",
-        "heading_size": "h1",
-        "bajada": "",
-        "pie": "",
-        "etiqueta_a11y": "Ingredientes",
-        "relacion": "1 / 1",
-        "color_scheme": "background-1",
-        "ancho_maximo": 1120,
-        "padding_top": 40,
-        "padding_bottom": 72
-      },
       "blocks": {
         "f1": {
           "type": "ficha",
@@ -597,33 +589,23 @@
         "f1",
         "f2",
         "f3"
-      ]
+      ],
+      "settings": {
+        "volanta": "",
+        "titulo": "&nbsp;<strong>Ingredientes Activos - Lo que trabaja con cada sorbo</strong>&nbsp;",
+        "heading_size": "h1",
+        "bajada": "",
+        "pie": "",
+        "etiqueta_a11y": "Ingredientes",
+        "relacion": "1 / 1",
+        "color_scheme": "background-1",
+        "ancho_maximo": 1120,
+        "padding_top": 40,
+        "padding_bottom": 72
+      }
     },
     "rutina": {
       "type": "cauce-media-lista",
-      "settings": {
-        "imagen": "shopify://shop_images/Gemini_Generated_Image_f24mjnf24mjnf24m.jpg",
-        "alt": "",
-        "foto_pendiente": "FOTO 4:3 — un perro tomando agua del bebedero, con la botella en primer plano.",
-        "relacion": "4 / 3",
-        "posicion_imagen": "izquierda",
-        "epigrafe": "",
-        "volanta": "",
-        "titulo": "Lo que pasa dentro de tu mascota",
-        "titulo_acento": "en los primeros 60 días",
-        "heading_size": "h1",
-        "bajada": "",
-        "titulo_en": "media_arriba",
-        "estilo": "linea",
-        "recuadro_titulo": "Uso continuo – La clave del cuidado bucal",
-        "recuadro_texto": "<p>La placa vuelve si se interrumpe el tratamiento. Agrega una tapita 15ml por cada litro de agua diariamente para mantener la protección activa.</p>",
-        "boton_texto": "",
-        "boton_link": "",
-        "color_scheme": "inverse",
-        "ancho_maximo": 1200,
-        "padding_top": 72,
-        "padding_bottom": 72
-      },
       "blocks": {
         "i1": {
           "type": "item",
@@ -687,33 +669,33 @@
         "i3",
         "i4",
         "i5"
-      ]
-    },
-    "pasos": {
-      "type": "cauce-media-lista",
+      ],
       "settings": {
-        "imagen": "shopify://shop_images/landing.png",
+        "imagen": "shopify://shop_images/Gemini_Generated_Image_f24mjnf24mjnf24m.jpg",
         "alt": "",
-        "foto_pendiente": "FOTO 1:1 — una mano volcando la tapita en el bebedero, con la botella al lado y un perro mirando.",
-        "relacion": "1 / 1",
+        "foto_pendiente": "FOTO 4:3 — un perro tomando agua del bebedero, con la botella en primer plano.",
+        "relacion": "4 / 3",
         "posicion_imagen": "izquierda",
         "epigrafe": "",
         "volanta": "",
-        "titulo": "Tu rutina no cambia. La boca de tu mascota, sí.",
-        "titulo_acento": "",
+        "titulo": "Lo que pasa dentro de tu mascota",
+        "titulo_acento": "en los primeros 60 días",
         "heading_size": "h1",
-        "bajada": "<p>Tu perro ya toma agua todos los días. Eso es todo lo que hace falta.</p>",
-        "titulo_en": "lista",
-        "estilo": "pasos",
-        "recuadro_titulo": "",
-        "recuadro_texto": "",
-        "boton_texto": "Elegir mi pack",
-        "boton_link": "#comprar",
-        "color_scheme": "background-1",
+        "bajada": "",
+        "titulo_en": "media_arriba",
+        "estilo": "linea",
+        "recuadro_titulo": "Uso continuo – La clave del cuidado bucal",
+        "recuadro_texto": "<p>La placa vuelve si se interrumpe el tratamiento. Agrega una tapita 15ml por cada litro de agua diariamente para mantener la protección activa.</p>",
+        "boton_texto": "",
+        "boton_link": "",
+        "color_scheme": "inverse",
         "ancho_maximo": 1200,
         "padding_top": 72,
-        "padding_bottom": 40
-      },
+        "padding_bottom": 72
+      }
+    },
+    "pasos": {
+      "type": "cauce-media-lista",
       "blocks": {
         "i1": {
           "type": "item",
@@ -765,33 +747,33 @@
         "i2",
         "i3",
         "item_AGXgiN"
-      ]
-    },
-    "beneficios": {
-      "type": "cauce-media-lista",
+      ],
       "settings": {
-        "imagen": "shopify://shop_images/landing2.png",
+        "imagen": "shopify://shop_images/landing.png",
         "alt": "",
-        "foto_pendiente": "FOTO 4:3 — una persona con su perro al aire libre, con la botella en primer plano.",
-        "relacion": "4 / 3",
+        "foto_pendiente": "FOTO 1:1 — una mano volcando la tapita en el bebedero, con la botella al lado y un perro mirando.",
+        "relacion": "1 / 1",
         "posicion_imagen": "izquierda",
         "epigrafe": "",
         "volanta": "",
-        "titulo": "Mejora la salud dental y el bienestar de tu perro&nbsp;",
+        "titulo": "Tu rutina no cambia. La boca de tu mascota, sí.",
         "titulo_acento": "",
         "heading_size": "h1",
-        "bajada": "",
+        "bajada": "<p>Tu perro ya toma agua todos los días. Eso es todo lo que hace falta.</p>",
         "titulo_en": "lista",
-        "estilo": "filas",
+        "estilo": "pasos",
         "recuadro_titulo": "",
         "recuadro_texto": "",
-        "boton_texto": "",
-        "boton_link": "",
+        "boton_texto": "Elegir mi pack",
+        "boton_link": "#comprar",
         "color_scheme": "background-1",
         "ancho_maximo": 1200,
-        "padding_top": 40,
-        "padding_bottom": 72
-      },
+        "padding_top": 72,
+        "padding_bottom": 40
+      }
+    },
+    "beneficios": {
+      "type": "cauce-media-lista",
       "blocks": {
         "i1": {
           "type": "item",
@@ -834,20 +816,33 @@
         "i1",
         "i2",
         "i3"
-      ]
+      ],
+      "settings": {
+        "imagen": "shopify://shop_images/landing2.png",
+        "alt": "",
+        "foto_pendiente": "FOTO 4:3 — una persona con su perro al aire libre, con la botella en primer plano.",
+        "relacion": "4 / 3",
+        "posicion_imagen": "izquierda",
+        "epigrafe": "",
+        "volanta": "",
+        "titulo": "Mejora la salud dental y el bienestar de tu perro&nbsp;",
+        "titulo_acento": "",
+        "heading_size": "h1",
+        "bajada": "",
+        "titulo_en": "lista",
+        "estilo": "filas",
+        "recuadro_titulo": "",
+        "recuadro_texto": "",
+        "boton_texto": "",
+        "boton_link": "",
+        "color_scheme": "background-1",
+        "ancho_maximo": 1200,
+        "padding_top": 40,
+        "padding_bottom": 72
+      }
     },
     "meses": {
       "type": "cauce-meses",
-      "settings": {
-        "titulo": "Una boca más sana, mes a mes",
-        "heading_size": "h1",
-        "etiqueta_a11y": "",
-        "color_scheme": "background-1",
-        "ancho_maximo": 1200,
-        "padding_top": 8,
-        "padding_bottom": 72
-      },
-      "disabled": true,
       "blocks": {
         "m1": {
           "type": "mes",
@@ -884,21 +879,20 @@
         "m1",
         "m2",
         "m3"
-      ]
+      ],
+      "disabled": true,
+      "settings": {
+        "titulo": "Una boca más sana, mes a mes",
+        "heading_size": "h1",
+        "etiqueta_a11y": "",
+        "color_scheme": "background-1",
+        "ancho_maximo": 1200,
+        "padding_top": 8,
+        "padding_bottom": 72
+      }
     },
     "garantia": {
       "type": "cauce-garantia",
-      "settings": {
-        "titulo": "Garantía de 30 días",
-        "heading_size": "h1",
-        "texto": "<p>Probalo durante 30 días desde que te llega el pedido. Si no te convence, te reintegramos lo que pagaste por una unidad, y no hace falta que devuelvas el producto.</p>",
-        "boton_texto": "Elegir mi pack",
-        "boton_link": "#comprar",
-        "color_scheme": "background-2",
-        "ancho_maximo": 1200,
-        "padding_top": 72,
-        "padding_bottom": 72
-      },
       "blocks": {
         "g2": {
           "type": "item",
@@ -938,21 +932,21 @@
         "g3",
         "g4",
         "g6"
-      ]
+      ],
+      "settings": {
+        "titulo": "Garantía de 30 días",
+        "heading_size": "h1",
+        "texto": "<p>Probalo durante 30 días desde que te llega el pedido. Si no te convence, te reintegramos lo que pagaste por una unidad, y no hace falta que devuelvas el producto.</p>",
+        "boton_texto": "Elegir mi pack",
+        "boton_link": "#comprar",
+        "color_scheme": "background-2",
+        "ancho_maximo": 1200,
+        "padding_top": 72,
+        "padding_bottom": 72
+      }
     },
     "faq": {
       "type": "cauce-faq",
-      "settings": {
-        "volanta": "",
-        "titulo": "Preguntas frecuentes",
-        "heading_size": "h1",
-        "pie": "",
-        "producto": "",
-        "emitir_schema": true,
-        "color_scheme": "background-1",
-        "padding_top": 72,
-        "padding_bottom": 72
-      },
       "blocks": {
         "q1": {
           "type": "pregunta",
@@ -1028,28 +1022,21 @@
         "q7",
         "q8",
         "q9"
-      ]
+      ],
+      "settings": {
+        "volanta": "",
+        "titulo": "Preguntas frecuentes",
+        "heading_size": "h1",
+        "pie": "",
+        "producto": "",
+        "emitir_schema": true,
+        "color_scheme": "background-1",
+        "padding_top": 72,
+        "padding_bottom": 72
+      }
     },
     "resenas": {
       "type": "cauce-resenas",
-      "settings": {
-        "volanta": "",
-        "titulo": "Reseñas de clientes",
-        "heading_size": "h1",
-        "pie": "",
-        "etiqueta_una": "reseña",
-        "etiqueta_varias": "reseñas",
-        "etiqueta_de_cinco": "de 5 estrellas",
-        "etiqueta_verificada": "Compra verificada",
-        "ver_mas": "Ver más reseñas",
-        "aviso_editor": "[COMPLETAR: reseñas reales] Estas tarjetas se ven solo acá, en el editor. En la tienda el bloque aparece cuando haya al menos una reseña completa: texto, nombre y puntaje.",
-        "visibles": 6,
-        "relacion": "4 / 5",
-        "color_scheme": "background-1",
-        "ancho_maximo": 1200,
-        "padding_top": 24,
-        "padding_bottom": 72
-      },
       "blocks": {
         "r1": {
           "type": "resena",
@@ -1142,7 +1129,25 @@
         "resena_Tj3CYX",
         "resena_HUVeR3",
         "resena_3ANNwQ"
-      ]
+      ],
+      "settings": {
+        "volanta": "",
+        "titulo": "Reseñas de clientes",
+        "heading_size": "h1",
+        "pie": "",
+        "etiqueta_una": "reseña",
+        "etiqueta_varias": "reseñas",
+        "etiqueta_de_cinco": "de 5 estrellas",
+        "etiqueta_verificada": "Compra verificada",
+        "ver_mas": "Ver más reseñas",
+        "aviso_editor": "",
+        "visibles": 6,
+        "relacion": "4 / 5",
+        "color_scheme": "background-1",
+        "ancho_maximo": 1200,
+        "padding_top": 24,
+        "padding_bottom": 72
+      }
     }
   },
   "order": [
