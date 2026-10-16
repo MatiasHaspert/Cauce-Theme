@@ -4814,3 +4814,241 @@ img.cauce-resenas__foto {
 .plantilla--aditivo-dental .product-details .text-block p {
   font-family: var(--cauce-font-texto);
 }
+
+/* ==========================================================================
+   30. Galeria de producto en el telefono
+   La de la PDP de referencia del comercio, sobre el carrusel de Horizon:
+   la foto con margen y esquinas redondas, una flecha redonda a cada lado,
+   los puntos debajo y la tira de miniaturas abajo, con sus propias flechas.
+   Se prende desde el bloque de galeria: "Paginacion en moviles" = Puntos y
+   miniaturas (.media-gallery--cauce-movil, .media-gallery--cauce-miniaturas)
+   y "Flechas en moviles" (.cauce-flechas-movil). Ver docs/DECISIONS.md D-084.
+
+   Las medidas son las de la referencia en un telefono de 390 px: flechas de
+   30 px a 10 px del borde, puntos de 6 px y 9 px el elegido, cinco
+   miniaturas a la vista con 8 px entre si, esquinas de 20 px. La foto toma el
+   margen de la pagina (16 px) en vez de sus 19,5 px, para alinear con el
+   texto de abajo.
+
+   Nada de esto toca la computadora: ahi la galeria sigue siendo la de
+   Horizon, con miniaturas abajo y flechas al pasar el mouse.
+   ========================================================================== */
+
+/* El envoltorio de la tira y sus flechas no existe fuera del telefono. */
+cauce-miniaturas { display: contents; }
+
+@media screen and (max-width: 749px) {
+  .media-gallery--cauce-movil {
+    --cauce-galeria-radio: 1.25rem;
+    --cauce-galeria-gap: 0.5rem;
+  }
+
+  /* --- Foto ---------------------------------------------------------------- */
+  /* Cada slide sigue ocupando todo el ancho, asi el scroll-snap y el gesto de
+     Horizon no cambian: el margen va adentro. Con el margen, la proporcion
+     del slide ya no es la de la foto (le sobraria alto), asi que el alto lo
+     da la foto misma: .product-media trae su proporcion en --ratio.
+
+     Horizon estira todos los slides al alto de la foto mas alta, para que la
+     galeria no salte al pasar. La foto va arriba y no estirada, como en la
+     referencia: si hay una vertical, las cuadradas dejan aire abajo en vez
+     de quedar en una caja mas alta, donde las esquinas redondas caerian en
+     el fondo y no en la foto. */
+
+  .media-gallery--cauce-movil slideshow-slide {
+    aspect-ratio: auto;
+    padding-inline: var(--page-margin, 1rem);
+  }
+
+  .media-gallery--cauce-movil slideshow-slide .product-media {
+    align-self: flex-start;
+    border-radius: var(--cauce-galeria-radio);
+    overflow: hidden;
+  }
+
+  /* --- Flechas sobre la foto ---------------------------------------------- */
+  /* Un circulo de 30 px en TEXTO al 70 %, con el chevron en el color de
+     fondo. El boton es de 44 px para que el dedo no tenga que apuntar: el
+     circulo se dibuja en el icono. Horizon las pone en mix-blend-mode
+     difference para que se vean sobre cualquier foto; con fondo propio no
+     hace falta. */
+
+  slideshow-arrows.cauce-flechas-movil {
+    mix-blend-mode: normal;
+    padding-inline: 0.1875rem;
+  }
+
+  .media-gallery--carousel slideshow-arrows.cauce-flechas-movil .slideshow-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    opacity: 1;
+    color: var(--color-background);
+  }
+
+  .cauce-flechas-movil .slideshow-control .svg-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.875rem;
+    height: 1.875rem;
+    border-radius: 50%;
+    background-color: var(--color-foreground);
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+  }
+
+  .cauce-flechas-movil .slideshow-control .svg-wrapper svg {
+    --icon-stroke-width: 2px;
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .cauce-flechas-movil .slideshow-control:active .svg-wrapper { opacity: 0.9; }
+  .cauce-flechas-movil .slideshow-control[disabled] { opacity: 1; }
+  .cauce-flechas-movil .slideshow-control[disabled] .svg-wrapper { opacity: 0.3; }
+
+  /* --- Puntos ------------------------------------------------------------- */
+  /* Debajo de la foto y no encima: van primero, las miniaturas despues. */
+
+  .media-gallery--cauce-movil .media-gallery__mobile-controls {
+    order: 1;
+    min-height: 0;
+    margin-block-start: 1.125rem;
+    mix-blend-mode: normal;
+  }
+
+  .media-gallery--cauce-movil .slideshow-controls__dots {
+    gap: 0;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  .media-gallery--cauce-movil .slideshow-controls__dots button {
+    width: 1.25rem;
+    height: 1.875rem;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .media-gallery--cauce-movil .slideshow-controls__dots button::after {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background-color: var(--color-foreground);
+    box-shadow: none;
+    opacity: 0.5;
+    transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+  }
+
+  .media-gallery--cauce-movil .slideshow-controls__dots button[aria-selected='true']::after {
+    opacity: 1;
+    transform: scale(1.5);
+    box-shadow: none;
+  }
+
+  /* --- Miniaturas --------------------------------------------------------- */
+  /* Son las de computadora (snippets/product-media-gallery-content.liquid):
+     aca pasan a una tira de todo el ancho con una columna de 24 px a cada
+     lado para las flechas. Cinco a la vista: el ancho de cada una sale del
+     ancho de la tira (container query), no de la pantalla. */
+
+  .media-gallery--cauce-miniaturas slideshow-controls[thumbnails] {
+    order: 2;
+    min-height: 0;
+  }
+
+  .media-gallery--cauce-miniaturas cauce-miniaturas {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr) 1.5rem;
+    align-items: center;
+    width: 100%;
+  }
+
+  /* scroll-hint (Horizon) desvanece los bordes de la tira con un mask-image en
+     el style del elemento; con flechas no hace falta, y la referencia no lo
+     tiene. Por eso el !important. */
+  .media-gallery--cauce-miniaturas .slideshow-controls__thumbnails-container {
+    grid-column: 2;
+    grid-row: 1;
+    container-type: inline-size;
+    /* stylelint-disable-next-line declaration-no-important */
+    mask-image: none !important;
+  }
+
+  .media-gallery--cauce-miniaturas .slideshow-controls__thumbnails {
+    gap: var(--cauce-galeria-gap);
+    padding: 0.5rem 0.125rem;
+  }
+
+  .media-gallery--cauce-miniaturas .slideshow-controls__thumbnails .slideshow-control {
+    flex: none;
+    width: calc((100cqi - 0.25rem - 4 * var(--cauce-galeria-gap)) / 5);
+    aspect-ratio: 1;
+    border: 0;
+    border-radius: var(--cauce-galeria-radio);
+  }
+
+  .media-gallery--cauce-miniaturas .slideshow-controls__thumbnails .slideshow-control img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--cauce-galeria-radio);
+  }
+
+  /* La elegida lleva un filete de 2 px en TEXTO, pegado a la foto. */
+  .media-gallery--cauce-miniaturas .slideshow-controls__thumbnails .slideshow-control[aria-selected='true'] {
+    border: 0;
+    outline: 0;
+    box-shadow: 0 0 0 2px var(--color-foreground);
+  }
+
+  .media-gallery--cauce-miniaturas .slideshow-controls__thumbnails .slideshow-control:focus-visible {
+    outline: var(--focus-outline-width, 2px) solid currentColor;
+    outline-offset: 2px;
+  }
+
+  /* Las flechas de la tira: un chevron fino, sin fondo. */
+  .cauce-miniaturas__flecha {
+    display: flex;
+    grid-row: 1;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: var(--minimum-touch-target);
+    padding: 0;
+    color: var(--color-foreground);
+    cursor: pointer;
+  }
+
+  .cauce-miniaturas__flecha[hidden] { display: none; }
+
+  .cauce-miniaturas__flecha--anterior { grid-column: 1; }
+  .cauce-miniaturas__flecha--siguiente { grid-column: 3; }
+
+  .cauce-miniaturas__flecha svg {
+    --icon-stroke-width: 1.5px;
+    width: 0.875rem;
+    height: 0.875rem;
+    rotate: -90deg;
+  }
+
+  .cauce-miniaturas__flecha--anterior svg { rotate: 90deg; }
+
+  .cauce-miniaturas__flecha:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cauce-flechas-movil .slideshow-control .svg-wrapper,
+  .media-gallery--cauce-movil .slideshow-controls__dots button::after {
+    transition: none;
+  }
+}

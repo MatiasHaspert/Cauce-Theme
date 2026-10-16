@@ -4706,3 +4706,115 @@ defecto (que es la que usa el R-ALA mientras esté activo). Se tradujeron.
 
 ---
 
+## D-084 · 2026-10-16 · La galería de la PDP en el teléfono pasa a ser la de la referencia
+
+**Decisión.** El comercio pidió para el testeo de Hocico Fresh la galería de fotos que usa en el
+teléfono `https://ruffitos.com/products/formula-probioticos-perro-alergias`. Se armó **sobre el
+carrusel de Horizon**, sin copiarla: la referencia corre Shrine PRO 1.3.2 (el tema del que se salió
+en D-081) y su galería es el `media-gallery` + `slider-component` de Dawn con el JS de Shrine. Se
+tomaron la forma y las medidas; ningún código, foto ni texto de ellos.
+
+### 1. Cómo queda
+
+Medido en la referencia en un teléfono de 390 px:
+
+| | Referencia | CAUCE |
+|---|---|---|
+| Foto | A 19,5 px de cada borde, esquinas de 20 px | Al margen de la página (16 px), para que alinee con el texto de abajo; esquinas de 20 px |
+| Flechas | Un círculo casi negro de 30 px al 70 %, con chevron blanco, a 10 px del borde, sobre la foto | Igual, en el color de texto (`--color-foreground`) con el chevron en el de fondo. El botón mide 44 px para el dedo; el círculo dibujado, 30 |
+| Puntos | Debajo de la foto: 6 px al 50 %, el elegido de 9 px y lleno | Igual |
+| Miniaturas | Cinco a la vista, 8 px entre sí, esquinas de 20 px, la elegida con un filete oscuro; un chevron fino a cada lado corre la tira de a tres | Igual. Los chevrones de la tira aparecen solo cuando la tira no entra entera |
+| Pasar de foto | Scroll-snap nativo | El de Horizon, que también es scroll-snap |
+| Tocar la foto | No hace nada | Abre el zoom de Horizon, como antes |
+
+**En escritorio no cambia nada:** sigue la galería de Horizon con miniaturas abajo y flechas al pasar
+el mouse.
+
+Dos diferencias que quedan, a propósito:
+
+- **El carrusel da la vuelta.** En Horizon la galería de producto es infinita: en la primera foto
+  la flecha de la izquierda lleva a la última y nunca se apaga. En la referencia se frena en las
+  puntas y la flecha baja al 30 %. Lo infinito viene fijo en `product-media-gallery-content` y vale
+  también para escritorio; el CSS ya tiene el estado apagado por si algún día se cambia.
+- **Fotos de distinto formato.** Horizon estira todos los slides al alto de la foto más alta, para
+  que la galería no salte al pasar; la foto va arriba y las más bajas dejan aire debajo. La
+  referencia hace lo mismo (tiene una foto vertical entre las cuadradas). Con las cinco fotos de
+  Hocico Fresh en el mismo formato no pasa.
+
+### 2. Cómo se prende
+
+Dos ajustes nuevos en el bloque **Multimedia del producto**, grupo Carrusel:
+
+- **Paginación en móviles → "Puntos y miniaturas"** (`dots_thumbnails`): la foto con margen y
+  esquinas redondas, los puntos debajo y las miniaturas abajo.
+- **Flechas en móviles** (`cauce_flechas_movil`).
+
+`product.aditivo-dental` los tiene prendidos. La plantilla de producto por defecto no cambia.
+
+Las miniaturas del teléfono **son las de escritorio**, que ya están en la página y dejan de
+esconderse. No se dibuja un segundo juego: el slideshow de Horizon junta las miniaturas en
+`ref="thumbnails[]"` y marca la elegida por posición, así que dos juegos se pisarían. Por eso hace
+falta "Miniaturas" en Paginación en escritorio (lo dice la ayuda del ajuste); si no, el teléfono
+muestra los puntos y las flechas sin la tira.
+
+### 3. Qué se tocó
+
+| Archivo | Cambio |
+|---|---|
+| `blocks/_product-media-gallery.liquid` (Horizon) | La opción y el checkbox |
+| `snippets/product-media-gallery-content.liquid` (Horizon) | Con "Puntos y miniaturas" las miniaturas de escritorio no llevan `mobile:hidden` y los puntos de teléfono van fuera de la foto. Clases `media-gallery--cauce-movil` y `media-gallery--cauce-miniaturas`. Con el checkbox, las flechas sin `mobile:hidden` |
+| `snippets/slideshow-arrows.liquid`, `snippets/slideshow-arrow.liquid` (Horizon) | Parámetro opcional `icon_style_mobile`: el botón lleva un ícono para cada pantalla. El teléfono tiene chevron y la flecha de escritorio no cambia |
+| `snippets/slideshow-controls.liquid` (Horizon) | Parámetro opcional `cauce_flechas_miniaturas`: envuelve la tira en `<cauce-miniaturas>` con un chevron a cada lado |
+| `assets/cauce-brand.css` | Bloque 30, todo dentro de `max-width: 749px` |
+| `assets/cauce.js` | `<cauce-miniaturas>` |
+| `locales/es.json`, `locales/en.default.json` | Las etiquetas de los dos chevrones de la tira |
+
+Los cambios en archivos de Horizon son parámetros opcionales y llevan "CAUCE" y "D-084" en un
+comentario: sin los ajustes nuevos, la galería se dibuja igual que antes.
+
+**Un arreglo de paso.** Horizon centra la miniatura elegida cuando se toca una o cuando se arrastra
+la foto con el mouse, pero no cuando se pasa con el dedo: eso es scroll nativo, y con las
+miniaturas solo en escritorio no hacía falta. En el teléfono la elegida quedaba fuera de la tira.
+`<cauce-miniaturas>` escucha el evento `slideshow:select` de Horizon y, si la elegida no se ve
+entera, la centra.
+
+**Alternativas descartadas:**
+
+- *Traer la galería de Shrine/Dawn.* Sería un segundo carrusel con JS propio al lado del de Horizon,
+  que también maneja el zoom, el cambio de variante y el editor. Y es el código del que se salió.
+- *Solo CSS sobre Horizon.* Las miniaturas y las flechas se esconden en teléfono con
+  `mobile:hidden`, que es `display: none !important`: había que pisarlo con más `!important`, y no
+  resolvía el chevron ni los chevrones de la tira.
+- *Pasar "Íconos" a chevrones en el bloque.* Cambia también la flecha de escritorio, y el pedido era
+  el teléfono.
+
+### 4. Cómo se verificó
+
+- Un banco de prueba con LiquidJS dibujó el bloque real de la galería dentro de
+  `product-information-content`, con todos los `{% stylesheet %}` del tema, sus variables,
+  `cauce-brand.css` y los módulos JS de Horizon, en un marco de 390 px al lado de la referencia.
+  Las fotos de prueba fueron las ocho de la referencia (siete cuadradas y una vertical), cargadas
+  de su CDN solo en ese banco local: nada de eso entra al tema.
+- Medidas: foto a 16 px del borde con esquinas de 20; flechas de 30 px; puntos de 6 y 9 px;
+  miniaturas de 59 px en un marco de 380 px útiles (en 390 dan 61; la referencia, 62,7).
+- Comportamiento: la flecha pasa a la foto 2 y mueve el punto y la miniatura; tocar la quinta
+  miniatura lleva a la foto 5 y la tira la centra; los chevrones de la tira corren de a tres y se
+  apagan en cada punta; al pasar las fotos con scroll la tira sigue a la elegida; tocar la foto
+  abre el zoom; tocar una flecha no lo abre.
+- Con 1, 3 y 5 fotos: con 1 no hay controles; con 3 las miniaturas se centran; con 5 llenan la
+  tira y no aparecen los chevrones.
+- Escritorio: los 55 elementos visibles de la galería tienen la misma posición y el mismo tamaño
+  antes y después; solo cambian dos nombres de clase.
+- `theme check`: 0 errores y las mismas advertencias que antes del cambio. Validador de settings:
+  0 problemas.
+- **No se vio en Shopify ni en un teléfono.** El paso de fotos se probó con scroll programático (la
+  galería sin tocar responde igual a eso); el gesto con el dedo hay que probarlo en el teléfono.
+
+### 5. Lo que queda pendiente
+
+- Recorrerlo en un teléfono con el producto real: el gesto, que la tira siga a la foto y cómo se ven
+  las cinco fotos de Hocico Fresh, que hoy son marcadores (D-074).
+- El zoom al tocar la foto: la referencia no lo tiene. Si se prefiere sin zoom, se apaga en el
+  bloque ("Activar zoom"), pero eso lo saca también de escritorio.
+
+---

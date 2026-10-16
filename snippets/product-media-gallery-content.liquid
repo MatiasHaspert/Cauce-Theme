@@ -39,7 +39,23 @@
     assign controls_on_media = true
   endif
 
-  if block_settings.slideshow_mobile_controls_style == 'thumbnails'
+  # CAUCE: 'dots_thumbnails' pone en el teléfono los puntos debajo de la foto y,
+  # abajo, las miniaturas de computadora, que ya están en la página y no se
+  # esconden. No se dibuja un segundo juego para el teléfono: el slideshow junta
+  # las miniaturas en ref="thumbnails[]" y marca la elegida por posición, así
+  # que dos juegos se pisarían. Ver docs/DECISIONS.md D-084.
+  assign mobile_controls_style = block_settings.slideshow_mobile_controls_style
+  assign cauce_galeria_movil = false
+  assign cauce_miniaturas_movil = false
+  if mobile_controls_style == 'dots_thumbnails'
+    assign mobile_controls_style = 'dots'
+    assign cauce_galeria_movil = true
+    if media_presentation == 'carousel' and block_settings.slideshow_controls_style == 'thumbnails'
+      assign cauce_miniaturas_movil = true
+    endif
+  endif
+
+  if mobile_controls_style == 'thumbnails' or cauce_galeria_movil
     assign mobile_controls_on_media = false
   else
     assign mobile_controls_on_media = true
@@ -47,16 +63,18 @@
 
   assign render_slideshow_controls = false
 
-  if media_presentation == 'carousel' or block_settings.slideshow_controls_style == block_settings.slideshow_mobile_controls_style
+  if media_presentation == 'carousel' or block_settings.slideshow_controls_style == mobile_controls_style
     assign render_slideshow_controls = true
   endif
 
   assign render_mobile_slideshow_controls = false
 
-  if block_settings.slideshow_controls_style != block_settings.slideshow_mobile_controls_style
-    assign slideshow_controls_class = 'mobile:hidden'
+  if block_settings.slideshow_controls_style != mobile_controls_style
+    unless cauce_miniaturas_movil
+      assign slideshow_controls_class = 'mobile:hidden'
+    endunless
 
-    if block_settings.slideshow_mobile_controls_style != 'hint'
+    if mobile_controls_style != 'hint'
       assign render_mobile_slideshow_controls = true
     endif
   endif
@@ -354,6 +372,12 @@
       {% if block_settings.extend_media %}
         media-gallery--extend
       {% endif %}
+      {% if cauce_galeria_movil %}
+        media-gallery--cauce-movil
+      {% endif %}
+      {% if cauce_miniaturas_movil %}
+        media-gallery--cauce-miniaturas
+      {% endif %}
     "
     style="{% render 'spacing-style', settings: block_settings %} --thumbnail-width: {{ block_settings.thumbnail_width }}px; --media-radius: {{ block_settings.media_radius }}px;{% if block_settings.icons_style contains 'large' %} --slideshow-icon-padding: 0px;{% endif %}--image-gap: {{ block_settings.image_gap }}px;{% unless block_settings.aspect_ratio == 'adapt' %} --gallery-aspect-ratio: {{ block_settings.aspect_ratio }};{% endunless %}"
     data-presentation="{{ media_presentation }}"
@@ -414,14 +438,15 @@
             controls_on_media: controls_on_media,
             pagination_position: pagination_position,
             aspect_ratio: block_settings.aspect_ratio,
-            thumbnail_radius: block_settings.thumbnail_radius
+            thumbnail_radius: block_settings.thumbnail_radius,
+            cauce_flechas_miniaturas: cauce_miniaturas_movil
           -%}
         {% endif %}
 
         {% if render_mobile_slideshow_controls %}
           {%- render 'slideshow-controls',
             class: 'desktop:hidden media-gallery__mobile-controls',
-            style: block_settings.slideshow_mobile_controls_style,
+            style: mobile_controls_style,
             item_count: sorted_media.size,
             thumbnails: sorted_media,
             controls_on_media: mobile_controls_on_media,
@@ -435,7 +460,16 @@
 
     {% if render_slideshow_arrows %}
       {% capture slideshow_arrows %}
-        {% render 'slideshow-arrows', class: 'mobile:hidden', icon_style: block_settings.icons_style %}
+        {% # CAUCE: con cauce_flechas_movil las flechas también van en el teléfono, con chevrones (D-084). %}
+        {% if block_settings.cauce_flechas_movil %}
+          {% render 'slideshow-arrows',
+            class: 'cauce-flechas-movil',
+            icon_style: block_settings.icons_style,
+            icon_style_mobile: 'chevron'
+          %}
+        {% else %}
+          {% render 'slideshow-arrows', class: 'mobile:hidden', icon_style: block_settings.icons_style %}
+        {% endif %}
       {% endcapture %}
     {% endif %}
 

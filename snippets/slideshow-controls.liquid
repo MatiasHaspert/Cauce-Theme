@@ -15,6 +15,7 @@
   @param {number} [thumbnail_radius] - The border radius for thumbnails in pixels
   @param {string} [class] - Additional classes to apply to the controls
   @param {boolean} [secondary] - Whether the controls are secondary
+  @param {boolean} [cauce_flechas_miniaturas] - CAUCE: arrows on mobile that scroll the thumbnails strip (D-084)
 
   @example
   {%- render 'slideshow-controls', style: 'dots', item_count: 10 -%}
@@ -101,6 +102,24 @@
 
     {% case style %}
       {% when 'thumbnails' %}
+        {% comment %}
+          CAUCE: en el teléfono, dos flechas a los lados de la tira que la corren de a
+          tres miniaturas, sin cambiar la foto. Las maneja <cauce-miniaturas>
+          (assets/cauce.js) y aparecen solo si la tira no entra. En computadora el
+          envoltorio es display: contents y no cambia nada. Ver D-084.
+        {% endcomment %}
+        {% if cauce_flechas_miniaturas %}
+          <cauce-miniaturas class="cauce-miniaturas">
+          <button
+            type="button"
+            class="cauce-miniaturas__flecha cauce-miniaturas__flecha--anterior button-unstyled desktop:hidden"
+            aria-label="{{ 'cauce.pdp.miniaturas_anteriores' | t }}"
+            data-paso="-1"
+            hidden
+          >
+            {{- 'icon-caret.svg' | inline_asset_content -}}
+          </button>
+        {% endif %}
         <scroll-hint
           ref="thumbnailsContainer"
           class="slideshow-controls__thumbnails-container"
@@ -152,6 +171,18 @@
             {% endfor %}
           </div>
         </scroll-hint>
+        {% if cauce_flechas_miniaturas %}
+          <button
+            type="button"
+            class="cauce-miniaturas__flecha cauce-miniaturas__flecha--siguiente button-unstyled desktop:hidden"
+            aria-label="{{ 'cauce.pdp.miniaturas_siguientes' | t }}"
+            data-paso="1"
+            hidden
+          >
+            {{- 'icon-caret.svg' | inline_asset_content -}}
+          </button>
+          </cauce-miniaturas>
+        {% endif %}
       {% when 'counter' %}
         <div class="slideshow-controls__counter">
           <span ref="current">1</span><span class="slash">/</span>{{ item_count -}}

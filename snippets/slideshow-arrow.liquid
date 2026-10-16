@@ -3,6 +3,7 @@
 
   @param {string} action - { 'previous' | 'next' } The action to perform when the arrow is clicked.
   @param {string} [icon_style] - { 'arrow' | 'chevron' } The style of the icon, defaults to 'arrow'.
+  @param {string} [icon_style_mobile] - CAUCE: { 'arrow' | 'chevron' } The style of the icon on mobile, if different (D-084).
   @param {string} [icon_shape] - { 'none' | 'circle' | 'square' } The shape of the icon background, defaults to 'none'.
   @param {string} [icon_size] - { 'small' | 'medium' | 'large' } The size of the icon, defaults to 'medium'.
 
@@ -21,6 +22,15 @@
 
   if icon_style contains 'large'
     assign icon_size = 'large'
+  endif
+
+  # CAUCE: un ícono para computadora y otro para el teléfono, en el mismo botón (D-084).
+  assign icon_name_mobile = icon_name
+  if icon_style_mobile != blank
+    assign icon_name_mobile = 'arrow'
+    if icon_style_mobile contains 'chevron'
+      assign icon_name_mobile = 'caret'
+    endif
   endif
 -%}
 
@@ -41,13 +51,22 @@
   on:click="/{{ action }}"
   ref="{{ action }}"
 >
-  <span class="svg-wrapper icon-{{ icon_name }}">
+  <span class="svg-wrapper icon-{{ icon_name }}{% if icon_name_mobile != icon_name %} mobile:hidden{% endif %}">
     {%- if icon_name == 'caret' -%}
       {{- 'icon-caret.svg' | inline_asset_content -}}
     {%- else -%}
       {{- 'icon-arrow.svg' | inline_asset_content -}}
     {%- endif -%}
   </span>
+  {%- if icon_name_mobile != icon_name -%}
+    <span class="svg-wrapper icon-{{ icon_name_mobile }} desktop:hidden">
+      {%- if icon_name_mobile == 'caret' -%}
+        {{- 'icon-caret.svg' | inline_asset_content -}}
+      {%- else -%}
+        {{- 'icon-arrow.svg' | inline_asset_content -}}
+      {%- endif -%}
+    </span>
+  {%- endif -%}
 </button>
 
 {% stylesheet %}

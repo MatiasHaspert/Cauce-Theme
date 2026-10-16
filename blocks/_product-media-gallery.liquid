@@ -139,8 +139,21 @@
         {
           "value": "thumbnails",
           "label": "t:options.thumbnails"
+        },
+        {
+          "value": "dots_thumbnails",
+          "label": "Puntos y miniaturas"
         }
-      ]
+      ],
+      "info": "Puntos y miniaturas (CAUCE): la foto con margen y esquinas redondas, los puntos debajo y las miniaturas abajo. Las miniaturas son las de escritorio: hace falta \"Miniaturas\" en Paginación en escritorio."
+    },
+    {
+      "type": "checkbox",
+      "id": "cauce_flechas_movil",
+      "label": "Flechas en móviles",
+      "info": "Dos botones redondos a los costados de la foto (CAUCE).",
+      "default": false,
+      "visible_if": "{{ block.settings.media_presentation == 'carousel' }}"
     },
     {
       "type": "header",

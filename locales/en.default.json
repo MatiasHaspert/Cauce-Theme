@@ -400,7 +400,9 @@
       "medios_pago_titulo": "Medios de pago",
       "cuotas": "Hasta {{ cuotas }} cuotas sin interés con tarjeta",
       "packs_leyenda": "Elegí tu pack",
-      "precio_anterior": "Precio anterior"
+      "precio_anterior": "Precio anterior",
+      "miniaturas_anteriores": "Ver las miniaturas anteriores",
+      "miniaturas_siguientes": "Ver más miniaturas"
     },
     "whatsapp": {
       "flotante": "Escribinos por WhatsApp",

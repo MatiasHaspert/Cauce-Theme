@@ -10,6 +10,8 @@
   la landing del R-ALA y la home, y el texto dinamico del boton de compra;
   el empujon del carrito pasa a los eventos de Horizon y entra
   <cauce-barra-compra>.
+
+  Galeria en el telefono (D-084): entra <cauce-miniaturas>.
 */
 (function () {
   'use strict';
@@ -437,9 +439,100 @@
     });
   }
 
+  /* ----------------------------------------------------------------------
+     <cauce-miniaturas> — las flechas de la tira de miniaturas de la galeria
+     en el telefono (snippets/slideshow-controls.liquid, D-084).
+
+     Corren la tira de a tres miniaturas, como en la galeria de referencia, y
+     no cambian la foto: eso lo hace el slideshow de Horizon cuando se toca una
+     miniatura. Aparecen solo si la tira no entra entera, y cada una se apaga
+     al llegar a su punta. Sin JS quedan escondidas y la tira se corre con el
+     dedo igual.
+
+     Ademas la tira sigue a la foto. Horizon centra la miniatura elegida
+     cuando se toca una o se arrastra con el mouse, pero no cuando la foto se
+     pasa con el dedo (es scroll nativo, y en computadora no hacia falta): en
+     el telefono la elegida quedaba fuera de la tira. Se escucha su evento
+     slideshow:select y, si la elegida no se ve entera, se la centra.
+     -------------------------------------------------------------------- */
+  class CauceMiniaturas extends HTMLElement {
+    connectedCallback() {
+      this.tira = this.querySelector('.slideshow-controls__thumbnails-container');
+      this.flechas = Array.from(this.querySelectorAll('[data-paso]'));
+      this.slideshow = this.closest('slideshow-component');
+      if (!this.tira || this.flechas.length !== 2) return;
+
+      this.actualizar = this.actualizar.bind(this);
+      this.onClick = this.onClick.bind(this);
+      this.onSelect = this.onSelect.bind(this);
+      this.tira.addEventListener('scroll', this.actualizar, { passive: true });
+      this.flechas.forEach(function (flecha) {
+        flecha.addEventListener('click', this.onClick);
+      }, this);
+      if (this.slideshow) this.slideshow.addEventListener('slideshow:select', this.onSelect);
+      this.observador = new ResizeObserver(this.actualizar);
+      this.observador.observe(this.tira);
+      this.actualizar();
+    }
+
+    disconnectedCallback() {
+      if (!this.tira || !this.observador) return;
+      this.tira.removeEventListener('scroll', this.actualizar);
+      this.flechas.forEach(function (flecha) {
+        flecha.removeEventListener('click', this.onClick);
+      }, this);
+      if (this.slideshow) this.slideshow.removeEventListener('slideshow:select', this.onSelect);
+      this.observador.disconnect();
+    }
+
+    comportamiento() {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    }
+
+    onSelect(e) {
+      const indice = e.detail ? e.detail.index : -1;
+      const item = this.tira.querySelectorAll('.slideshow-controls__thumbnail')[indice];
+      if (!item || this.tira.scrollWidth <= this.tira.clientWidth) return;
+
+      const caja = this.tira.getBoundingClientRect();
+      const r = item.getBoundingClientRect();
+      if (r.left >= caja.left && r.right <= caja.right) return;
+
+      this.tira.scrollTo({
+        left: this.tira.scrollLeft + (r.left - caja.left) - (caja.width - r.width) / 2,
+        behavior: this.comportamiento()
+      });
+    }
+
+    // Tres miniaturas con su espacio: la distancia entre dos seguidas, por 3.
+    paso() {
+      const items = this.tira.querySelectorAll('.slideshow-controls__thumbnail');
+      if (items.length < 2) return this.tira.clientWidth;
+      return (items[1].offsetLeft - items[0].offsetLeft) * 3;
+    }
+
+    onClick(e) {
+      const sentido = Number(e.currentTarget.getAttribute('data-paso'));
+      this.tira.scrollBy({ left: sentido * this.paso(), behavior: this.comportamiento() });
+    }
+
+    actualizar() {
+      const tira = this.tira;
+      const tope = tira.scrollWidth - tira.clientWidth;
+      const desborda = tope > 1;
+      this.flechas.forEach(function (flecha) {
+        flecha.hidden = !desborda;
+      });
+      if (!desborda) return;
+      this.flechas[0].disabled = tira.scrollLeft <= 1;
+      this.flechas[1].disabled = tira.scrollLeft >= tope - 1;
+    }
+  }
+
   caucePendientes();
 
   if (!customElements.get('cauce-tabs')) customElements.define('cauce-tabs', CauceTabs);
+  if (!customElements.get('cauce-miniaturas')) customElements.define('cauce-miniaturas', CauceMiniaturas);
   if (!customElements.get('cauce-meses')) customElements.define('cauce-meses', CauceMeses);
   if (!customElements.get('cauce-barra-compra')) customElements.define('cauce-barra-compra', CauceBarraCompra);
 
