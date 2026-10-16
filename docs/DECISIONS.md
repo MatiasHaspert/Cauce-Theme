@@ -4667,3 +4667,42 @@ y los renders de prueba del bloque de compra y del carrito dan lo mismo que en D
 Shopify.**
 
 ---
+
+## D-083 · 2026-10-16 · Repaso de la migración: lo que se había editado en Shrine y los textos de Horizon
+
+**Decisión.** Se repasó todo lo que podía haber quedado afuera de D-081. Dos cosas faltaban.
+
+### 1. Cambios hechos desde el editor de Shrine después de la copia
+
+El repo de Shrine tenía en `origin/main` un "Update from Shopify" del 2026-10-14 que no estaba en
+la copia local usada para migrar. Toca solo `product.aditivo-dental.json`, y se pasó igual:
+
+- "La fórmula, a la vista" (`respaldo`) queda **apagada**.
+- "Una boca más sana, mes a mes" (`meses`) queda **prendida**. Los meses 2 y 3 siguen con
+  `[COMPLETAR: …]` y sin fotos, así que en la tienda se ven resaltados en amarillo (D-074 §3) y con
+  los recuadros de foto pendiente.
+- El aviso del editor de las reseñas queda vacío.
+
+El resto de la plantilla es idéntico a lo migrado.
+
+### 2. Textos de demostración de Horizon en inglés
+
+Las plantillas de Horizon que no se tocaron traían texto fijo en inglés, que en Shrine salía en
+español: la 404, la página de contraseña, la lista de colecciones y la plantilla de producto por
+defecto (que es la que usa el R-ALA mientras esté activo). Se tradujeron.
+
+### 3. Lo que se revisó y no hacía falta migrar
+
+| | Por qué no |
+|---|---|
+| Apps embebidas y bloques de apps | Shrine no tenía ninguna |
+| Ramas del repo de Shrine | Todas mergeadas en `main` |
+| Agregados CAUCE en `logo-list`, `bundle-offer`, `upsell-block` | Eran arreglos de theme-check sobre código de Shrine |
+| Prioridad alta de la primera foto (`product-thumbnail`) | Horizon ya la pide con `fetchpriority="high"` |
+| `track-order` (17track), `password.liquid`, `material-icon` | Demo de Shrine, layout de Shrine y su sistema de íconos |
+| Colores del checkout | Eran los de demo de Shrine (`#dd1d1d`); el checkout se configura en su propio editor |
+| Mails de notificación (`carpetalocal/`) | Usan imágenes de Archivos de la tienda, no del tema: no se rompen si se borra Shrine |
+| Plantillas de cuenta de cliente | Sin cambios de CAUCE. Horizon no las trae: funciona con las cuentas de cliente nuevas de Shopify |
+
+---
+

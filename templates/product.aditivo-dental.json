@@ -546,7 +546,8 @@
         "ancho_maximo": 1120,
         "padding_top": 72,
         "padding_bottom": 40
-      }
+      },
+      "disabled": true
     },
     "ingredientes": {
       "type": "cauce-fichas",
@@ -880,7 +881,6 @@
         "m2",
         "m3"
       ],
-      "disabled": true,
       "settings": {
         "titulo": "Una boca más sana, mes a mes",
         "heading_size": "h1",

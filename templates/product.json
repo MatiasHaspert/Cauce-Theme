@@ -15,7 +15,7 @@
           "type": "disclosures",
           "name": "t:names.disclosures",
           "settings": {
-            "heading": "Disclosures",
+            "heading": "Información del producto",
             "heading_preset": "h5",
             "open_by_default": false,
             "icon": "caret",
@@ -331,7 +331,7 @@
           "type": "text",
           "name": "t:names.header",
           "settings": {
-            "text": "<h3>You may also like </h3>",
+            "text": "<h3>También te puede interesar</h3>",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "left",
