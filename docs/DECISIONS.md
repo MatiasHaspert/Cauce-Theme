@@ -4883,6 +4883,11 @@ WhatsApp, la paleta, los radios y los botones en mayúscula.
    desaparecieran de `settings_data.json`, y sin ellos el carrito cobra pero no muestra qué. En el
    editor sigue el aviso, ahora diciendo que se ven las piezas por defecto. Con bloques no cambia
    nada: se recorren en el orden del editor y los apagados no se dibujan.
+3. **El selector de cantidad tapaba el precio de la línea.** Apareció recién cuando el drawer volvió
+   a dibujar productos: los botones − y + de Horizon llevan la clase `.button`, y la base de botones
+   de `.cauce-seccion` (D-081 §2) les da `min-width: 7.5rem`. El stepper medía 274 px y el precio
+   quedaba en 17. El bloque 17 de `cauce-brand.css` ahora anula `min-width` y `min-height` en esos
+   botones: el stepper mide 114 px y el precio entra entero. Vale también para `/cart`.
 
 **Alternativa descartada:** mover el drawer a un grupo de secciones JSON (sus bloques quedarían en un
 archivo propio y no en `settings_data.json`). Es más robusto, pero cambia el id de la sección que
@@ -4894,6 +4899,11 @@ integración en el admin). `shopify theme check` no valida los handles de fuente
 
 **Cómo se verificó.** Reproducido en la tienda con un carrito de prueba: `/cart/add.js` con
 `sections=cart-drawer-section` devolvía 1 producto y una sección con 0 líneas. `shopify theme
-check`: 0 errores.
+check`: 0 errores. Después del push, el `settings_data.json` del tema publicado quedó idéntico al
+del repo (esta vez Shopify lo aceptó), el mismo pedido devolvió la línea dibujada con total, botón
+de pago y medios de pago, y la ficha volvió a tener CUIT, WhatsApp y apertura automática del
+drawer. En Chrome, en caucearg.com: "Agregar al carrito" abre el drawer con el producto, el
+subtotal, el ahorro y "Tenés el envío gratis". El arreglo del stepper se probó inyectando la regla
+en esa misma página antes de subirlo.
 
 ---

@@ -1976,9 +1976,14 @@ button.shopify-payment-button__button--unbranded {
   display: none;
 }
 
+/* min-width/min-height: los botones de Horizon llevan la clase .button, y la
+   base de .cauce-seccion le da 7.5rem de ancho minimo; sin anularlo el stepper
+   media 274px y tapaba el precio de la linea (D-086). */
 .cauce-carrito .cauce-carrito__stepper :is(.quantity-minus, .quantity-plus) {
   width: 2.5rem;
+  min-width: 0;
   height: 100%;
+  min-height: 0;
   margin: 0;
   padding: 0;
   border: 0;
