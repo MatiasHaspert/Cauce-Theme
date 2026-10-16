@@ -4818,3 +4818,37 @@ entera, la centra.
   bloque ("Activar zoom"), pero eso lo saca también de escritorio.
 
 ---
+## D-085 · 2026-10-16 · Vuelven los ajustes del tema que se perdieron al conectar `main` con Shopify
+
+**Qué pasó.** `main` está conectada con la integración de GitHub al tema **Cauce-Theme/main** de la
+tienda: un push a `main` llega a ese tema, y cada vez que se guarda en el editor, Shopify sube un
+commit "Update from Shopify for theme Cauce-Theme/main" (`shopify[bot]`). El primero, a las 9:02
+(hora argentina), dejó `config/settings_data.json` con los valores de fábrica de Horizon:
+
+- Sin ninguno de los ajustes `cauce_*`: razón social, CUIT, domicilio, email, teléfono, WhatsApp,
+  horario, link de arrepentimiento, leyendas, cuotas, transferencia (porcentaje y código), medios de
+  pago, umbral de envío gratis y destino del carrito vacío. El pie y la barra legal quedaban sin los
+  datos de la Ley 24.240 y el botón de WhatsApp no se dibujaba.
+- El carrito (`cart-drawer-section`, D-081 §4) sin sus nueve bloques.
+- La paleta, las fuentes (Inter, que se descarga), los radios, el favicon y los botones en
+  mayúscula, de fábrica.
+
+Los guardados siguientes fueron cambios del comercio: el logo del pie (`footer-group.json`) y el
+alto del logo del encabezado.
+
+**Decisión.** Con el visto bueno del comercio, `settings_data.json` vuelve a ser el de D-082 con dos
+excepciones, que se dejan como están en la tienda: el alto del logo (100 px en escritorio y 28 en
+teléfono, ajustado desde el editor) y `content_for_index`, que agrega Shopify. El logo del pie no
+está en este archivo y no se tocó.
+
+**Para lo que sigue:** antes de subir a `main` hay que traer lo que haya guardado el editor (`git
+fetch` y rebase), porque un push con una copia vieja pisaría los cambios del comercio. El editor
+además reescribe las plantillas JSON (pone `settings` al final de cada sección y completa valores
+por defecto); un conflicto de texto ahí suele ser solo de forma.
+
+**Cómo se verificó.** Comparado contra D-082 clave por clave: solo difieren el alto del logo y
+`content_for_index`. `theme check` sin errores; el validador de settings solo marca
+`content_for_index`, que es de Shopify.
+
+---
+
