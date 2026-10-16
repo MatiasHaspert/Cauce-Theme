@@ -1,0 +1,203 @@
+{% comment %}
+  CAUCE — banda en movimiento: una fila de mensajes cortos que se desplaza sola.
+  Reemplaza al horizontal-ticker de Shrine (D-074 §1, D-081).
+
+  Sin JS: es una animacion de CSS sobre dos copias de la misma fila. La segunda
+  copia es aria-hidden, asi que un lector de pantalla lee cada mensaje una vez.
+  Cada copia repite la lista las veces que haga falta para cubrir una pantalla
+  ancha sin dejar un hueco al final del recorrido.
+
+  Con prefers-reduced-motion la banda se queda quieta y los mensajes se centran
+  en renglones (bloque 29 de cauce-brand.css). Lo que el ticker de Shrine no
+  hacia (AUDIT-SHRINE §2, bloque 11).
+{% endcomment %}
+
+{%- liquid
+  assign cauce_repeticiones = section.settings.repeticiones | default: 4
+-%}
+
+{%- capture cauce_items -%}
+  {%- for block in section.blocks -%}
+    {%- if block.settings.texto != blank -%}
+      <li class="cauce-banda__item" {{ block.shopify_attributes }}>
+        {%- if block.settings.icono != 'ninguno' -%}
+          {% render 'cauce-iconos', icono: block.settings.icono, clase: 'cauce-banda__icono' %}
+        {%- endif -%}
+        <span>{{ block.settings.texto }}</span>
+      </li>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- if cauce_items != blank -%}
+  <div
+    class="cauce-banda cauce-seccion color-{{ section.settings.color_scheme }}{% if section.settings.negrita %} cauce-banda--negrita{% endif %}{% if section.settings.pausa_hover %} cauce-banda--pausa{% endif %}"
+    style="--cauce-banda-duracion: {{ section.settings.duracion }}s; --cauce-banda-gap: {{ section.settings.espacio_mobile }}px; --cauce-banda-gap-desktop: {{ section.settings.espacio_desktop }}px; --cauce-banda-texto: {{ section.settings.texto_mobile }}px; --cauce-banda-texto-desktop: {{ section.settings.texto_desktop }}px; --padding-top: {{ section.settings.padding_top }}px; --padding-bottom: {{ section.settings.padding_bottom }}px;"
+  >
+    <div class="cauce-banda__marco">
+      <ul class="cauce-banda__pista" role="list">
+        {%- for i in (1..cauce_repeticiones) -%}
+          {%- if forloop.first -%}
+            {{ cauce_items }}
+          {%- else -%}
+            {{ cauce_items | replace: '<li class="cauce-banda__item"', '<li aria-hidden="true" class="cauce-banda__item"' }}
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+      <ul class="cauce-banda__pista" role="list" aria-hidden="true">
+        {%- for i in (1..cauce_repeticiones) -%}
+          {{ cauce_items }}
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "CAUCE · Banda",
+  "tag": "section",
+  "class": "cauce-section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "options": [
+        { "value": "background-1", "label": "Fondo" },
+        { "value": "background-2", "label": "Superficie" },
+        { "value": "inverse", "label": "Oscuro" }
+      ],
+      "default": "background-2"
+    },
+    {
+      "type": "range",
+      "id": "duracion",
+      "label": "Duracion de una vuelta",
+      "min": 10,
+      "max": 90,
+      "step": 5,
+      "unit": "s",
+      "default": 35
+    },
+    {
+      "type": "range",
+      "id": "repeticiones",
+      "label": "Repeticiones de la lista",
+      "info": "Las que hagan falta para que la fila cubra una pantalla ancha.",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "pausa_hover",
+      "label": "Frenar al pasar el mouse",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "negrita",
+      "label": "Texto en negrita",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "texto_mobile",
+      "label": "Tamaño del texto en telefono",
+      "min": 11,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "texto_desktop",
+      "label": "Tamaño del texto en escritorio",
+      "min": 11,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "espacio_mobile",
+      "label": "Espacio entre mensajes en telefono",
+      "min": 16,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "espacio_desktop",
+      "label": "Espacio entre mensajes en escritorio",
+      "min": 16,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Espacio arriba",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Espacio abajo",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 14
+    }
+  ],
+  "blocks": [
+    {
+      "type": "mensaje",
+      "name": "Mensaje",
+      "settings": [
+        {
+          "type": "text",
+          "id": "texto",
+          "label": "Texto"
+        },
+        {
+          "type": "select",
+          "id": "icono",
+          "label": "Icono",
+          "options": [
+            { "value": "ninguno", "label": "Ninguno" },
+            { "value": "envio", "label": "Envio" },
+            { "value": "pago", "label": "Pago" },
+            { "value": "escudo", "label": "Escudo" },
+            { "value": "devolucion", "label": "Devolucion" },
+            { "value": "visto", "label": "Tilde" }
+          ],
+          "default": "ninguno"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "CAUCE · Banda",
+      "blocks": [
+        { "type": "mensaje", "settings": { "texto": "Envío gratis a todo el país" } },
+        { "type": "mensaje", "settings": { "texto": "3 cuotas sin interés" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

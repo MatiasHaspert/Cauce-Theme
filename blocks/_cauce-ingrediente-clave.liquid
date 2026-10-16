@@ -1,0 +1,124 @@
+{% comment %}
+  CAUCE: una fila de la tabla de ingredientes clave. Solo vive adentro de
+  blocks/cauce-pestanas.liquid, que arma la <table> alrededor. Ver D-077 y D-081.
+
+  - Es una fila de <table> de verdad: el ingrediente es el <th> de su fila y
+    cada icono lleva "Si" / "No" oculto.
+  - Sin foto dibuja un circulo punteado del mismo tamano, con el pedido de
+    produccion como nombre accesible. El layout no se mueve al cargarla.
+  - Sin nombre no dibuja nada.
+
+  ADVERTENCIA DE CLAIMS. Es publicidad comparativa: cada fila afirma algo de este
+  producto y, con la cruz, lo niega de toda la categoria. Todo el texto vive en
+  templates/*.json. "Si" y "No" son etiquetas de accesibilidad, no claims.
+{% endcomment %}
+
+{%- if block.settings.nombre != blank -%}
+  {%- assign cauce_clave_alt = block.settings.alt | default: block.settings.imagen.alt -%}
+  <tr {{ block.shopify_attributes }}>
+    <th scope="row" class="cauce-clave__ingrediente">
+      <span class="cauce-clave__fila">
+        {%- if block.settings.imagen != blank -%}
+          {{
+            block.settings.imagen
+            | image_url: width: 192
+            | image_tag:
+              loading: 'lazy',
+              widths: '48, 96, 144, 192',
+              sizes: '48px',
+              class: 'cauce-clave__foto',
+              alt: cauce_clave_alt
+          }}
+        {%- elsif block.settings.foto_pendiente != blank -%}
+          <span
+            class="cauce-clave__foto cauce-clave__foto--pendiente"
+            role="img"
+            aria-label="{{ block.settings.foto_pendiente | strip_html | escape }}"
+          ></span>
+        {%- endif -%}
+        <span class="cauce-clave__cuerpo">
+          <span class="cauce-clave__nombre">{{ block.settings.nombre }}</span>
+          {%- if block.settings.texto != blank -%}
+            <span class="cauce-clave__texto">{{ block.settings.texto }}</span>
+          {%- endif -%}
+        </span>
+      </span>
+    </th>
+    {%- for cauce_columna in (1..2) -%}
+      {%- liquid
+        if cauce_columna == 1
+          assign cauce_tiene = block.settings.nosotros
+          assign cauce_clase = 'cauce-clave__nosotros'
+        else
+          assign cauce_tiene = block.settings.otros
+          assign cauce_clase = 'cauce-clave__otros'
+        endif
+      -%}
+      <td class="{{ cauce_clase }}">
+        {%- if cauce_tiene -%}
+          <svg class="cauce-clave__si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="m5 12.8 4.6 4.7L19 6.5"/>
+          </svg>
+          <span class="visually-hidden">Sí</span>
+        {%- else -%}
+          <svg class="cauce-clave__no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false">
+            <path d="M6.5 5l11 14M17.5 5l-11 14"/>
+          </svg>
+          <span class="visually-hidden">No</span>
+        {%- endif -%}
+      </td>
+    {%- endfor -%}
+  </tr>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Ingrediente clave",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "nombre",
+      "label": "Nombre"
+    },
+    {
+      "type": "textarea",
+      "id": "texto",
+      "label": "Que hace"
+    },
+    {
+      "type": "image_picker",
+      "id": "imagen",
+      "label": "Foto"
+    },
+    {
+      "type": "text",
+      "id": "alt",
+      "label": "Texto alternativo"
+    },
+    {
+      "type": "text",
+      "id": "foto_pendiente",
+      "label": "Pedido de foto",
+      "info": "Se usa como nombre accesible del circulo mientras no hay foto."
+    },
+    {
+      "type": "checkbox",
+      "id": "nosotros",
+      "label": "Tilde en la columna propia",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "otros",
+      "label": "Tilde en la otra columna",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Ingrediente clave"
+    }
+  ]
+}
+{% endschema %}

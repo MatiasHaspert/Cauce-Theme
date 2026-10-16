@@ -1,0 +1,126 @@
+{% comment %}
+  CAUCE — bloque de texto: volanta, titulo, texto y, si hace falta, HTML libre
+  debajo. Para las paginas legales y de ayuda (arrepentimiento, contacto), donde
+  en Shrine se usaban rich-text y custom-liquid (D-081).
+
+  El HTML libre existe porque el texto enriquecido de Shopify no admite
+  subtitulos: "Que pasa despues" del arrepentimiento lleva un h2, una lista
+  numerada y los datos de contacto de los settings de CAUCE (por eso es un
+  setting de tipo liquid y no html).
+{% endcomment %}
+
+<div class="cauce-texto cauce-seccion color-{{ section.settings.color_scheme }}">
+  <div
+    class="page-width cauce-texto__inner cauce-texto__inner--{{ section.settings.ancho }} cauce-texto__inner--{{ section.settings.alineacion }}"
+    style="--padding-top: {{ section.settings.padding_top }}px; --padding-bottom: {{ section.settings.padding_bottom }}px;"
+  >
+    {%- if section.settings.volanta != blank -%}
+      <p class="cauce-eyebrow">{{ section.settings.volanta }}</p>
+    {%- endif -%}
+    {%- if section.settings.titulo != blank -%}
+      {%- if section.settings.titulo_principal -%}
+        <h1 class="cauce-texto__titulo {{ section.settings.heading_size }}">{{ section.settings.titulo }}</h1>
+      {%- else -%}
+        <h2 class="cauce-texto__titulo {{ section.settings.heading_size }}">{{ section.settings.titulo }}</h2>
+      {%- endif -%}
+    {%- endif -%}
+    {%- if section.settings.texto != blank -%}
+      <div class="cauce-texto__texto rte">{{ section.settings.texto }}</div>
+    {%- endif -%}
+    {%- if section.settings.html != blank -%}
+      <div class="cauce-texto__texto rte">{{ section.settings.html }}</div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "CAUCE · Texto",
+  "tag": "section",
+  "class": "cauce-section",
+  "settings": [
+    { "type": "text", "id": "volanta", "label": "Volanta" },
+    { "type": "inline_richtext", "id": "titulo", "label": "Titulo" },
+    {
+      "type": "checkbox",
+      "id": "titulo_principal",
+      "label": "Es el titulo principal de la pagina (h1)",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Tamaño del titulo",
+      "options": [
+        { "value": "h2", "label": "Chico" },
+        { "value": "h1", "label": "Mediano" },
+        { "value": "h0", "label": "Grande" }
+      ],
+      "default": "h1"
+    },
+    { "type": "richtext", "id": "texto", "label": "Texto" },
+    {
+      "type": "liquid",
+      "id": "html",
+      "label": "HTML o Liquid debajo del texto",
+      "info": "Para subtitulos y listas que el texto enriquecido no admite. Acepta Liquid: el snippet cauce-dato-legal y los settings de CAUCE."
+    },
+    {
+      "type": "select",
+      "id": "ancho",
+      "label": "Ancho",
+      "options": [
+        { "value": "angosto", "label": "Angosto" },
+        { "value": "normal", "label": "Normal" }
+      ],
+      "default": "angosto"
+    },
+    {
+      "type": "select",
+      "id": "alineacion",
+      "label": "Alineacion",
+      "options": [
+        { "value": "izquierda", "label": "Izquierda" },
+        { "value": "centro", "label": "Centro" }
+      ],
+      "default": "izquierda"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "options": [
+        { "value": "background-1", "label": "Fondo" },
+        { "value": "background-2", "label": "Superficie" },
+        { "value": "inverse", "label": "Oscuro" }
+      ],
+      "default": "background-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Espacio arriba",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Espacio abajo",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    }
+  ],
+  "presets": [
+    {
+      "name": "CAUCE · Texto"
+    }
+  ]
+}
+{% endschema %}

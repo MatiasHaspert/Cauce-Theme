@@ -1,0 +1,277 @@
+{% comment %}
+  CAUCE — el carrito, drawer y /cart. Un solo archivo para las dos superficies:
+  lo unico que cambia es el contexto y la clase de layout (D-046 §7).
+
+  Va adentro de <cart-items-component> (snippets/cart-items-component.liquid de
+  Horizon), que es el que hace los cambios de cantidad y vuelve a pedir la
+  seccion entera por la Section Rendering API. Todo lo que hay aca se recalcula
+  en cada cambio: no hay regiones que elegir.
+
+  Parametros:
+    bloques    {array}   requerido. section.blocks de la seccion que llama:
+                         cart-drawer-section (drawer) o cauce-carrito-pagina.
+    contexto   {string}  requerido. 'drawer' | 'pagina'.
+    titulo     {string}  opcional. Titulo; [count] se reemplaza por la cantidad.
+
+  Los bloques se recorren dos veces, como en Shrine: el cuerpo (reaseguro,
+  envio, productos, empujon, leyenda) y el pie (totales, pago, CTA, medios). En
+  el drawer el pie queda fijo abajo; en /cart es la columna de la derecha.
+
+  CONTRATO CON HORIZON:
+    [ref="cartItemCount"] ......... component-cart-items.js lee la cantidad del
+                                    HTML nuevo despues de cada cambio.
+    .cart-drawer--empty ............ cart-drawer.js no abre el drawer vacio.
+    [data-cart-drawer-empty] ....... anima el paso de vacio a lleno.
+    .cart-drawer__content / .cart-drawer__summary
+                                    cart-drawer.js mide el pie para decidir si
+                                    lo deja fijo.
+    form#cart-form ................. el boton de pago lo envia con
+                                    name="checkout".
+    ref="cartTotal" ................ el total brilla mientras se actualiza.
+    #cart-drawer/close ............. cierra el drawer (eventos de Horizon).
+{% endcomment %}
+
+<script
+  src="{{ 'component-cart-items.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
+<script
+  src="{{ 'component-cart-quantity-selector.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
+{% render 'text-component-shimmer-styles' %}
+
+{%- liquid
+  assign cauce_drawer = false
+  if contexto == 'drawer'
+    assign cauce_drawer = true
+  endif
+  assign cauce_titulo = titulo | default: 'Tu carrito'
+  assign cauce_cuerpo = 'trust_line,progress_bar,cart_items,product_upsells,legal_note' | split: ','
+
+  if settings.cauce_carrito_vacio_url != blank
+    assign cauce_seguir_url = settings.cauce_carrito_vacio_url
+  else
+    assign cauce_seguir_url = routes.all_products_collection_url
+  endif
+-%}
+
+<span class="visually-hidden" ref="cartItemCount" aria-hidden="true">{{- cart.item_count -}}</span>
+
+{%- capture cauce_cabecera -%}
+  <div class="cauce-carrito__cabecera">
+    {%- if cauce_drawer -%}
+      <h2 class="cauce-carrito__titulo" id="cart-drawer-heading">
+        {{- cauce_titulo | replace: '[count]', cart.item_count -}}
+      </h2>
+      {%- if cart.item_count > 0 -%}
+        <span class="cauce-carrito__contador" aria-hidden="true">{{ cart.item_count }}</span>
+        <span class="visually-hidden">{{ 'accessibility.cart_count' | t }}: {{ cart.item_count }}</span>
+      {%- endif -%}
+      <button
+        type="button"
+        class="cauce-carrito__cerrar"
+        on:click="#cart-drawer/close"
+        aria-label="{{ 'actions.close' | t }}"
+      >
+        {%- render 'cauce-iconos', icono: 'cruz' -%}
+      </button>
+    {%- else -%}
+      <h1 class="cauce-carrito__titulo">{{ cauce_titulo | replace: '[count]', cart.item_count }}</h1>
+      <a href="{{ cauce_seguir_url }}" class="cauce-carrito__volver">
+        {{- 'actions.continue_shopping' | t -}}
+      </a>
+    {%- endif -%}
+  </div>
+{%- endcapture -%}
+
+{%- if cart.empty? -%}
+  <div class="cauce-carrito__vacio-wrap cart-drawer--empty" data-cart-drawer-empty>
+    {{ cauce_cabecera }}
+    {% render 'cauce-carrito-vacio', url: cauce_seguir_url %}
+  </div>
+{%- else -%}
+  {{ cauce_cabecera }}
+
+  {%- if bloques.size == 0 and request.design_mode -%}
+    <p class="cauce-carrito__aviso">
+      El carrito no tiene bloques. Agregalos desde la sección del carrito en el editor de temas.
+    </p>
+  {%- endif -%}
+
+  <div class="cauce-carrito__cuerpo cart-drawer__content">
+    {%- for block in bloques -%}
+      {%- unless cauce_cuerpo contains block.type -%}
+        {%- continue -%}
+      {%- endunless -%}
+      {%- case block.type -%}
+        {%- when 'trust_line' -%}
+          <div class="cauce-carrito__bloque" {{ block.shopify_attributes }}>
+            {% render 'cauce-carrito-reaseguro',
+              arrepentimiento: block.settings.mostrar_arrepentimiento,
+              iva: block.settings.mostrar_iva,
+              envio: block.settings.mostrar_envio
+            %}
+          </div>
+
+        {%- when 'progress_bar' -%}
+          <div class="cauce-carrito__bloque" {{ block.shopify_attributes }}>
+            {% render 'cauce-carrito-envio' %}
+          </div>
+
+        {%- when 'cart_items' -%}
+          <form
+            action="{{ routes.cart_url }}"
+            id="cart-form"
+            class="cart-form cauce-carrito__form"
+            method="post"
+            {{ block.shopify_attributes }}
+          >
+            <ul class="cauce-carrito__items" role="list">
+              {%- for item in cart.items -%}
+                {% render 'cauce-carrito-linea',
+                  item: item,
+                  formato: block.settings.mostrar_formato,
+                  por_dia: block.settings.mostrar_precio_dia
+                %}
+              {%- endfor -%}
+            </ul>
+            {%- if cauce_drawer == false and block.settings.mostrar_nota -%}
+              {%- comment -%}
+                La nota existe SOLO en /cart: en el drawer comia altura y empujaba
+                el primer item abajo del fold (D-046 §7). Se guarda al ir al pago,
+                porque el boton envia este mismo formulario.
+              {%- endcomment -%}
+              <div class="cauce-carrito__nota">
+                <label for="Cart-note">{{ 'cauce.carrito.nota' | t }}</label>
+                <textarea name="note" id="Cart-note" rows="3">{{ cart.note }}</textarea>
+              </div>
+            {%- endif -%}
+          </form>
+
+        {%- when 'product_upsells' -%}
+          <div class="cauce-carrito__bloque" {{ block.shopify_attributes }}>
+            {% render 'cauce-carrito-nudge' %}
+          </div>
+
+        {%- when 'legal_note' -%}
+          <div class="cauce-carrito__legal" {{ block.shopify_attributes }}>
+            {% render 'cauce-disclaimer', compacto: true %}
+          </div>
+      {%- endcase -%}
+    {%- endfor -%}
+    <div class="cauce-carrito__errores" id="cauce-carrito-errores" role="alert"></div>
+  </div>
+
+  <div class="cauce-carrito__pie cart-drawer__summary">
+    {%- for block in bloques -%}
+      {%- if cauce_cuerpo contains block.type -%}
+        {%- continue -%}
+      {%- endif -%}
+      {%- case block.type -%}
+        {%- when 'subtotals' -%}
+          <div class="cauce-carrito__totales" {{ block.shopify_attributes }}>
+            {%- if cart.cart_level_discount_applications.size > 0 -%}
+              <ul
+                class="cauce-carrito__descuentos"
+                role="list"
+                aria-label="{{ 'cauce.carrito.descuentos' | t }}"
+              >
+                {%- for discount in cart.cart_level_discount_applications -%}
+                  <li>
+                    {{- discount.title | escape }} (−{{ discount.total_allocated_amount | money }})
+                  </li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+
+            {%- comment -%}
+              role="status" en el total: al cambiar una cantidad el carrito se
+              vuelve a renderizar y un lector de pantalla tiene que enterarse del
+              monto nuevo sin ir a buscarlo.
+            {%- endcomment -%}
+            <div class="cauce-carrito__total" role="status">
+              <span class="cauce-carrito__total-label">{{ 'cauce.carrito.subtotal' | t }}</span>
+              {%- assign cauce_total = cart.total_price | money -%}
+              <text-component
+                ref="cartTotal"
+                value="{{ cauce_total | strip_html }}"
+                class="cauce-carrito__total-monto"
+                data-cart-subtotal
+              >
+                {{- cauce_total -}}
+              </text-component>
+            </div>
+
+            {%- if block.settings.mostrar_ahorro -%}
+              {%- assign cauce_ahorro = cart.original_total_price | minus: cart.total_price -%}
+              {%- if cauce_ahorro > 0 -%}
+                {%- assign cauce_ahorro_money = cauce_ahorro | money -%}
+                <p class="cauce-carrito__ahorro">
+                  {{- 'cauce.carrito.ahorro' | t: monto: cauce_ahorro_money -}}
+                </p>
+              {%- endif -%}
+            {%- endif -%}
+
+            <small class="cauce-carrito__impuestos">
+              {%- if cart.taxes_included -%}
+                {{ 'cauce.carrito.impuestos_incluidos' | t }}
+              {%- else -%}
+                {{ 'cauce.carrito.impuestos_en_checkout' | t }}
+              {%- endif -%}
+            </small>
+          </div>
+
+        {%- when 'payment_benefit' -%}
+          <div class="cauce-carrito__bloque" {{ block.shopify_attributes }}>
+            {% render 'cauce-carrito-pago' %}
+          </div>
+
+        {%- when 'checkout_btn' -%}
+          <div class="cauce-carrito__ctas" {{ block.shopify_attributes }}>
+            <button
+              type="submit"
+              id="checkout"
+              class="cauce-carrito__cta"
+              name="checkout"
+              form="cart-form"
+              {% if cart == empty %}
+                disabled
+              {% endif %}
+            >
+              {% render 'cauce-iconos', icono: 'candado', clase: 'cauce-icono--cta' %}
+              <span>{{ 'cauce.carrito.checkout' | t }}</span>
+              {%- if block.settings.mostrar_monto -%}
+                <span class="cauce-carrito__cta-sep" aria-hidden="true"></span>
+                <span class="cauce-carrito__cta-monto">{{ cart.total_price | money }}</span>
+              {%- endif -%}
+              {% render 'cauce-iconos', icono: 'flecha', clase: 'cauce-icono--cta' %}
+            </button>
+            {%- if block.settings.mostrar_pagos_rapidos and additional_checkout_buttons -%}
+              <div class="additional-checkout-buttons">
+                {{ content_for_additional_checkout_buttons }}
+              </div>
+            {%- endif -%}
+            {%- if block.settings.mostrar_seguir -%}
+              {%- if cauce_drawer -%}
+                <button type="button" class="cauce-carrito__seguir" on:click="#cart-drawer/close">
+                  {{ 'actions.continue_shopping' | t }}
+                </button>
+              {%- else -%}
+                <a class="cauce-carrito__seguir" href="{{ cauce_seguir_url }}">
+                  {{ 'actions.continue_shopping' | t }}
+                </a>
+              {%- endif -%}
+            {%- endif -%}
+          </div>
+
+        {%- when 'payment_badges' -%}
+          <div class="cauce-carrito__pagos" {{ block.shopify_attributes }}>
+            {% render 'cauce-medios-pago', alineacion: 'center' %}
+          </div>
+      {%- endcase -%}
+    {%- endfor -%}
+  </div>
+{%- endif -%}

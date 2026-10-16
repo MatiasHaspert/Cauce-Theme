@@ -1,0 +1,1162 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "banda": {
+      "type": "cauce-banda",
+      "settings": {
+        "color_scheme": "background-2",
+        "duracion": 35,
+        "repeticiones": 4,
+        "pausa_hover": true,
+        "negrita": true,
+        "texto_mobile": 13,
+        "texto_desktop": 15,
+        "espacio_mobile": 40,
+        "espacio_desktop": 72,
+        "padding_top": 14,
+        "padding_bottom": 14
+      },
+      "blocks": {
+        "m1": {
+          "type": "mensaje",
+          "settings": {
+            "texto": "Envío gratis a todo el país",
+            "icono": "ninguno"
+          }
+        },
+        "m2": {
+          "type": "mensaje",
+          "settings": {
+            "texto": "3 cuotas sin interés",
+            "icono": "ninguno"
+          }
+        },
+        "m3": {
+          "type": "mensaje",
+          "settings": {
+            "texto": "Garantía de 30 días",
+            "icono": "ninguno"
+          }
+        }
+      },
+      "block_order": [
+        "m1",
+        "m2",
+        "m3"
+      ]
+    },
+    "main": {
+      "type": "product-information",
+      "blocks": {
+        "media-gallery": {
+          "type": "_product-media-gallery",
+          "static": true,
+          "settings": {
+            "media_presentation": "carousel",
+            "media_columns": "one",
+            "image_gap": 8,
+            "large_first_image": false,
+            "slideshow_controls_style": "thumbnails",
+            "slideshow_mobile_controls_style": "dots",
+            "thumbnail_position": "bottom",
+            "thumbnail_width": 64,
+            "thumbnail_radius": 8,
+            "aspect_ratio": "adapt",
+            "constrain_to_viewport": true,
+            "media_fit": "contain",
+            "media_radius": 12,
+            "extend_media": false,
+            "zoom": true,
+            "video_loop": false,
+            "hide_variants": true,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "product-details": {
+          "type": "_product-details",
+          "static": true,
+          "settings": {
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "details_position": "flex-start",
+            "gap": 0,
+            "sticky_details_desktop": true,
+            "background_media": "none",
+            "background_color": "",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "padding-block-start": 8,
+            "padding-block-end": 24,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "titulo": {
+              "type": "text",
+              "settings": {
+                "text": "<h1>{{ closest.product.title }}</h1>",
+                "width": "100%",
+                "max_width": "none",
+                "alignment": "left",
+                "type_preset": "h1",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
+            "que_es": {
+              "type": "custom-liquid",
+              "settings": {
+                "custom_liquid": "<p class=\"cauce-pastilla\">{% render 'cauce-iconos', icono: 'gota' %}<span>Aditivo dental líquido para el agua de tu perro · 1 litro</span></p>"
+              },
+              "blocks": {}
+            },
+            "descripcion": {
+              "type": "text",
+              "settings": {
+                "text": "<p>Una tapita en el bebedero cada vez que le cambiás el agua. Ayuda a mantener el aliento fresco y a reducir la placa que después se vuelve sarro, sin cepillado.</p>",
+                "width": "100%",
+                "max_width": "none",
+                "alignment": "left",
+                "type_preset": "custom",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 18,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
+            "ancla_comprar": {
+              "type": "custom-liquid",
+              "settings": {
+                "custom_liquid": "<span id=\"comprar\" class=\"cauce-ancla\" aria-hidden=\"true\"></span>"
+              },
+              "blocks": {}
+            },
+            "comprar": {
+              "type": "cauce-comprar",
+              "settings": {
+                "titulo": "CADA BOTELLA DE 1 LITRO RINDE 60 DÍAS",
+                "subtitulo": "",
+                "preseleccionado": "option_2",
+                "destacado": "option_2",
+                "indicador": true,
+                "cuotas_en": "todos",
+                "sin_ahorro": false,
+                "redondear": true,
+                "dias_unidad": 60,
+                "nota": "El precio tachado es lo que costarían esas botellas compradas de a una.",
+                "nota_icono": "info",
+                "boton_texto": "",
+                "cantidad_1": 1,
+                "etiqueta_1": "1 botella",
+                "detalle_1": "Rinde 60 días",
+                "cinta_1": "",
+                "descuento_1": 0,
+                "porcentaje_1": 0,
+                "tachado_1": true,
+                "cantidad_2": 2,
+                "etiqueta_2": "2 botellas",
+                "detalle_2": "[price_each] cada una",
+                "cinta_2": "",
+                "descuento_2": 39900,
+                "porcentaje_2": 0,
+                "tachado_2": true,
+                "cantidad_3": 3,
+                "etiqueta_3": "3 botellas",
+                "detalle_3": "[price_each] cada una",
+                "cinta_3": "",
+                "descuento_3": 77800,
+                "porcentaje_3": 0,
+                "tachado_3": true,
+                "cantidad_4": 0,
+                "etiqueta_4": "",
+                "detalle_4": "",
+                "cinta_4": "",
+                "descuento_4": 0,
+                "porcentaje_4": 0,
+                "tachado_4": true
+              },
+              "blocks": {
+                "add-to-cart": {
+                  "type": "add-to-cart",
+                  "static": true,
+                  "settings": {
+                    "style_class": "button"
+                  },
+                  "blocks": {}
+                }
+              }
+            },
+            "pagos": {
+              "type": "custom-liquid",
+              "settings": {
+                "custom_liquid": "{% render 'cauce-medios-pago', alineacion: 'left' %}"
+              },
+              "blocks": {}
+            },
+            "fichas": {
+              "type": "custom-liquid",
+              "settings": {
+                "custom_liquid": "<ul class=\"cauce-fichas\" role=\"list\"><li class=\"cauce-fichas__item\">{% render 'cauce-iconos', icono: 'gota' %}<span>1 litro · rinde 60 días</span></li><li class=\"cauce-fichas__item\">{% render 'cauce-iconos', icono: 'hoja' %}<span>Sin sabor ni olor, 100% indetectable</span></li><li class=\"cauce-fichas__item\">{% render 'cauce-iconos', icono: 'envio' %}<span>Entrega en 3 a 10 días hábiles</span></li><li class=\"cauce-fichas__item\">{% render 'cauce-iconos', icono: 'escudo' %}<span>Garantía de 30 días</span></li></ul>"
+              },
+              "blocks": {}
+            },
+            "pestanas": {
+              "type": "cauce-pestanas",
+              "settings": {
+                "titulo": "Ingredientes clave",
+                "etiqueta": "Más sobre el producto",
+                "titulo_1": "Cómo se usa",
+                "contenido_1": "<ol><li>Llená el bebedero como siempre.</li><li>Agregá una tapita (15 ml) por cada litro de agua. La tapa de la botella es la medida.</li><li>Repetilo cada vez que le cambiás el agua.</li></ol><p>Una botella de 1 litro rinde 60 días.</p>",
+                "titulo_2": "Ingredientes clave",
+                "nosotros": "Hocico Fresh",
+                "otros": "Otros",
+                "titulo_3": "Beneficios del producto",
+                "contenido_3": "<h3 class=\"cauce-beneficios__titulo\">¿Le temes al cepillo de dientes? Hocico Fresh cuida la boca de tu perro sin esfuerzo</h3><ul class=\"cauce-beneficios\" role=\"list\"><li>Dientes más limpios en 30 días o menos con uso diario</li><li>Elimina placa y controla las bacterias que causan enfermedades orales</li><li>Refresca el aliento hasta por 12 horas sin necesidad de cepillado</li><li>Solo añade una tapa al agua cada vez que la cambies — ¡así de fácil!</li><li>100% ingredientes naturales. Seguro para perros adultos de todas las razas y tamaños</li><li>Previene enfermedades que pueden afectar corazón, pulmón e hígado</li></ul>"
+              },
+              "blocks": {
+                "clave1": {
+                  "type": "_cauce-ingrediente-clave",
+                  "settings": {
+                    "nombre": "Extracto de té verde",
+                    "texto": "Aporta polifenoles de origen vegetal, que se usan en higiene bucal para acompañar el aliento fresco.",
+                    "imagen": "shopify://shop_images/hojateverde.avif",
+                    "alt": "",
+                    "foto_pendiente": "FOTO 1:1 — placa de vidrio con extracto de té verde (líquido verde oliva), vista desde arriba.",
+                    "nosotros": true,
+                    "otros": false
+                  },
+                  "blocks": {}
+                },
+                "clave2": {
+                  "type": "_cauce-ingrediente-clave",
+                  "settings": {
+                    "nombre": "Tres ingredientes, una fórmula",
+                    "texto": "Cetilpiridinio, té verde y zinc van juntos en cada tapita, para ayudar a reducir la placa que se forma todos los días.",
+                    "imagen": "shopify://shop_images/25.avif",
+                    "alt": "",
+                    "foto_pendiente": "FOTO 1:1 — los tres ingredientes juntos en sus placas de vidrio, vista desde arriba.",
+                    "nosotros": true,
+                    "otros": false
+                  },
+                  "blocks": {}
+                },
+                "clave3": {
+                  "type": "_cauce-ingrediente-clave",
+                  "settings": {
+                    "nombre": "Acción sobre las bacterias",
+                    "texto": "Ayuda a reducir las bacterias de la boca que forman la placa y dan mal aliento, cada vez que tu perro toma agua.",
+                    "imagen": "shopify://shop_images/26.avif",
+                    "alt": "",
+                    "foto_pendiente": "FOTO 1:1 — dientes de un perro, primer plano.",
+                    "nosotros": true,
+                    "otros": false
+                  },
+                  "blocks": {}
+                },
+                "clave4": {
+                  "type": "_cauce-ingrediente-clave",
+                  "settings": {
+                    "nombre": "Sin xilitol, sin sabor ni olor",
+                    "texto": "No lleva xilitol. No tiene sabor ni olor y no cambia el color del agua: tu perro toma como siempre.",
+                    "imagen": "shopify://shop_images/27.avif",
+                    "alt": "",
+                    "foto_pendiente": "FOTO 1:1 — bebedero con agua transparente, vista desde arriba.",
+                    "nosotros": true,
+                    "otros": false
+                  },
+                  "blocks": {}
+                },
+                "clave5": {
+                  "type": "_cauce-ingrediente-clave",
+                  "settings": {
+                    "nombre": "Cloruro de cetilpiridinio",
+                    "texto": "Ingrediente de uso habitual en productos de higiene bucal. Ayuda a reducir las bacterias que forman la placa.",
+                    "imagen": "shopify://shop_images/26_1.avif",
+                    "alt": "",
+                    "foto_pendiente": "FOTO 1:1 — placa de vidrio con cloruro de cetilpiridinio (líquido transparente), vista desde arriba.",
+                    "nosotros": true,
+                    "otros": false
+                  },
+                  "blocks": {}
+                },
+                "clave6": {
+                  "type": "_cauce-ingrediente-clave",
+                  "settings": {
+                    "nombre": "Gluconato de zinc",
+                    "texto": "Se une a los compuestos que le dan olor al aliento y ayuda a neutralizarlos. Va disuelto en el agua, sin sabor.",
+                    "imagen": "shopify://shop_images/29.avif",
+                    "alt": "",
+                    "foto_pendiente": "FOTO 1:1 — placa de vidrio con gluconato de zinc (polvo blanco o solución), vista desde arriba.",
+                    "nosotros": true,
+                    "otros": false
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "clave1",
+                "clave2",
+                "clave3",
+                "clave4",
+                "clave5",
+                "clave6"
+              ]
+            },
+            "sticky": {
+              "type": "cauce-barra-compra",
+              "settings": {
+                "boton_texto": "Elegir mi pack",
+                "destino": "#comprar",
+                "mostrar_producto": true,
+                "color_scheme": "background-1"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "titulo",
+            "que_es",
+            "descripcion",
+            "ancla_comprar",
+            "comprar",
+            "pagos",
+            "fichas",
+            "pestanas",
+            "sticky"
+          ]
+        }
+      },
+      "settings": {
+        "content_width": "content-center-aligned",
+        "desktop_media_position": "left",
+        "equal_columns": true,
+        "limit_details_width": false,
+        "gap": 48,
+        "enable_sticky_add_to_cart": false,
+        "background_color": "",
+        "padding-block-start": 32,
+        "padding-block-end": 56
+      }
+    },
+    "problema": {
+      "type": "cauce-media-lista",
+      "settings": {
+        "imagen": "shopify://shop_images/imagenPdp.avif",
+        "alt": "",
+        "foto_pendiente": "FOTO 16:9 — la boca de un perro con placa en los dientes. Foto real; no se presenta como un caso de cliente.",
+        "relacion": "16 / 9",
+        "posicion_imagen": "izquierda",
+        "epigrafe": "",
+        "volanta": "",
+        "titulo": "El 70% de las mascotas sufre enfermedad oral antes de los 3 años",
+        "titulo_acento": "",
+        "heading_size": "h1",
+        "bajada": "<p>Y la mayoría de dueños no lo saben hasta que el daño ya es irreversible. El mal aliento es la primera señal - y casi siempre se ignora.</p>",
+        "titulo_en": "media_abajo",
+        "estilo": "tarjetas",
+        "recuadro_titulo": "",
+        "recuadro_texto": "",
+        "boton_texto": "",
+        "boton_link": "",
+        "color_scheme": "inverse",
+        "ancho_maximo": 1200,
+        "padding_top": 72,
+        "padding_bottom": 72
+      },
+      "blocks": {
+        "i1": {
+          "type": "item",
+          "settings": {
+            "etiqueta": "01 · Placa",
+            "titulo": "Se forma todos los días.",
+            "texto": "<p>Después de cada comida, bacterias forman sobre los dientes una película que no se ve. Sin higiene, ese ciclo nunca se interrumpe.</p>",
+            "destacado": false,
+            "icono": "ninguno",
+            "alt": ""
+          }
+        },
+        "i2": {
+          "type": "item",
+          "settings": {
+            "etiqueta": "02 · Sarro",
+            "titulo": "Placa endurecida que el cepillo ya no puede quitar.",
+            "texto": "<p>Una vez formado, el sarro lo saca el veterinario con una limpieza con anestesia. Por eso este aditivo actúa antes, sobre la placa.</p>",
+            "destacado": false,
+            "icono": "ninguno",
+            "alt": ""
+          }
+        },
+        "i3": {
+          "type": "item",
+          "settings": {
+            "etiqueta": "03 · Mal aliento",
+            "titulo": "No es normal - es evidencia de infección activa.",
+            "texto": "<p>Ese olor no es una característica de la especie. Es la huella de colonias bacterianas destruyendo tejido gingival en este momento.</p>",
+            "destacado": false,
+            "icono": "ninguno",
+            "alt": ""
+          }
+        }
+      },
+      "block_order": [
+        "i1",
+        "i2",
+        "i3"
+      ]
+    },
+    "respaldo": {
+      "type": "cauce-respaldo",
+      "settings": {
+        "volanta": "",
+        "titulo": "La fórmula, a la vista",
+        "heading_size": "h1",
+        "bajada": "<p>Antes de ponerlo en el agua de tu perro, mirá qué lleva, qué no lleva y cómo se usa.</p>",
+        "ficha_titulo": "Hocico Fresh",
+        "lleva_titulo": "Qué lleva",
+        "no_lleva_titulo": "Qué no lleva",
+        "pie": "",
+        "color_scheme": "background-1",
+        "ancho_maximo": 1120,
+        "padding_top": 72,
+        "padding_bottom": 40
+      },
+      "blocks": {
+        "d1": {
+          "type": "dato",
+          "settings": {
+            "etiqueta": "Presentación",
+            "valor": "Botella de 1 litro. La tapa a rosca es la medida: 15 ml."
+          }
+        },
+        "d2": {
+          "type": "dato",
+          "settings": {
+            "etiqueta": "Dosis",
+            "valor": "Una tapita por cada litro de agua, cada vez que le cambiás el agua."
+          }
+        },
+        "d3": {
+          "type": "dato",
+          "settings": {
+            "etiqueta": "Cuánto rinde",
+            "valor": "60 días."
+          }
+        },
+        "d4": {
+          "type": "dato",
+          "settings": {
+            "etiqueta": "Para quién",
+            "valor": "Perros de toda raza y tamaño: cachorros, adultos y mayores. No es para gatos."
+          }
+        },
+        "l1": {
+          "type": "lleva",
+          "settings": {
+            "texto": "Cloruro de cetilpiridinio"
+          }
+        },
+        "l2": {
+          "type": "lleva",
+          "settings": {
+            "texto": "Extracto de té verde"
+          }
+        },
+        "l3": {
+          "type": "lleva",
+          "settings": {
+            "texto": "Gluconato de zinc"
+          }
+        },
+        "n1": {
+          "type": "no_lleva",
+          "settings": {
+            "texto": "Xilitol"
+          }
+        },
+        "n2": {
+          "type": "no_lleva",
+          "settings": {
+            "texto": "Sabor"
+          }
+        },
+        "n3": {
+          "type": "no_lleva",
+          "settings": {
+            "texto": "Olor"
+          }
+        }
+      },
+      "block_order": [
+        "d1",
+        "d2",
+        "d3",
+        "d4",
+        "l1",
+        "l2",
+        "l3",
+        "n1",
+        "n2",
+        "n3"
+      ]
+    },
+    "ingredientes": {
+      "type": "cauce-fichas",
+      "settings": {
+        "volanta": "",
+        "titulo": "&nbsp;<strong>Ingredientes Activos - Lo que trabaja con cada sorbo</strong>&nbsp;",
+        "heading_size": "h1",
+        "bajada": "",
+        "pie": "",
+        "etiqueta_a11y": "Ingredientes",
+        "relacion": "1 / 1",
+        "color_scheme": "background-1",
+        "ancho_maximo": 1120,
+        "padding_top": 40,
+        "padding_bottom": 72
+      },
+      "blocks": {
+        "f1": {
+          "type": "ficha",
+          "settings": {
+            "nombre": "Cloruro de cetilpiridinio",
+            "imagen": "shopify://shop_images/imagenpdp1.avif",
+            "alt": "",
+            "foto_pendiente": "FOTO 1:1 — placa de vidrio con cloruro de cetilpiridinio (líquido transparente), vista desde arriba.",
+            "funcion": "Ayuda a reducir las bacterias que forman la placa.",
+            "detalle": "<p>Destruye la placa bacteriana en la fuente y previene su reaparición. El activo principal de la formula.</p><ul><li>Elimina la placa desde el origen.</li><li>Previene reaparición diaria.</li><li>Actúa en toda la cavidad oral.&nbsp;</li></ul>"
+          }
+        },
+        "f2": {
+          "type": "ficha",
+          "settings": {
+            "nombre": "Extracto de té verde",
+            "imagen": "shopify://shop_images/imagenpdp2.avif",
+            "alt": "",
+            "foto_pendiente": "FOTO 1:1 — placa de vidrio con extracto de té verde (líquido verde oliva), vista desde arriba.",
+            "funcion": "El antiinflamatorio natural",
+            "detalle": "<p>Reduce la inflamación gingival y fortalece el tejido de las encías con polifenoles antioxidantes.</p><ul><li>Reduce la inflamación de encías.</li><li>Antioxidante de origen natural</li><li>Fortalece el tejido gingival</li></ul>"
+          }
+        },
+        "f3": {
+          "type": "ficha",
+          "settings": {
+            "nombre": "Gluconato de zinc",
+            "imagen": "shopify://shop_images/11_614d123b-c111-4356-9d2f-c5d9f37ea9ad.webp",
+            "alt": "",
+            "foto_pendiente": "FOTO 1:1 — placa de vidrio con gluconato de zinc (polvo blanco o solución), vista desde arriba.",
+            "funcion": "El disolvente de sarro",
+            "detalle": "<p>Descompone el sarro existente y regula el pH oral para crear un entorno desfavorable para las bacterias.</p><ul><li>Disuelve el sarro acumulado</li><li>Regula el pH de la boca.</li><li>Crea un territorio inhóspito para bacterias&nbsp;</li></ul>"
+          }
+        }
+      },
+      "block_order": [
+        "f1",
+        "f2",
+        "f3"
+      ]
+    },
+    "rutina": {
+      "type": "cauce-media-lista",
+      "settings": {
+        "imagen": "shopify://shop_images/Gemini_Generated_Image_f24mjnf24mjnf24m.jpg",
+        "alt": "",
+        "foto_pendiente": "FOTO 4:3 — un perro tomando agua del bebedero, con la botella en primer plano.",
+        "relacion": "4 / 3",
+        "posicion_imagen": "izquierda",
+        "epigrafe": "",
+        "volanta": "",
+        "titulo": "Lo que pasa dentro de tu mascota",
+        "titulo_acento": "en los primeros 60 días",
+        "heading_size": "h1",
+        "bajada": "",
+        "titulo_en": "media_arriba",
+        "estilo": "linea",
+        "recuadro_titulo": "Uso continuo – La clave del cuidado bucal",
+        "recuadro_texto": "<p>La placa vuelve si se interrumpe el tratamiento. Agrega una tapita 15ml por cada litro de agua diariamente para mantener la protección activa.</p>",
+        "boton_texto": "",
+        "boton_link": "",
+        "color_scheme": "inverse",
+        "ancho_maximo": 1200,
+        "padding_top": 72,
+        "padding_bottom": 72
+      },
+      "blocks": {
+        "i1": {
+          "type": "item",
+          "settings": {
+            "etiqueta": "Día 1",
+            "titulo": "Primer uso",
+            "texto": "<ul><li>Los activos (CPC y extracto de té verde) comienzan a actuar en la cavidad oral</li></ul>",
+            "destacado": false,
+            "icono": "ninguno",
+            "alt": ""
+          }
+        },
+        "i2": {
+          "type": "item",
+          "settings": {
+            "etiqueta": "Días 3 – 7",
+            "titulo": "Acción acumulada",
+            "texto": "<ul><li>Reducción progresiva de bacterias. Primeras mejoras perceptibles en el aliento.</li></ul>",
+            "destacado": false,
+            "icono": "ninguno",
+            "alt": ""
+          }
+        },
+        "i3": {
+          "type": "item",
+          "settings": {
+            "etiqueta": "Semana 2",
+            "titulo": "Resultados visibles",
+            "texto": "<ul><li>Aliento notablemente más fresco. Mejoras visibles en encías y placa.</li></ul>",
+            "destacado": true,
+            "icono": "ninguno",
+            "alt": ""
+          }
+        },
+        "i4": {
+          "type": "item",
+          "settings": {
+            "etiqueta": "Día 30",
+            "titulo": "Dientes más limpios",
+            "texto": "<ul><li>Reducción significativa de placa y sarro con uso diario constante.</li></ul>",
+            "destacado": false,
+            "icono": "ninguno",
+            "alt": ""
+          }
+        },
+        "i5": {
+          "type": "item",
+          "settings": {
+            "etiqueta": "Día 60",
+            "titulo": "Botella terminada",
+            "texto": "<ul><li>Dos meses de higiene dental diaria completos. Es el momento de continuar el tratamiento.</li></ul>",
+            "destacado": false,
+            "icono": "ninguno",
+            "alt": ""
+          }
+        }
+      },
+      "block_order": [
+        "i1",
+        "i2",
+        "i3",
+        "i4",
+        "i5"
+      ]
+    },
+    "pasos": {
+      "type": "cauce-media-lista",
+      "settings": {
+        "imagen": "shopify://shop_images/landing.png",
+        "alt": "",
+        "foto_pendiente": "FOTO 1:1 — una mano volcando la tapita en el bebedero, con la botella al lado y un perro mirando.",
+        "relacion": "1 / 1",
+        "posicion_imagen": "izquierda",
+        "epigrafe": "",
+        "volanta": "",
+        "titulo": "Tu rutina no cambia. La boca de tu mascota, sí.",
+        "titulo_acento": "",
+        "heading_size": "h1",
+        "bajada": "<p>Tu perro ya toma agua todos los días. Eso es todo lo que hace falta.</p>",
+        "titulo_en": "lista",
+        "estilo": "pasos",
+        "recuadro_titulo": "",
+        "recuadro_texto": "",
+        "boton_texto": "Elegir mi pack",
+        "boton_link": "#comprar",
+        "color_scheme": "background-1",
+        "ancho_maximo": 1200,
+        "padding_top": 72,
+        "padding_bottom": 40
+      },
+      "blocks": {
+        "i1": {
+          "type": "item",
+          "settings": {
+            "etiqueta": "",
+            "titulo": "Llená el bebedero",
+            "texto": "<p>Con agua fresca, como cualquier día.</p>",
+            "destacado": false,
+            "icono": "ninguno",
+            "alt": ""
+          }
+        },
+        "i2": {
+          "type": "item",
+          "settings": {
+            "etiqueta": "",
+            "titulo": "Agregá una tapita por litro",
+            "texto": "<p>La tapa de la botella es la medida: 15 ml por cada litro de agua. Sin sabor, sin olor y sin cambiarle el color al agua.</p>",
+            "destacado": false,
+            "icono": "ninguno",
+            "alt": ""
+          }
+        },
+        "i3": {
+          "type": "item",
+          "settings": {
+            "etiqueta": "",
+            "titulo": "Los activos trabajan con cada sorbo",
+            "texto": "<p>Recubren dientes y encías, disuelven la placa bacteriana y neutralizan el mal aliento desde la raíz.</p>",
+            "destacado": false,
+            "icono": "ninguno",
+            "alt": ""
+          }
+        },
+        "item_AGXgiN": {
+          "type": "item",
+          "settings": {
+            "etiqueta": "",
+            "titulo": "Semana 2, los resultados son visibles:",
+            "texto": "<p>Placa reducida, sarro menor, aliento notablemente mejorado, Sin visita adicional al veterinario.</p>",
+            "destacado": false,
+            "icono": "ninguno",
+            "alt": ""
+          }
+        }
+      },
+      "block_order": [
+        "i1",
+        "i2",
+        "i3",
+        "item_AGXgiN"
+      ]
+    },
+    "beneficios": {
+      "type": "cauce-media-lista",
+      "settings": {
+        "imagen": "shopify://shop_images/landing2.png",
+        "alt": "",
+        "foto_pendiente": "FOTO 4:3 — una persona con su perro al aire libre, con la botella en primer plano.",
+        "relacion": "4 / 3",
+        "posicion_imagen": "izquierda",
+        "epigrafe": "",
+        "volanta": "",
+        "titulo": "Mejora la salud dental y el bienestar de tu perro&nbsp;",
+        "titulo_acento": "",
+        "heading_size": "h1",
+        "bajada": "",
+        "titulo_en": "lista",
+        "estilo": "filas",
+        "recuadro_titulo": "",
+        "recuadro_texto": "",
+        "boton_texto": "",
+        "boton_link": "",
+        "color_scheme": "background-1",
+        "ancho_maximo": 1200,
+        "padding_top": 40,
+        "padding_bottom": 72
+      },
+      "blocks": {
+        "i1": {
+          "type": "item",
+          "settings": {
+            "etiqueta": "",
+            "titulo": "Aliento más fresco",
+            "texto": "<p>Mantiene el aliento fresco hasta por 12 horas y equilibrar la flora bacteriana oral con una mezcla probiótica pendiente de patente.</p>",
+            "destacado": false,
+            "icono": "gota",
+            "imagen": "shopify://shop_images/7_3b0eecbf-db6f-4b74-95a4-206927adc745.avif",
+            "alt": ""
+          }
+        },
+        "i2": {
+          "type": "item",
+          "settings": {
+            "etiqueta": "",
+            "titulo": "Combate la acumulación de sarro y placa",
+            "texto": "<p>Ayuda a reducir la placa que después se vuelve sarro. Sin cepillado ni pelea: no hay que abrirle la boca.</p>",
+            "destacado": false,
+            "icono": "escudo",
+            "imagen": "shopify://shop_images/6_923cfb04-ca58-4f79-bda5-57e46165f755.avif",
+            "alt": ""
+          }
+        },
+        "i3": {
+          "type": "item",
+          "settings": {
+            "etiqueta": "",
+            "titulo": "Para toda raza y tamaño",
+            "texto": "<p>Cachorros, adultos y perros mayores, de los más chicos a los más grandes, con la misma dosis.</p>",
+            "destacado": false,
+            "icono": "corazon",
+            "imagen": "shopify://shop_images/landing4.png",
+            "alt": ""
+          }
+        }
+      },
+      "block_order": [
+        "i1",
+        "i2",
+        "i3"
+      ]
+    },
+    "meses": {
+      "type": "cauce-meses",
+      "settings": {
+        "titulo": "Una boca más sana, mes a mes",
+        "heading_size": "h1",
+        "etiqueta_a11y": "",
+        "color_scheme": "background-1",
+        "ancho_maximo": 1200,
+        "padding_top": 8,
+        "padding_bottom": 72
+      },
+      "disabled": true,
+      "blocks": {
+        "m1": {
+          "type": "mes",
+          "settings": {
+            "etiqueta": "Mes 1",
+            "titulo": "Empieza la rutina",
+            "texto": "<p>Aliento fresco desde el día 1. Los activos comienzan a trabajar acumulativamente en encías y dientes desde el primer sorbo.</p>",
+            "alt": "",
+            "foto_pendiente": "FOTO 1:1 — una persona con su perro y la botella de Hocico Fresh a la vista."
+          }
+        },
+        "m2": {
+          "type": "mes",
+          "settings": {
+            "etiqueta": "Mes 2",
+            "titulo": "[COMPLETAR: título del mes 2]",
+            "texto": "<p>[COMPLETAR: texto del mes 2]</p>",
+            "alt": "",
+            "foto_pendiente": "FOTO 1:1 — una persona abrazando a su perro, al aire libre."
+          }
+        },
+        "m3": {
+          "type": "mes",
+          "settings": {
+            "etiqueta": "Mes 3+",
+            "titulo": "[COMPLETAR: título del mes 3+]",
+            "texto": "<p>[COMPLETAR: texto del mes 3+]</p>",
+            "alt": "",
+            "foto_pendiente": "FOTO 1:1 — primer plano de un perro contento, con la boca abierta."
+          }
+        }
+      },
+      "block_order": [
+        "m1",
+        "m2",
+        "m3"
+      ]
+    },
+    "garantia": {
+      "type": "cauce-garantia",
+      "settings": {
+        "titulo": "Garantía de 30 días",
+        "heading_size": "h1",
+        "texto": "<p>Probalo durante 30 días desde que te llega el pedido. Si no te convence, te reintegramos lo que pagaste por una unidad, y no hace falta que devuelvas el producto.</p>",
+        "boton_texto": "Elegir mi pack",
+        "boton_link": "#comprar",
+        "color_scheme": "background-2",
+        "ancho_maximo": 1200,
+        "padding_top": 72,
+        "padding_bottom": 72
+      },
+      "blocks": {
+        "g2": {
+          "type": "item",
+          "settings": {
+            "icono": "reloj",
+            "titulo": "30 días desde que llega",
+            "texto": "<p>Se cuentan desde que recibís el pedido, no desde que lo comprás.</p>"
+          }
+        },
+        "g3": {
+          "type": "item",
+          "settings": {
+            "icono": "pago",
+            "titulo": "Reintegro de una unidad",
+            "texto": "<p>$49.900 si compraste 1 botella, $29.950 si compraste el pack de 2 y $23.967 si compraste el pack de 3.</p>"
+          }
+        },
+        "g4": {
+          "type": "item",
+          "settings": {
+            "icono": "chequeo",
+            "titulo": "Sin devolver el producto",
+            "texto": "<p>Te quedás con lo que compraste. Para pedirla, escribinos por WhatsApp o a cauce@caucearg.com.</p>"
+          }
+        },
+        "g6": {
+          "type": "item",
+          "settings": {
+            "icono": "persona",
+            "titulo": "Una garantía por persona",
+            "texto": "<p>Se suma a tu derecho de arrepentimiento: 10 días corridos para devolver la compra, con el botón del pie de página.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "g2",
+        "g3",
+        "g4",
+        "g6"
+      ]
+    },
+    "faq": {
+      "type": "cauce-faq",
+      "settings": {
+        "volanta": "",
+        "titulo": "Preguntas frecuentes",
+        "heading_size": "h1",
+        "pie": "",
+        "producto": "",
+        "emitir_schema": true,
+        "color_scheme": "background-1",
+        "padding_top": 72,
+        "padding_bottom": 72
+      },
+      "blocks": {
+        "q1": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Cómo se usa?",
+            "respuesta": "<p>Agregá una tapita (15 ml) por cada litro de agua del bebedero, cada vez que le cambiás el agua. La tapa de la botella es la medida.</p>"
+          }
+        },
+        "q2": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Mi perro va a notar el sabor?",
+            "respuesta": "<p>No. No tiene sabor ni olor y no cambia el color del agua, así que queda igual que siempre.</p>"
+          }
+        },
+        "q3": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Cuándo se nota el cambio?",
+            "respuesta": "<p>Muchos dueños notan mejora en el aliento en las primeras dos semanas con uso diario. Los beneficios en placa, sarro y encías se observan de forma progresiva con la constancia.</p>"
+          }
+        },
+        "q4": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Sirve para cualquier edad y tamaño?",
+            "respuesta": "<p>Sí. Sirve para cachorros, adultos y perros mayores, de toda raza y tamaño. No es para gatos.</p>"
+          }
+        },
+        "q5": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Reemplaza el cepillado o la limpieza del veterinario?",
+            "respuesta": "<p>No. Ayuda a reducir la placa que se forma todos los días, pero el sarro que ya está formado lo saca el veterinario con una limpieza. Los controles con tu veterinario siguen siendo necesarios.</p>"
+          }
+        },
+        "q6": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Es seguro para todos los días?",
+            "respuesta": "<p>Sí. Está formulado para usarse todos los días, en la dosis indicada: una tapita por litro de agua. No lleva xilitol.</p>"
+          }
+        },
+        "q7": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Tiene xilitol?",
+            "respuesta": "<p>No. La fórmula no lleva xilitol.</p>"
+          }
+        },
+        "q8": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Qué pasa si mi perro no quiere tomar el agua?",
+            "respuesta": "<p>Tenés la garantía de 30 días: si no te convence, te reintegramos lo que pagaste por una unidad, sin devolver el producto. Escribinos por WhatsApp o a cauce@caucearg.com.</p>"
+          }
+        },
+        "q9": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Cómo son el envío, las cuotas y la garantía?",
+            "respuesta": "<p>El envío es gratis a todo el país y llega en 3 a 10 días hábiles. Pagás con Mercado Pago: 3 cuotas sin interés con tarjeta, o 10 % menos por transferencia.</p><p>La garantía es de 30 días desde que llega el pedido: reintegro de una unidad, sin devolver el producto, una por persona.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6",
+        "q7",
+        "q8",
+        "q9"
+      ]
+    },
+    "resenas": {
+      "type": "cauce-resenas",
+      "settings": {
+        "volanta": "",
+        "titulo": "Reseñas de clientes",
+        "heading_size": "h1",
+        "pie": "",
+        "etiqueta_una": "reseña",
+        "etiqueta_varias": "reseñas",
+        "etiqueta_de_cinco": "de 5 estrellas",
+        "etiqueta_verificada": "Compra verificada",
+        "ver_mas": "Ver más reseñas",
+        "aviso_editor": "[COMPLETAR: reseñas reales] Estas tarjetas se ven solo acá, en el editor. En la tienda el bloque aparece cuando haya al menos una reseña completa: texto, nombre y puntaje.",
+        "visibles": 6,
+        "relacion": "4 / 5",
+        "color_scheme": "background-1",
+        "ancho_maximo": 1200,
+        "padding_top": 24,
+        "padding_bottom": 72
+      },
+      "blocks": {
+        "r1": {
+          "type": "resena",
+          "settings": {
+            "puntaje": "5",
+            "autor": "Camila R. O.",
+            "titulo": "Mi Golden por fin no huele a pescado",
+            "texto": "Tengo un Golden Retriever de 6 años y honestamente ya no soportaba el aliento que tenía. Probé galletas dentales, juguetes, hasta intenté cepillarlo pero él odia que le metan la mano en la boca. Una amiga veterinaria me recomendó este producto y al mes ya la diferencia era enorme. Le pongo la tapita en su bowl todas las mañanas y listo, sin pelea.",
+            "fecha": "",
+            "verificada": true,
+            "imagen": "shopify://shop_images/ffkR6tdQfN.webp",
+            "alt": "",
+            "foto_pendiente": "FOTO 4:5 — la que mandó el cliente, con su permiso. Opcional. Sin antes y después."
+          }
+        },
+        "r2": {
+          "type": "resena",
+          "settings": {
+            "puntaje": "5",
+            "autor": "Esteban G. I.",
+            "titulo": "Cumple lo que promete",
+            "texto": "He comprado muchos productos para perros que prometen cosas y no funcionan. Este sí. A mi husky le mejoró el aliento bastante y los dientes los tiene más limpios. Punto.",
+            "fecha": "",
+            "verificada": true,
+            "imagen": "shopify://shop_images/acJM75YGXQ.webp",
+            "alt": "",
+            "foto_pendiente": "FOTO 4:5 — la que mandó el cliente, con su permiso. Opcional. Sin antes y después."
+          }
+        },
+        "r3": {
+          "type": "resena",
+          "settings": {
+            "puntaje": "0",
+            "autor": "Malena B. O.",
+            "titulo": "Lo que necesitaba mi peludo",
+            "texto": "Mi border collie tenia un mal aliento que no resistia nadie. Probe esto sin muchas espectativas y resulto ser justo lo que necesitabamos. Ya van casi tres meses y el cambio es total.",
+            "fecha": "",
+            "verificada": true,
+            "imagen": "shopify://shop_images/XQ3kCQQsZd.webp",
+            "alt": "",
+            "foto_pendiente": "FOTO 4:5 — la que mandó el cliente, con su permiso. Opcional. Sin antes y después."
+          }
+        },
+        "resena_Tj3CYX": {
+          "type": "resena",
+          "settings": {
+            "puntaje": "1",
+            "autor": "Hernán C. D.",
+            "titulo": "Esperaba mejor olor",
+            "texto": "A ver, el producto puede que limpie y todo eso pero pensé que iba a tener un olor más rico tipo menta para mí también sentirlo. No huele a nada. No es lo que esperaba.",
+            "fecha": "",
+            "verificada": true,
+            "alt": "",
+            "foto_pendiente": ""
+          }
+        },
+        "resena_HUVeR3": {
+          "type": "resena",
+          "settings": {
+            "puntaje": "5",
+            "autor": "Adriana P. C.",
+            "titulo": "Cinco semanas y mi criolla otra cosa",
+            "texto": "Rescaté a mi perra hace tiempo y traía los dientes en muy mal estado. Llevo cinco semanas con el aditivo y de verdad se le ven mucho mejor. Las encías ya no sangran cuando muerde sus juguetes. Me hubiera gustado conocer el producto antes.",
+            "fecha": "",
+            "verificada": true,
+            "imagen": "shopify://shop_images/GhJRdrbNKP.webp",
+            "alt": "",
+            "foto_pendiente": ""
+          }
+        },
+        "resena_3ANNwQ": {
+          "type": "resena",
+          "settings": {
+            "puntaje": "5",
+            "autor": "Mateo H. R.",
+            "titulo": "Súper práctico",
+            "texto": "Lo más cómodo es que uno no tiene que hacer nada raro. Le echo la tapita al agua y ya. Mi pug Bruno tenía el aliento horrible y en unas tres semanas mejoró bastante.",
+            "fecha": "",
+            "verificada": true,
+            "imagen": "shopify://shop_images/nDXTbfwEAM.webp",
+            "alt": "",
+            "foto_pendiente": ""
+          }
+        }
+      },
+      "block_order": [
+        "r1",
+        "r2",
+        "r3",
+        "resena_Tj3CYX",
+        "resena_HUVeR3",
+        "resena_3ANNwQ"
+      ]
+    }
+  },
+  "order": [
+    "banda",
+    "main",
+    "problema",
+    "respaldo",
+    "ingredientes",
+    "rutina",
+    "pasos",
+    "beneficios",
+    "meses",
+    "garantia",
+    "faq",
+    "resenas"
+  ]
+}

@@ -1,0 +1,4804 @@
+/* ==========================================================================
+   CAUCE — sistema de marca (brandboard v2 · 2026)
+   Unico lugar donde viven los tokens. Ninguna seccion cauce-* declara hex.
+
+   Tema base: Horizon (Shopify). Se carga DESPUES de content_for_header (ver
+   layout/theme.liquid), asi que pisa los estilos de Horizon por orden de carga
+   y sin subir especificidad. Ver docs/DECISIONS.md D-081.
+
+   Unidades: este archivo viene de Shrine, donde 1rem eran 10px. En Horizon
+   1rem son 16px, asi que en la migracion todos los rem se multiplicaron por
+   0.625: el mismo tamano en pixeles, y siguen escalando con la fuente del
+   navegador. Un valor nuevo se escribe en rem de 16px.
+
+   Los colores de marca tambien estan cargados en la paleta de Horizon
+   (Configuracion del tema > Colores) para que sus piezas propias -botones,
+   campos, el selector de cantidad- salgan del color correcto:
+
+     Fondo ................ BLANCO
+     Texto ................ CAUCE
+     Boton primario ....... OXIDO con etiqueta BLANCO
+
+   Ver docs/DECISIONS.md D-002, D-031 y D-081.
+   ========================================================================== */
+
+:root {
+  /* --- Paleta (brandboard v2) ------------------------------------------ */
+  --cauce-cauce:       #10262A; /* color de marca: frascos, bandas oscuras, tipografia */
+  --cauce-blanco:      #FFFFFF; /* fondo dominante en web. Solo digital.               */
+  --cauce-sedimento:   #E9E6DC; /* superficie: etiquetas, packaging, bloques sobre blanco */
+  --cauce-vado:        #5F99A2; /* secundario: graficos, iconos, submarcas             */
+  --cauce-oxido:       #B03A22; /* acento UNICO sobre claro. Texto blanco encima.      */
+  --cauce-oxido-claro: #D9603F; /* el mismo acento sobre CAUCE. Nunca sobre claro.     */
+
+  /* --- Contraste medido (WCAG 2.1, sRGB) --------------------------------- *
+   *                       sobre BLANCO   sobre SEDIMENTO   sobre CAUCE
+   *   CAUCE ...............  15.76 AAA      12.62 AAA          —
+   *   SEDIMENTO ...........   1.25 falla       —             12.62 AAA
+   *   OXIDO ...............   6.04 AA         4.84 AA         2.61 falla
+   *   OXIDO CLARO .........   3.69 grande     2.95 falla      4.27 grande
+   *   VADO ................   3.20 UI         2.56 falla      4.93 AA
+   *
+   * Tres consecuencias que cambian respecto de v1:
+   *
+   * 1. OXIDO pasa AA como texto sobre los dos fondos claros. El BRONCE de v1 no
+   *    llegaba (2.48:1) y por eso existia --cauce-bronce-texto. Ese token se
+   *    elimina: el acento ya se usa puro, como lo dibuja el brandboard.
+   *
+   * 2. Blanco sobre OXIDO da 6.04:1, asi que la etiqueta del boton vuelve a ser
+   *    blanca, tal como pide el brandboard. Con BRONCE daba 3.10:1 y habia que
+   *    ponerla en TINTA. Revierte D-011.
+   *
+   * 3. VADO sobre SEDIMENTO da 2.56:1. El brandboard ya lo prohibe ("sobre
+   *    blanco o cauce, no sobre sedimento"); aca ese limite se aplica solo, via
+   *    el token contextual --cauce-icono.                                     */
+
+  /* VADO no llega a AA como texto sobre claro (3.20:1 sobre blanco). Se ajusta
+     el valor del texto, no el token de marca: mismo matiz (H 188) y misma croma.
+       VADO-TEXTO sobre BLANCO ....... 5.63:1  AA texto
+       VADO-TEXTO sobre SEDIMENTO .... 4.50:1  AA texto                        */
+  --cauce-vado-texto:  #446E75;
+
+  /* Superficie de tercer nivel: tarjetas dentro de una banda SEDIMENTO.
+     CAUCE sobre esta superficie mantiene 11.5:1. */
+  --cauce-sedimento-2: #DFDBCE;
+  --cauce-linea:        rgba(16, 38, 42, 0.14);
+  --cauce-linea-fuerte: rgba(16, 38, 42, 0.28);
+  /* La misma regla fina, del otro lado: sobre CAUCE. La usan el pie y la barra
+     legal, que son las dos piezas oscuras que hay que separar entre si. */
+  --cauce-linea-clara:  rgba(233, 230, 220, 0.22);
+
+  /* Exito y error. Entran con el carrito (bloque 17), que es la primera pieza
+     del tema que necesita decir "logrado" y "esto fallo". Cada uno tiene su
+     segundo valor para la banda oscura, igual que el acento.
+
+       --cauce-exito  sobre BLANCO 7.47 AAA · SEDIMENTO 5.98 AA · SEDIMENTO-2 5.39 AA
+       --cauce-exito-claro  sobre CAUCE 6.24 AA
+       --cauce-error  sobre BLANCO 8.52 AAA · SEDIMENTO 6.83 AA · SEDIMENTO-2 6.15 AA
+       --cauce-error-claro  sobre CAUCE 6.26 AA
+
+     El error es carmin (matiz 350) y no un rojo anaranjado: OXIDO esta en matiz
+     10 y es el color del boton de compra. Dos rojos casi iguales que significan
+     cosas distintas —comprar y algo salio mal— es peor que no tener un color de
+     error. */
+  --cauce-verde:        #1B6047;
+  --cauce-verde-claro:  #4FB58C;
+  --cauce-carmin:       #96182C;
+  --cauce-carmin-claro: #E4899A;
+
+  /* --- Tipografia ------------------------------------------------------- */
+  --cauce-font-logo:    'Archivo', var(--font-body--family, system-ui), sans-serif;
+  --cauce-font-titulo:  'Newsreader', Georgia, 'Times New Roman', serif;
+  --cauce-font-texto:   'Archivo', var(--font-body--family, system-ui), sans-serif;
+  --cauce-font-dato:    'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* El logo es Archivo con el eje de ancho al maximo (Expanded) + tracking.  */
+  --cauce-logo-stretch: 125;
+  --cauce-logo-weight:  600;
+  --cauce-logo-tracking: 0.14em;
+
+  /* --- Ritmo ------------------------------------------------------------ */
+  --cauce-aire-xs: 0.5rem;
+  --cauce-aire-s:  1rem;
+  --cauce-aire-m:  2rem;
+  --cauce-aire-l:  4rem;
+  --cauce-aire-xl: 6rem;
+
+  /* Aire minimo del logo = altura de la C. Nada entra en esa zona.
+     Se aplica como padding alrededor del lockup. */
+  --cauce-logo-aire: 1em;
+}
+
+/* ==========================================================================
+   0. Tokens contextuales
+   El brandboard define el acento en DOS valores segun el fondo, y prohibe VADO
+   sobre SEDIMENTO. En vez de repetir cada regla dos veces (una clara y una
+   `.color-inverse`, que es como estaba resuelto en v1), el par se resuelve una
+   sola vez aca y todo lo de abajo usa el token contextual.
+
+   Consumidores: --cauce-acento, --cauce-acento-label, --cauce-icono,
+   --cauce-secundario.
+   ========================================================================== */
+
+:root,
+.color-background-1,
+.color-background-2 {
+  --cauce-acento:       var(--cauce-oxido);
+  --cauce-acento-label: var(--cauce-blanco);
+  --cauce-secundario:   var(--cauce-vado-texto);
+  --cauce-exito:        var(--cauce-verde);
+  --cauce-error:        var(--cauce-carmin);
+}
+
+/* Sobre BLANCO el VADO puro pasa 3.20:1, que alcanza para iconos y componentes
+   (1.4.11) y es el uso que dibuja el brandboard. */
+:root,
+.color-background-1 {
+  --cauce-icono: var(--cauce-vado);
+}
+
+/* Sobre SEDIMENTO no. Regla del brandboard, aplicada sola. */
+.color-background-2 {
+  --cauce-icono: var(--cauce-vado-texto);
+}
+
+/* Sobre CAUCE entran los valores puros: VADO da 4.93:1 y el acento cambia al
+   segundo valor. OXIDO CLARO sobre CAUCE da 4.27:1 — AA para texto grande y
+   componentes, que es el uso que tiene (relleno del boton, trazo del isotipo,
+   precio). CAUCE encima del relleno da 4.27:1 y blanco 3.69:1, asi que la
+   etiqueta va en CAUCE: es el maximo disponible y el brandboard no la fija. */
+.color-inverse,
+.color-text,
+.cauce-banda-oscura,
+.cauce-legal {
+  --cauce-acento:       var(--cauce-oxido-claro);
+  --cauce-acento-label: var(--cauce-cauce);
+  --cauce-icono:        var(--cauce-vado);
+  --cauce-secundario:   var(--cauce-vado);
+  --cauce-exito:        var(--cauce-verde-claro);
+  --cauce-error:        var(--cauce-carmin-claro);
+}
+
+/* Secciones cuyo FONDO es el acento o el secundario. Encima de OXIDO no hay
+   acento posible: lo que se pida como tal cae al color legible sobre el fondo
+   (blanco 6.04:1 sobre OXIDO, CAUCE 4.93:1 sobre VADO). Sin esto un icono
+   accent-1 dentro de una seccion accent-1 se dibuja de su propio color. */
+.color-accent-1 {
+  --cauce-acento:       var(--cauce-blanco);
+  --cauce-acento-label: var(--cauce-oxido);
+  --cauce-icono:        var(--cauce-blanco);
+  --cauce-secundario:   var(--cauce-blanco);
+}
+
+.color-accent-2 {
+  --cauce-acento:       var(--cauce-cauce);
+  --cauce-acento-label: var(--cauce-vado);
+  --cauce-icono:        var(--cauce-cauce);
+  --cauce-secundario:   var(--cauce-cauce);
+}
+
+/* Shrine hacia salir el primer plano de los dos esquemas de acento de un
+   mismo setting, y sobre VADO el blanco da 3.20:1. En Horizon los esquemas
+   son de CAUCE (bloque 0b) y accent-2 ya declara CAUCE como texto (4.93:1). */
+
+/* ==========================================================================
+   0b. Esquemas de color y base de las piezas CAUCE sobre Horizon
+   Ver docs/DECISIONS.md D-081.
+
+   Las secciones cauce-* se escribieron sobre Shrine, que daba tres cosas que
+   Horizon no da o da distinto:
+
+   1. Los esquemas de color por seccion (background-1, background-2, inverse,
+      accent-1, accent-2). Horizon 4 no tiene esquemas: tiene una paleta y
+      colores sueltos por seccion. Aca los esquemas pasan a ser de CAUCE, con
+      las mismas clases (.color-<esquema>) para que los templates y los
+      settings de las secciones no cambien.
+
+   2. La tipografia base: titulos .h0-.h5, cuerpo de 15/16 px e interlinea 1.8.
+      Horizon pisa h1-h6 con sus presets; adentro de .cauce-seccion vuelven a
+      ser los de Shrine, con las fuentes de CAUCE.
+
+   3. .page-width, .rte y .button, con las medidas de Shrine.
+
+   Todo va acotado a .cauce-seccion (la clase que lleva cada seccion cauce-*)
+   para no tocar las piezas de Horizon que se usan tal cual.
+
+   Las variables de un esquema son --cauce-esq-fondo y --cauce-esq-texto.
+   Ojo: --cauce-fondo y --cauce-texto ya existen y son colores de la paleta de
+   una plantilla (bloque 26). No confundirlas.
+   ========================================================================== */
+
+:root {
+  /* Lo que en Shrine eran los settings colors_*. Una plantilla los pisa en
+     :root.plantilla--<sufijo> y los esquemas los toman solos. */
+  --cauce-base-texto:    var(--cauce-cauce);     /* colors_text                 */
+  --cauce-base-fondo-1:  var(--cauce-blanco);    /* colors_background_1         */
+  --cauce-base-fondo-2:  var(--cauce-sedimento); /* colors_background_2         */
+  --cauce-base-acento-1: var(--cauce-oxido);     /* colors_accent_1 (= boton)   */
+  --cauce-base-acento-2: var(--cauce-vado);      /* colors_accent_2             */
+  --cauce-base-etiqueta: var(--cauce-blanco);    /* colors_solid_button_labels  */
+
+  /* page_width de Shrine: 1200 px. Horizon tiene su propio --page-width, que
+     cambia con su setting; las piezas CAUCE no dependen de el. */
+  --cauce-ancho-pagina: 1200px;
+  --cauce-boton-radio: 2px;
+
+  --cauce-esq-fondo: var(--cauce-base-fondo-1);
+  --cauce-esq-texto: var(--cauce-base-texto);
+
+  /* Horizon arma sus botones, campos y textos con estas familias. Pasan a ser
+     las de CAUCE: las de Configuracion del tema > Tipografia quedan en una
+     fuente de sistema que no se descarga. */
+  --font-body--family: var(--cauce-font-texto);
+  --font-subheading--family: var(--cauce-font-texto);
+  --font-heading--family: var(--cauce-font-titulo);
+  --font-accent--family: var(--cauce-font-texto);
+  --font-paragraph--family: var(--cauce-font-texto);
+  --button-font-family-primary: var(--cauce-font-texto);
+  --button-font-family-secondary: var(--cauce-font-texto);
+}
+
+/* --- Esquemas ------------------------------------------------------------ */
+
+.color-background-1 {
+  --cauce-esq-fondo: var(--cauce-base-fondo-1);
+  --cauce-esq-texto: var(--cauce-base-texto);
+}
+
+.color-background-2 {
+  --cauce-esq-fondo: var(--cauce-base-fondo-2);
+  --cauce-esq-texto: var(--cauce-base-texto);
+}
+
+.color-inverse,
+.color-text {
+  --cauce-esq-fondo: var(--cauce-base-texto);
+  --cauce-esq-texto: var(--cauce-base-fondo-1);
+}
+
+.color-accent-1 {
+  --cauce-esq-fondo: var(--cauce-base-acento-1);
+  --cauce-esq-texto: var(--cauce-base-etiqueta);
+}
+
+/* Sobre VADO el blanco da 3.20:1: el texto va en CAUCE (4.93:1). D-031 §4. */
+.color-accent-2 {
+  --cauce-esq-fondo: var(--cauce-base-acento-2);
+  --cauce-esq-texto: var(--cauce-base-texto);
+}
+
+/* El boton de cada esquema, como en Shrine: en los dos fondos claros va en el
+   acento (D-064); en los oscuros y en los de acento, del color del texto con
+   la etiqueta del color del fondo. */
+.color-background-1,
+.color-background-2 {
+  --cauce-boton-fondo: var(--cauce-base-acento-1);
+  --cauce-boton-texto: var(--cauce-base-etiqueta);
+}
+
+.color-inverse,
+.color-text,
+.color-accent-1,
+.color-accent-2 {
+  --cauce-boton-fondo: var(--cauce-esq-texto);
+  --cauce-boton-texto: var(--cauce-esq-fondo);
+}
+
+.color-background-1,
+.color-background-2,
+.color-inverse,
+.color-text,
+.color-accent-1,
+.color-accent-2 {
+  background-color: var(--cauce-esq-fondo);
+  color: var(--cauce-esq-texto);
+
+  /* Lo que leen las piezas de Horizon que caen adentro de un esquema CAUCE
+     (el selector de cantidad del carrito, el boton de agregar). */
+  --color-background: var(--cauce-esq-fondo);
+  --color-foreground: var(--cauce-esq-texto);
+  --color-primary-button-background: var(--cauce-boton-fondo);
+  --color-primary-button-border: var(--cauce-boton-fondo);
+  --color-primary-button-text: var(--cauce-boton-texto);
+  --color-primary-button-hover-background: color-mix(in srgb, var(--cauce-boton-fondo) 86%, var(--cauce-boton-texto));
+  --color-primary-button-hover-border: color-mix(in srgb, var(--cauce-boton-fondo) 86%, var(--cauce-boton-texto));
+  --color-primary-button-hover-text: var(--cauce-boton-texto);
+  --color-secondary-button-background: transparent;
+  --color-secondary-button-border: var(--cauce-esq-texto);
+  --color-secondary-button-text: var(--cauce-esq-texto);
+  --color-secondary-button-hover-background: color-mix(in srgb, var(--cauce-esq-texto) 8%, transparent);
+  --color-secondary-button-hover-border: var(--cauce-esq-texto);
+  --color-secondary-button-hover-text: var(--cauce-esq-texto);
+}
+
+/* --- Contenedor ---------------------------------------------------------- */
+
+.page-width {
+  max-width: var(--cauce-ancho-pagina);
+  margin: 0 auto;
+  padding: 0 0.9375rem;
+}
+
+@media screen and (min-width: 750px) {
+  .page-width { padding: 0 3.125rem; }
+  .page-width--narrow { padding: 0 5.625rem; }
+}
+
+@media screen and (min-width: 990px) {
+  .page-width--narrow {
+    max-width: 45.375rem;
+    padding: 0;
+  }
+}
+
+/* --- Tipografia ---------------------------------------------------------- */
+
+.cauce-seccion {
+  font-family: var(--cauce-font-texto);
+  font-size: 0.9375rem;
+  line-height: 1.8;
+  letter-spacing: 0.0375rem;
+}
+
+@media screen and (min-width: 750px) {
+  .cauce-seccion { font-size: 1rem; }
+}
+
+/* Especificidad, igual que en Shrine: una etiqueta suelta (h2, h3) queda en
+   (0,0,1), asi le gana al h2 de Horizon por orden de carga y pierde contra la
+   regla de cualquier pieza (.cauce-x__nombre). Las clases de tamano (.h1 en un
+   titulo de seccion) suben a (0,2,0) porque Horizon las pisa con .h1.h1. */
+:where(.cauce-seccion) :is(h1, h2, h3, h4, h5),
+.cauce-seccion :is(.h0, .h1, .h2, .h3, .h4, .h5) {
+  font-family: var(--cauce-font-titulo);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.1667;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: inherit;
+  word-break: break-word;
+}
+
+/* Las medidas de Shrine con heading_scale 1.2, en rem de 16 px. */
+:where(.cauce-seccion) h1 { font-size: 1.6875rem; }
+:where(.cauce-seccion) h2 { font-size: 1.5rem; }
+:where(.cauce-seccion) h3 { font-size: 1.275rem; }
+:where(.cauce-seccion) h4 { font-size: 1.0875rem; }
+:where(.cauce-seccion) h5 { font-size: 0.9rem; }
+
+.cauce-seccion .h0 { font-size: 2.4375rem; }
+.cauce-seccion .h1 { font-size: 1.6875rem; }
+.cauce-seccion .h2 { font-size: 1.5rem; }
+.cauce-seccion .h3 { font-size: 1.275rem; }
+.cauce-seccion .h4 { font-size: 1.0875rem; }
+.cauce-seccion .h5 { font-size: 0.9rem; }
+
+@media screen and (min-width: 750px) {
+  :where(.cauce-seccion) h1 { font-size: 2.25rem; }
+  :where(.cauce-seccion) h2 { font-size: 1.8rem; }
+  :where(.cauce-seccion) h3 { font-size: 1.35rem; }
+  :where(.cauce-seccion) h5 { font-size: 0.975rem; }
+
+  .cauce-seccion .h0 { font-size: 3.1875rem; }
+  .cauce-seccion .h1 { font-size: 2.25rem; }
+  .cauce-seccion .h2 { font-size: 1.8rem; }
+  .cauce-seccion .h3 { font-size: 1.35rem; }
+  .cauce-seccion .h5 { font-size: 0.975rem; }
+}
+
+/* --- Texto enriquecido --------------------------------------------------- */
+
+/* Tambien en la caja de pestanas de la columna de compra, que vive adentro de
+   una seccion de Horizon y no de una .cauce-seccion. */
+
+:where(.cauce-seccion, .cauce-pestanas-bloque) .rte::after {
+  clear: both;
+  content: '';
+  display: block;
+}
+
+:where(.cauce-seccion, .cauce-pestanas-bloque) .rte > p:first-child { margin-top: 0; }
+:where(.cauce-seccion, .cauce-pestanas-bloque) .rte > p:last-child { margin-bottom: 0; }
+
+:where(.cauce-seccion, .cauce-pestanas-bloque) .rte :is(ul, ol) {
+  list-style-position: inside;
+  margin-block-end: 1em;
+  padding-left: 1.25rem;
+}
+
+:where(.cauce-seccion, .cauce-pestanas-bloque) .rte li { list-style: inherit; }
+:where(.cauce-seccion, .cauce-pestanas-bloque) .rte li:last-child { margin-bottom: 0; }
+
+:where(.cauce-seccion, .cauce-pestanas-bloque) .rte a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.1875rem;
+  text-decoration-thickness: 0.0625rem;
+}
+
+:where(.cauce-seccion, .cauce-pestanas-bloque) .rte a:hover { text-decoration-thickness: 0.125rem; }
+
+/* --- Botones ------------------------------------------------------------- */
+
+/* Las medidas del boton de Shrine. Los colores salen de las variables de
+   Horizon que fija el esquema (arriba), asi que el boton de Horizon y el de
+   una seccion CAUCE son el mismo boton. */
+:where(.cauce-seccion) .button,
+:where(.cauce-seccion) .button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  min-width: 7.5rem;
+  min-height: 2.8125rem;
+  padding: 0 1.875rem;
+  border-radius: var(--cauce-boton-radio);
+  font-family: var(--cauce-font-texto);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+@media screen and (max-width: 749px) {
+  :where(.cauce-seccion) .button--full-width { padding-inline: 1rem; }
+}
+
+/* --- Avisos del editor ---------------------------------------------------- */
+
+/* Un dato que falta y solo lo puede cargar el comercio: se ve en el editor
+   (request.design_mode) y nunca en la tienda. D-046 §6. */
+.cauce-carrito__aviso {
+  margin: 0.75rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px dashed currentColor;
+  border-radius: 4px;
+  font-family: var(--cauce-font-texto);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+/* ==========================================================================
+   1. Remapeo del tema
+   Lo que la paleta y la tipografia de Horizon no pueden expresar. Las
+   familias de Horizon ya apuntan a las de CAUCE (bloque 0b).
+
+   Sale la regla de .cauce-page de Shrine: la clase nunca la puso ningun
+   archivo (D-046 §9) y en Horizon tampoco.
+   ========================================================================== */
+
+body {
+  font-family: var(--cauce-font-texto);
+  background-color: var(--cauce-base-fondo-1);
+}
+
+/* Los titulos de las paginas de Horizon (politicas, 404, busqueda) en la
+   tipografia de titulos de CAUCE. */
+h1, h2, h3, h4,
+.h0, .h1, .h2, .h3, .h4 {
+  font-family: var(--cauce-font-titulo);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* ==========================================================================
+   2. Utilidades de marca
+   ========================================================================== */
+
+/* Logo: wordmark en Archivo Expanded. Ver snippets/cauce-logo.liquid. */
+.cauce-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  padding: var(--cauce-logo-aire);
+  text-decoration: none;
+  color: inherit;
+}
+
+.cauce-logo__marca {
+  font-family: var(--cauce-font-logo);
+  font-variation-settings: 'wdth' var(--cauce-logo-stretch), 'wght' var(--cauce-logo-weight);
+  font-weight: var(--cauce-logo-weight);
+  font-stretch: expanded;
+  letter-spacing: var(--cauce-logo-tracking);
+  /* el tracking agrega aire a la derecha; se compensa para que el bloque
+     optico quede centrado */
+  margin-right: calc(var(--cauce-logo-tracking) * -1);
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.cauce-logo__isotipo {
+  flex: 0 0 auto;
+  display: block;
+  height: 1.15em;
+  width: auto;
+}
+
+.cauce-logo__descriptor {
+  display: block;
+  font-family: var(--cauce-font-texto);
+  font-size: 0.3em;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.72;
+  margin-top: 0.5em;
+}
+
+/* Datos, lotes, etiquetas: DM Mono. */
+.cauce-dato {
+  font-family: var(--cauce-font-dato);
+  font-weight: 400;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Antetitulo de seccion. */
+.cauce-eyebrow {
+  font-family: var(--cauce-font-dato);
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin: 0 0 var(--cauce-aire-s);
+}
+
+/* El unico oxido de la pieza. Usar como maximo una vez por seccion visible.
+   El token ya trae el valor que corresponde al fondo (bloque 0).
+
+   LIMITE: sobre CAUCE el token vale OXIDO CLARO, que da 4.27:1. Eso es AA para
+   texto grande (>=1.5rem, o >=1.1688rem en negrita) y para componentes, pero no
+   para texto chico. Sobre banda oscura este utilitario va en titulos, precios y
+   datos grandes. Para texto chico sobre CAUCE, usar --cauce-secundario (VADO,
+   4.93:1) o blanco. Ver docs/DECISIONS.md D-031. */
+.cauce-acento {
+  color: var(--cauce-acento);
+}
+
+/* Iconos VADO. currentColor deja que hereden el tono correcto por contexto. */
+.cauce-icono {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: 0 0 auto;
+  color: var(--cauce-icono);
+  stroke-width: 1.4;
+}
+
+/* Reglas finas editoriales. */
+.cauce-regla {
+  border: 0;
+  border-top: 1px solid var(--cauce-linea);
+  margin: var(--cauce-aire-m) 0;
+}
+
+/* ==========================================================================
+   3. Parches a piezas de Horizon
+   En Shrine este bloque corregia secciones nativas que se usaban tal cual
+   (icon_color, el ticker sin reduced-motion, el boton de background-2). En
+   Horizon esas secciones ya no estan: lo que queda es lo que vale para
+   cualquier boton y el foco. Ver D-081.
+   ========================================================================== */
+
+/* Los botones van en mayuscula (D-063).
+
+   Es text-transform y no texto escrito en mayuscula en el editor: el contenido
+   sigue guardado como se lee ("Agregar al carrito"), que es lo que anuncia un
+   lector de pantalla. Horizon ya lo hace con su setting de caja del boton
+   (Configuracion del tema > Botones); aca se suma el tracking, que no es
+   decorativo: en mayuscula y a 700 las letras se pegan. */
+.button,
+.button-secondary,
+.shopify-challenge__button,
+button.shopify-payment-button__button--unbranded {
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Foco visible propio en todas las piezas CAUCE. */
+.cauce-seccion :focus-visible,
+.cauce-comprar :focus-visible,
+.cauce-pestanas-bloque :focus-visible {
+  outline: 2px solid var(--cauce-icono);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ==========================================================================
+   4. Barra legal (Argentina). Ver sections/cauce-legal-bar.liquid.
+   ========================================================================== */
+
+.cauce-legal {
+  background-color: var(--cauce-cauce);
+  color: var(--cauce-sedimento);
+  font-family: var(--cauce-font-texto);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.cauce-legal a {
+  color: var(--cauce-sedimento);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+/* No lleva el acento, por dos razones que coinciden. La de marca: el oxido se
+   usa una vez por pieza y ese uso es el boton de compra, no un link del pie.
+   La medida: este texto es de 0.8125rem y OXIDO CLARO sobre CAUCE da 4.27:1, que
+   no pasa AA a ese tamano. Blanco da 15.76:1. */
+.cauce-legal a:hover {
+  color: var(--cauce-blanco);
+}
+
+.cauce-legal__inner {
+  display: grid;
+  gap: var(--cauce-aire-m);
+  padding: var(--cauce-aire-m) 0 var(--cauce-aire-s);
+}
+
+.cauce-legal__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cauce-aire-s);
+}
+
+/* El boton de arrepentimiento y el libro de quejas son obligatorios y tienen que
+   leerse como acciones, no como letra chica del pie. */
+.cauce-legal__boton {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(233, 230, 220, 0.45);
+  border-radius: 3px;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  text-decoration: none;
+}
+
+.cauce-legal a.cauce-legal__boton { text-decoration: none; }
+
+.cauce-legal__boton:hover {
+  border-color: var(--cauce-blanco);
+  color: var(--cauce-blanco);
+}
+
+/* Sin URL cargada el boton no es un link: no puede parecer que funciona. */
+.cauce-legal__boton--pendiente {
+  border-style: dashed;
+  opacity: 0.85;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.cauce-legal__fiscal img {
+  display: block;
+  width: 56px;
+  height: auto;
+}
+
+.cauce-legal__datos p { margin: 0 0 0.25rem; }
+.cauce-legal__precio { opacity: 0.8; }
+
+.cauce-legal__defensa {
+  margin: var(--cauce-aire-xs) 0 0;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+@media screen and (min-width: 990px) {
+  .cauce-legal__inner {
+    grid-template-columns: auto 1fr;
+    align-items: start;
+  }
+  .cauce-legal__acciones { grid-column: 1 / -1; }
+  .cauce-legal__disclaimer { grid-column: 1 / -1; }
+}
+
+.cauce-legal__disclaimer {
+  border-top: 1px solid var(--cauce-linea-clara);
+  padding: var(--cauce-aire-s) 0;
+  font-size: 0.75rem;
+  opacity: 0.85;
+  max-width: 78ch;
+}
+
+/* Placeholder visible: los datos que faltan no pueden pasar desapercibidos. */
+.cauce-pendiente {
+  background: rgba(176, 58, 34, 0.16);
+  border-bottom: 1px dashed var(--cauce-acento);
+  padding: 0 0.3em;
+  font-family: var(--cauce-font-dato);
+  font-size: 0.92em;
+}
+
+/* ==========================================================================
+   5. PDP — bloque de compra
+   Ver blocks/cauce-comprar.liquid.
+
+   En Shrine las tarjetas de packs eran el quantity-breaks del tema con los
+   agregados de CAUCE encima (D-047 a D-051, D-072, D-074). En Horizon son un
+   bloque propio: este bloque reconstruye el diseno entero —lo que ponia el
+   CSS de Shrine y lo que le corregia CAUCE— sobre clases cauce-pack*. Mismas
+   medidas, en rem de 16 px.
+   ========================================================================== */
+
+.cauce-comprar {
+  --cauce-pack-acento: var(--cauce-base-texto);
+  --cauce-pack-radio: 0.625rem;
+  --cauce-pack-borde: 1px;
+
+  display: block;
+  font-family: var(--cauce-font-texto);
+  color: var(--cauce-base-texto);
+}
+
+/* --- Grupo de packs ------------------------------------------------------- */
+
+.cauce-packs {
+  margin: 0 0 0.5625rem;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+/* El encabezado es la etiqueta del grupo de radios (legend), no un titulo de
+   documento: en Shrine era un h3 justo despues del h1. Va entre dos filetes. */
+.cauce-packs__titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  margin: 0 0 0.8125rem;
+  padding: 0;
+  font-family: var(--cauce-font-texto);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--cauce-base-texto);
+}
+
+.cauce-packs__titulo > span:nth-of-type(2) {
+  /* 0.65 daba 3.77:1 sobre SEDIMENTO. Ver bloque 8. */
+  opacity: 0.85;
+}
+
+.cauce-packs__titulo > span:nth-of-type(1),
+.cauce-packs__titulo > span:nth-of-type(3) {
+  display: block;
+  flex-grow: 1;
+  height: 2px;
+  background: var(--cauce-pack-acento);
+}
+
+/* Bajada del encabezado. Es copy, no dato: caja baja y sin tracking, para que
+   no se lea como un titulo de dos renglones. D-051. */
+.cauce-packs__subtitulo {
+  max-width: 46ch;
+  margin: -0.4375rem auto 0.8125rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  text-align: center;
+  color: var(--cauce-base-texto);
+  opacity: 0.75;
+}
+
+.cauce-packs__lista {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 0.53125rem;
+}
+
+/* El radio queda en el arbol (teclado y lector de pantalla) pero no se ve: lo
+   que se ve es la tarjeta. */
+.cauce-packs__radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* --- Tarjeta -------------------------------------------------------------- */
+
+.cauce-pack {
+  position: relative;
+  display: block;
+  padding: 1.09375rem;
+  border: var(--cauce-pack-borde) solid color-mix(in srgb, var(--cauce-pack-acento) 30%, transparent);
+  border-radius: var(--cauce-pack-radio);
+  background: var(--cauce-blanco);
+  color: var(--cauce-base-texto);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.cauce-packs--indicador .cauce-pack { padding-left: 2.5rem; }
+
+/* El destaque del pack es FIJO, no sigue a la seleccion (D-051, D-072): la
+   tarjeta destacada va siempre en SEDIMENTO y la seleccion se lee por el borde
+   y por el punto. */
+.cauce-pack--destacado { background: var(--cauce-sedimento); }
+
+.cauce-packs__radio:checked + .cauce-pack {
+  border-color: var(--cauce-pack-acento);
+}
+
+@media (hover: hover) {
+  .cauce-pack:hover { border-color: var(--cauce-pack-acento); }
+}
+
+.cauce-packs__radio:focus-visible + .cauce-pack {
+  outline: 2px solid var(--cauce-icono);
+  outline-offset: 3px;
+}
+
+/* El punto de seleccion. */
+.cauce-packs--indicador .cauce-pack::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 1.25rem;
+  width: 0.9375rem;
+  height: 0.9375rem;
+  border: 2px solid color-mix(in srgb, var(--cauce-pack-acento) 30%, transparent);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.cauce-packs--indicador .cauce-packs__radio:checked + .cauce-pack::before {
+  border-color: var(--cauce-blanco);
+  background: var(--cauce-pack-acento);
+  box-shadow: 0 0 0 1px var(--cauce-pack-acento);
+}
+
+.cauce-packs--indicador .cauce-packs__radio:checked + .cauce-pack--destacado::before {
+  border-color: var(--cauce-sedimento);
+}
+
+/* La cinta: en la esquina, apenas girada, en el acento con etiqueta. */
+.cauce-pack__cinta {
+  position: absolute;
+  top: -0.625rem;
+  right: -0.625rem;
+  margin: 0;
+  padding: 0 0.7em;
+  border-radius: 0.2em;
+  background: var(--cauce-base-acento-1);
+  color: var(--cauce-base-etiqueta);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.6;
+  transform: rotate(3deg);
+}
+
+/* --- Contenido de la tarjeta --------------------------------------------- */
+
+/* 375 px: la columna izquierda puede crecer a cinco renglones. min-width 0 deja
+   que el texto largo corte en vez de estirar el flex, y flex-shrink 0 clava el
+   ancho del precio (bloque 5 de Shrine). */
+.cauce-pack__contenido {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.625rem;
+}
+
+.cauce-pack__izq {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  row-gap: 0.3125rem;
+  min-width: 0;
+  text-align: left;
+}
+
+.cauce-pack__izq > span { display: block; }
+
+.cauce-pack__etiqueta {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* El precio por unidad es un dato y es EL argumento de volumen: va en mono, al
+   mismo cuerpo que el total y a contraste pleno (D-050c, D-051). */
+.cauce-pack__detalle {
+  font-family: var(--cauce-font-dato);
+  font-size: 1rem;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: var(--cauce-cauce);
+}
+
+.cauce-pack__der {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  row-gap: 0.3125rem;
+  text-align: right;
+}
+
+.cauce-pack__precio {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--cauce-pack-acento);
+}
+
+.cauce-pack__tachado {
+  font-size: 0.875rem;
+  line-height: 1;
+  text-decoration: line-through;
+}
+
+.cauce-pack__detalle:empty,
+.cauce-pack__cinta:empty,
+.cauce-pack__envio:empty {
+  display: none;
+}
+
+/* Envio gratis por pack. Aparece solo en las tarjetas cuyo total cruza
+   settings.cauce_umbral_envio_gratis (snippets/cauce-envio-escalon.liquid). */
+.cauce-pack__envio {
+  padding: 0 0.6em;
+  border: 1px solid var(--cauce-sedimento-2);
+  border-radius: 0.1875rem;
+  font-family: var(--cauce-font-dato);
+  font-size: 0.6875rem;
+  line-height: 1.7;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--cauce-cauce);
+}
+
+/* En la tarjeta destacada el borde SEDIMENTO-2 desaparece contra SEDIMENTO: el
+   chip se invierte, pastilla blanca con texto CAUCE. */
+.cauce-pack--destacado .cauce-pack__envio {
+  border-color: var(--cauce-blanco);
+  background: var(--cauce-blanco);
+}
+
+/* Ahorro, precio con transferencia y cuotas: datos duros, en mono y en CAUCE
+   pleno. La jerarquia la hace el cuerpo. */
+.cauce-pack__ahorro {
+  font-family: var(--cauce-font-dato);
+  font-size: 0.875rem;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: var(--cauce-cauce);
+}
+
+.cauce-pack__cuotas,
+.cauce-pack__transferencia {
+  font-family: var(--cauce-font-dato);
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: var(--cauce-cauce);
+}
+
+/* --- Nota y boton --------------------------------------------------------- */
+
+.cauce-comprar__nota {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.375rem;
+  margin: 0 0 1.125rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--cauce-cauce);
+}
+
+.cauce-comprar__nota .cauce-icono {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.05rem;
+  color: var(--cauce-icono);
+}
+
+@media screen and (min-width: 750px) {
+  .cauce-comprar__nota { font-size: 0.8125rem; }
+}
+
+.cauce-comprar__boton {
+  margin: 0 0 0.9375rem;
+}
+
+.cauce-comprar__boton > span,
+.cauce-comprar__boton add-to-cart-component,
+.cauce-comprar__boton .add-to-cart-button {
+  width: 100%;
+}
+
+.cauce-comprar__boton .add-to-cart-button {
+  min-height: 3.125rem;
+  border-radius: var(--cauce-boton-radio);
+  font-family: var(--cauce-font-texto);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* --- Medios de pago ------------------------------------------------------- */
+
+.cauce-pagos {
+  margin: var(--cauce-aire-xs) 0 0;
+}
+
+.cauce-pagos--center { text-align: center; }
+.cauce-pagos--right  { text-align: right; }
+
+.cauce-pagos__lista {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cauce-pagos--center .cauce-pagos__lista { justify-content: center; }
+.cauce-pagos--right  .cauce-pagos__lista { justify-content: flex-end; }
+
+.cauce-pagos__item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.cauce-pagos__svg {
+  width: 2.375rem;
+  height: auto;
+  display: block;
+  border-radius: 3px;
+}
+
+/* Logo propio desde assets/ para las marcas que Shopify no dibuja. Se fija la
+   altura y no el ancho: Mercado Pago y Naranja X son mucho mas anchos que un
+   plastico. */
+.cauce-pagos__logo {
+  height: 1.5rem;
+  width: auto;
+  max-width: 6.25rem;
+  display: block;
+  object-fit: contain;
+}
+
+/* Chip tipografico: ultimo recurso para una marca sin SVG nativo ni logo
+   propio. Sobrio a proposito: un logo redibujado a mano seria un logo mal
+   dibujado. */
+.cauce-pagos__chip {
+  font-family: var(--cauce-font-dato);
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  padding: 0.55em 0.7em;
+  border: 1px solid rgba(16, 38, 42, 0.22);
+  border-radius: 3px;
+  color: var(--cauce-cauce);
+  white-space: nowrap;
+}
+
+.cauce-pagos__tira {
+  max-width: 100%;
+  height: auto;
+}
+
+.cauce-pagos__cuotas {
+  font-family: var(--cauce-font-dato);
+  font-size: 0.75rem;
+  margin: var(--cauce-aire-xs) 0 0;
+  opacity: 0.75;
+}
+
+/* --- Leyenda de suplemento ------------------------------------------------ */
+
+.cauce-disclaimer {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  margin: var(--cauce-aire-s) 0 0;
+  padding-top: var(--cauce-aire-s);
+  border-top: 1px solid rgba(16, 38, 42, 0.12);
+  opacity: 0.8;
+  max-width: 62ch;
+}
+
+.cauce-disclaimer--compacto {
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* ==========================================================================
+   6. Pestanas
+   El componente <cauce-tabs> (assets/cauce.js). Lo usa la caja de pestanas de
+   la columna de compra (blocks/cauce-pestanas.liquid), que le cambia la forma
+   en el bloque 26. En Shrine este bloque traia ademas las secciones de la
+   landing del R-ALA, que no se migraron (D-081).
+   ========================================================================== */
+
+/* Pestanas ---------------------------------------------------------------- */
+
+.cauce-tabs__titulo { margin: 0 0 var(--cauce-aire-m); }
+
+.cauce-tabs__lista {
+  display: flex;
+  gap: var(--cauce-aire-s);
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid rgba(16, 38, 42, 0.15);
+  margin-bottom: var(--cauce-aire-m);
+}
+
+.cauce-tabs__lista::-webkit-scrollbar { display: none; }
+.color-inverse .cauce-tabs__lista { border-color: rgba(233, 230, 220, 0.22); }
+
+.cauce-tabs__boton {
+  flex: 0 0 auto;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 0 0 var(--cauce-aire-xs);
+  margin-bottom: -1px;
+  font-family: var(--cauce-font-texto);
+  font-size: 0.875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: inherit;
+  opacity: 0.55;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cauce-tabs__boton[aria-selected="true"] {
+  opacity: 1;
+  border-bottom-color: currentColor;
+}
+
+.cauce-tabs__panel { max-width: 78ch; }
+
+/* Sin JS los paneles quedan todos visibles. Se los separa para que se lean
+   como secciones y no como un bloque continuo. */
+.cauce-tabs__panel + .cauce-tabs__panel { margin-top: var(--cauce-aire-m); }
+
+/* ==========================================================================
+   7. Cierre y legales (fase 5)
+   ========================================================================== */
+
+.cauce-faq__inner,
+.cauce-news__inner {
+  padding-top: var(--padding-top, 4.5rem);
+  padding-bottom: var(--padding-bottom, 4.5rem);
+}
+
+@media screen and (max-width: 749px) {
+  .cauce-faq__inner,
+  .cauce-news__inner {
+    padding-top: calc(var(--padding-top, 4.5rem) * 0.75);
+    padding-bottom: calc(var(--padding-bottom, 4.5rem) * 0.75);
+  }
+}
+
+/* Preguntas frecuentes ---------------------------------------------------- */
+
+.cauce-faq__titulo { margin: 0 0 var(--cauce-aire-m); }
+.cauce-faq__lista { max-width: 82ch; }
+
+.cauce-faq__item { border-top: 1px solid rgba(16, 38, 42, 0.15); }
+.cauce-faq__item:last-child { border-bottom: 1px solid rgba(16, 38, 42, 0.15); }
+
+.color-inverse .cauce-faq__item,
+.color-inverse .cauce-faq__item:last-child { border-color: rgba(233, 230, 220, 0.22); }
+
+.cauce-faq__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cauce-aire-s);
+  padding: var(--cauce-aire-s) 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.cauce-faq__summary::-webkit-details-marker { display: none; }
+
+.cauce-faq__pregunta {
+  font-family: var(--cauce-font-texto);
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+/* El indicador es 'caret' de cauce-iconos (en Shrine, el icon-caret del
+   tema): un chevron de 24 px de viewBox, asi que lleva alto y ancho. */
+.cauce-faq__summary svg {
+  flex: 0 0 auto;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: currentColor;
+  transition: transform 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cauce-faq__summary svg { transition: none; }
+}
+
+.cauce-faq__item[open] .cauce-faq__summary svg { transform: rotate(180deg); }
+
+.cauce-faq__respuesta {
+  padding: 0 0 var(--cauce-aire-s);
+  max-width: 72ch;
+}
+
+.cauce-faq__pie {
+  margin-top: var(--cauce-aire-m);
+  font-size: 0.8125rem;
+  opacity: 0.75;
+}
+
+/* Suscripcion ------------------------------------------------------------- */
+
+.cauce-news__inner {
+  display: grid;
+  gap: var(--cauce-aire-m);
+}
+
+@media screen and (min-width: 990px) {
+  .cauce-news__inner {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: var(--cauce-aire-l);
+  }
+}
+
+.cauce-news__titulo { margin: 0 0 var(--cauce-aire-xs); }
+.cauce-news__bajada { max-width: 48ch; }
+.cauce-news__bajada p { margin: 0; }
+
+.cauce-news__campo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+/* El label existe para lectores de pantalla; el placeholder alcanza en pantalla,
+   pero un input sin label accesible no pasa AA. */
+.cauce-news__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.cauce-news__input {
+  flex: 1 1 13.75rem;
+  min-width: 0;
+  border: 1px solid rgba(16, 38, 42, 0.35);
+  border-radius: 3px;
+  background-color: transparent;
+  color: inherit;
+  padding: 0.6875rem 0.75rem;
+  font-family: var(--cauce-font-texto);
+  font-size: 0.9375rem;
+}
+
+.color-inverse .cauce-news__input { border-color: rgba(233, 230, 220, 0.4); }
+
+.cauce-news__boton { flex: 0 0 auto; }
+
+.cauce-news__consentimiento {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: var(--cauce-aire-s);
+  max-width: 62ch;
+}
+
+.cauce-news__check {
+  flex: 0 0 auto;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.0625rem;
+  accent-color: var(--cauce-acento);
+}
+
+.cauce-news__consent-label {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.cauce-news__error,
+.cauce-news__exito {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: var(--cauce-aire-s) 0 0;
+  font-size: 0.8125rem;
+}
+
+.cauce-news__error svg,
+.cauce-news__exito svg { flex: 0 0 auto; width: 1rem; height: 1rem; }
+
+/* ==========================================================================
+   8. Correcciones del QA de la fase 6
+   Lo que sigue aplicando en Horizon. Las de la ficha tecnica y de multicolumn
+   eran de piezas que no se migraron (D-081).
+   ========================================================================== */
+
+/* Contraste. Lighthouse mobile marco elementos por debajo de 4.5:1 por bajar
+   la opacidad sobre texto chico: volanta 4.31, pestana inactiva 2.88. Subir
+   la opacidad es preferible a agrandar el texto: el tamano es parte del
+   diseno editorial, la opacidad no. */
+.cauce-eyebrow { opacity: 0.85; }
+.cauce-tabs__boton { opacity: 0.8; }
+.cauce-faq__respuesta { opacity: 1; }
+
+/* ==========================================================================
+   16. Pie de pagina
+   sections/cauce-pie.liquid + sections/cauce-legal-bar.liquid, apiladas en
+   sections/footer-group.json (D-004). El pie va en `inverse`, que resuelve a
+   CAUCE, exactamente el fondo de la barra legal, y las dos piezas se leen
+   como un solo bloque de cierre (D-045). En Shrine el pie era la seccion
+   footer del tema con bloques agregados; en Horizon es propio (D-081).
+   ========================================================================== */
+
+.cauce-pie {
+  border-top: 1px solid var(--cauce-linea-clara);
+}
+
+.cauce-pie__inner {
+  padding-top: var(--padding-top, 4rem);
+  padding-bottom: var(--padding-bottom, 1.5rem);
+}
+
+.cauce-pie__columnas {
+  display: grid;
+  gap: var(--cauce-aire-m);
+}
+
+@media screen and (min-width: 750px) {
+  .cauce-pie__columnas {
+    grid-template-columns: 5fr 3fr 4fr;
+    gap: var(--cauce-aire-l);
+  }
+}
+
+/* Las cabeceras de columna no son titulos de seccion: son etiquetas. Toman el
+   lenguaje del antetitulo (DM Mono en versalitas). */
+.cauce-pie .cauce-pie__cabecera {
+  margin: 0 0 var(--cauce-aire-s);
+  font-family: var(--cauce-font-dato);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+/* El lockup de marca ------------------------------------------------------- */
+
+/* El aire del logo es una zona de respeto contra otros elementos, no un margen
+   contra el borde de la columna: se compensa con un margen negativo para que
+   la C alinee con las cabeceras de al lado. */
+.cauce-pie__lockup .cauce-logo {
+  margin: calc(var(--cauce-logo-aire) * -1);
+  margin-bottom: 0;
+}
+
+.cauce-pie__lockup,
+.cauce-pie__imagen {
+  display: block;
+  margin-bottom: var(--cauce-aire-s);
+}
+
+.cauce-pie__imagen img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.cauce-pie__texto {
+  max-width: 42ch;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  opacity: 0.85;
+}
+
+/* Redes: el bloque de marca es el unico lugar donde se dibujan (D-045). */
+.cauce-pie__redes {
+  display: flex;
+  gap: 0.25rem;
+  margin: var(--cauce-aire-xs) 0 0 -0.625rem;
+  padding: 0;
+  list-style: none;
+}
+
+.cauce-pie__red {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  color: inherit;
+  opacity: 0.85;
+}
+
+.cauce-pie__red:hover { opacity: 1; }
+
+.cauce-pie__red .cauce-icono {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: currentColor;
+}
+
+/* Menu y contacto ---------------------------------------------------------- */
+
+.cauce-pie__menu {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cauce-pie__menu li { margin: 0 0 0.5rem; }
+
+.cauce-pie__menu a,
+.cauce-pie__contacto a {
+  color: color-mix(in srgb, var(--cauce-esq-texto) 90%, transparent);
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+
+.cauce-pie__menu a:hover,
+.cauce-pie__contacto a:hover {
+  color: var(--cauce-esq-texto);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.cauce-pie__contacto p {
+  margin: 0 0 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.cauce-pie__horario,
+.cauce-pie__domicilio {
+  opacity: 0.75;
+}
+
+/* Medios de pago sobre fondo oscuro ---------------------------------------- */
+
+.cauce-pie__pagos {
+  margin-top: var(--cauce-aire-l);
+}
+
+.cauce-pie__pagos .cauce-pagos { margin-top: 0; }
+
+/* Los tres logos propios (Mercado Pago, Cabal, Naranja X) estan dibujados para
+   fondo claro: sobre CAUCE quedan casi negros sobre negro. Placa blanca, que
+   es como esas marcas piden usarse. */
+.color-inverse .cauce-pagos__item,
+.cauce-legal .cauce-pagos__item {
+  background: var(--cauce-blanco);
+  border-radius: 4px;
+  padding: 0.3125rem 0.4375rem;
+}
+
+.color-inverse .cauce-pagos__chip,
+.cauce-legal .cauce-pagos__chip {
+  border: 0;
+  padding: 0.15em 0.2em;
+}
+
+/* Copyright y politicas ------------------------------------------------------ */
+
+.cauce-pie__base {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 1.25rem;
+  margin-top: var(--cauce-aire-m);
+  padding-top: var(--cauce-aire-s);
+  border-top: 1px solid var(--cauce-linea-clara);
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+.cauce-pie__base a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.cauce-pie__base a:hover { text-decoration: underline; }
+
+.cauce-pie__politicas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Junta con la barra legal ------------------------------------------------- */
+
+/* Las dos piezas comparten fondo, asi que la unica separacion posible es el
+   filete. La barra legal cierra el pie: letra mas chica, SEDIMENTO en vez de
+   blanco y este filete arriba. */
+.cauce-legal {
+  border-top: 1px solid var(--cauce-linea-clara);
+}
+
+/* ==========================================================================
+   17. Carrito — drawer y /cart
+   Una sola hoja para las dos superficies. La clase raiz .cauce-carrito va en
+   el panel del drawer (.cauce-carrito--drawer) y en el contenedor de /cart
+   (.cauce-carrito--pagina), asi que /cart no es un segundo diseno: es el mismo
+   CSS con un modificador de layout. El markup es snippets/cauce-carrito.liquid.
+
+   Por que aca y no en un stylesheet de seccion: Horizon vuelve a renderizar el
+   carrito entero en cada cambio de cantidad, y es la regla 4 del proyecto.
+
+   En Horizon el contenedor del drawer es un <dialog> (<theme-drawer>) y los
+   cambios de cantidad los hace <cart-items-component>. Ver D-081.
+
+   NINGUN HEX. Los colores salen de los tokens contextuales del bloque 0 y de
+   color-mix sobre --cauce-esq-texto para las reglas finas, que se adapta sola al
+   esquema en vez de necesitar una regla por esquema.
+
+   Contraste medido (WCAG 2.1, sRGB):
+     etiqueta del CTA sobre el acento .... 6.04 sobre OXIDO (esquema claro)
+                                           4.27 sobre OXIDO CLARO (esquema oscuro),
+                                           que es AA solo para texto grande: por eso
+                                           el CTA sube a 1.5rem en .color-inverse.
+     texto muteado (opacity .78) ......... 7.70 sobre blanco · 6.77 sobre sedimento
+                                           10.02 sobre CAUCE
+     --cauce-exito como texto ............ 7.47 / 5.98 claro · 6.24 sobre CAUCE
+     --cauce-error como texto ............ 8.52 / 6.83 claro · 6.26 sobre CAUCE
+     relleno de la barra (VADO) .......... grafico, 1.4.11: 3.20 sobre blanco
+   ========================================================================== */
+
+/* --- Panel del drawer ----------------------------------------------------- */
+
+/* El panel: el mismo ancho que en Shrine (26.25rem, sin pasar el ancho de la
+   pantalla menos un margen). La cabecera y el pie quedan fijos y el cuerpo
+   scrollea, asi el boton de pago nunca se va abajo del fold. */
+.cauce-carrito-dialog.theme-drawer__dialog {
+  width: min(26.25rem, calc(100vw - 1.875rem));
+  max-width: min(26.25rem, calc(100vw - 1.875rem));
+  padding: 0;
+  border: 0;
+}
+
+.cauce-carrito--drawer,
+.cauce-carrito--drawer .cart-items-component {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.cauce-carrito__vacio-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+}
+
+/* --- Cabecera ------------------------------------------------------------- */
+
+.cauce-carrito .cauce-carrito__cabecera {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5625rem;
+  margin: 0;
+  padding: 1rem 1.125rem 0.8125rem;
+  justify-content: flex-start;
+  border-bottom: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 14%, transparent);
+}
+
+.cauce-carrito .cauce-carrito__titulo {
+  margin: 0;
+  font-family: var(--cauce-font-titulo);
+  font-weight: 400;
+  font-size: 1.375rem;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.cauce-carrito__contador {
+  font-family: var(--cauce-font-dato);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  min-width: 1.375rem;
+  height: 1.375rem;
+  padding: 0 0.375rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 18%, transparent);
+  color: var(--cauce-secundario);
+}
+
+.cauce-carrito .cauce-carrito__cerrar {
+  position: static;
+  transform: none;
+  margin-left: auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 14%, transparent);
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.cauce-carrito .cauce-carrito__cerrar .cauce-icono {
+  width: 1.125rem;
+  height: 1.125rem;
+  color: inherit;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cauce-carrito .cauce-carrito__cerrar:hover {
+    background-color: color-mix(in srgb, var(--cauce-esq-texto) 6%, transparent);
+  }
+}
+
+/* --- Cuerpo scrolleable --------------------------------------------------- */
+
+.cauce-carrito .cauce-carrito__cuerpo {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* El ritmo entre bloques lo pone el sistema, no un margen por bloque. */
+.cauce-carrito .cauce-carrito__cuerpo > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.cauce-carrito__bloque {
+  padding: 0.75rem 1.125rem;
+}
+
+.cauce-carrito .cauce-carrito__form {
+  display: block;
+}
+
+/* --- Reaseguro ------------------------------------------------------------ */
+
+/* El separador es un ::before del PROPIO segmento, no un nodo suelto entre
+   spans: asi viaja con su texto y, cuando la linea wrapea en mobile, nunca queda
+   un punto huerfano colgando al final de un renglon. Tecnica de Numen. */
+.cauce-carrito__reaseguro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0;
+  row-gap: 0.1875rem;
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  opacity: 0.78;
+}
+
+.cauce-carrito__reaseguro-icono {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.375rem;
+}
+
+.cauce-carrito__reaseguro-item {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.cauce-carrito__reaseguro-item + .cauce-carrito__reaseguro-item::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 0.1875rem;
+  height: 0.1875rem;
+  border-radius: 50%;
+  background-color: currentColor;
+  opacity: 0.55;
+  margin: 0 0.375rem;
+}
+
+/* --- Barra de envio gratis ------------------------------------------------ */
+
+.cauce-carrito__envio-texto {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+.cauce-carrito__envio-icono {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.cauce-carrito__envio-monto {
+  font-family: var(--cauce-font-dato);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.cauce-carrito__envio-pista {
+  height: 0.375rem;
+  border-radius: 999px;
+  background-color: color-mix(in srgb, var(--cauce-esq-texto) 10%, transparent);
+  overflow: hidden;
+}
+
+/* El relleno va en VADO y no en el acento: es un grafico, y el unico oxido de
+   la pieza es el boton de pago (regla del brandboard, misma razon que D-036).
+   Dos clases para ganarle a cualquier regla de una sola clase. */
+.cauce-carrito__envio-pista .cauce-carrito__envio-relleno {
+  display: block;
+  height: 100%;
+  min-width: 0.375rem;
+  border-radius: 999px;
+  background-color: var(--cauce-icono);
+  transition: width 460ms cubic-bezier(0.23, 1, 0.32, 1), background-color 200ms ease;
+}
+
+.cauce-carrito__envio--logrado .cauce-carrito__envio-texto {
+  color: var(--cauce-exito);
+}
+
+.cauce-carrito__envio--logrado .cauce-carrito__envio-pista .cauce-carrito__envio-relleno {
+  background-color: var(--cauce-exito);
+}
+
+/* --- Linea de producto ---------------------------------------------------- */
+
+.cauce-carrito__items {
+  list-style: none;
+  margin: 0;
+  padding: 0 1.125rem;
+}
+
+.cauce-carrito__linea {
+  position: relative;
+  display: grid;
+  grid-template-columns: 4.375rem 1fr;
+  gap: 0.8125rem;
+  margin: 0;
+  padding: 0.9375rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 8%, transparent);
+}
+
+.cauce-carrito__linea:last-child {
+  border-bottom: 0;
+}
+
+.cauce-carrito__linea-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.375rem;
+  height: 5rem;
+  padding: 0.375rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 10%, transparent);
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--cauce-esq-texto) 4%, transparent);
+}
+
+.cauce-carrito__linea-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.cauce-carrito__linea-cuerpo {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cauce-carrito__linea-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.cauce-carrito .cauce-carrito__linea-nombre {
+  min-width: 0;
+  margin: 0;
+  font-family: var(--cauce-font-texto);
+  font-size: 0.9062rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: inherit;
+  text-decoration: none;
+  word-break: break-word;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cauce-carrito .cauce-carrito__linea-nombre:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.1875rem;
+  }
+}
+
+.cauce-carrito__linea-quitar-wrap {
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.cauce-carrito .cauce-carrito__linea-quitar {
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: -0.625rem -0.625rem 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  transition: color 140ms ease, opacity 140ms ease, background-color 140ms ease;
+}
+
+.cauce-carrito .cauce-carrito__linea-quitar .cauce-icono {
+  width: 1.125rem;
+  height: 1.125rem;
+  color: inherit;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cauce-carrito .cauce-carrito__linea-quitar:hover {
+    opacity: 1;
+    color: var(--cauce-error);
+    background-color: color-mix(in srgb, var(--cauce-esq-texto) 6%, transparent);
+  }
+}
+
+.cauce-carrito__linea-chip {
+  align-self: flex-start;
+  margin: 0.375rem 0 0;
+  padding: 0.125rem 0.4375rem;
+  font-size: 0.6875rem;
+  white-space: nowrap;
+  border: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 14%, transparent);
+  border-radius: 4px;
+  opacity: 0.85;
+}
+
+.cauce-carrito__linea-variante {
+  margin: 0.3125rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  opacity: 0.78;
+}
+
+.cauce-carrito__linea-pie {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.625rem;
+  margin-top: 0.6875rem;
+}
+
+.cauce-carrito__linea-precios {
+  min-width: 0;
+}
+
+/* Los precios de esta marca son datos: DM Mono con tabular-nums, igual que
+   .cauce-datos__valor y las cifras de cauce-resultados. */
+.cauce-carrito__linea-precio {
+  display: block;
+  font-family: var(--cauce-font-dato);
+  font-size: 1.125rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.cauce-carrito__linea-antes {
+  display: block;
+  font-family: var(--cauce-font-dato);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  opacity: 0.6;
+}
+
+.cauce-carrito__linea-dia {
+  display: block;
+  margin-top: 0.1875rem;
+  font-size: 0.6875rem;
+  color: var(--cauce-secundario);
+}
+
+/* --- Stepper de cantidad -------------------------------------------------- */
+
+/* Es el <cart-quantity-selector-component> de Horizon
+   (snippets/quantity-selector.liquid), que es quien dispara el cambio de
+   cantidad. Aca solo cambia la forma: el marco lo pone el propio contenedor. */
+.cauce-carrito .cauce-carrito__stepper {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  min-height: 0;
+  height: 2.5rem;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 18%, transparent);
+  border-radius: 4px;
+  color: inherit;
+}
+
+.cauce-carrito .cauce-carrito__stepper::before,
+.cauce-carrito .cauce-carrito__stepper::after {
+  content: none;
+  display: none;
+}
+
+.cauce-carrito .cauce-carrito__stepper :is(.quantity-minus, .quantity-plus) {
+  width: 2.5rem;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+/* El tap tiene que caer en el boton y no en su icono o en el texto oculto. */
+.cauce-carrito .cauce-carrito__stepper :is(.quantity-minus, .quantity-plus) > * {
+  pointer-events: none;
+}
+
+.cauce-carrito .cauce-carrito__stepper :is(.quantity-minus, .quantity-plus) svg {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  color: inherit;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cauce-carrito .cauce-carrito__stepper :is(.quantity-minus, .quantity-plus):not(:disabled):hover {
+    background-color: color-mix(in srgb, var(--cauce-esq-texto) 6%, transparent);
+  }
+}
+
+.cauce-carrito .cauce-carrito__stepper :is(.quantity-minus, .quantity-plus):disabled,
+.cauce-carrito .cauce-carrito__stepper :is(.quantity-minus, .quantity-plus).disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.cauce-carrito .cauce-carrito__stepper input {
+  flex: 0 0 auto;
+  width: 2rem;
+  min-width: 2rem;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  opacity: 1;
+  text-align: center;
+  font-family: var(--cauce-font-dato);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+}
+
+.cauce-carrito .cauce-carrito__stepper input::-webkit-outer-spin-button,
+.cauce-carrito .cauce-carrito__stepper input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* --- Estado de carga y error de linea ------------------------------------- */
+
+/* Mientras viaja un cambio, <cart-items-component> lleva .cart-items-disabled.
+   En Shrine habia un overlay con spinner por linea. */
+.cart-items-disabled .cauce-carrito__linea,
+.cart-items-disabled .cauce-carrito__total-monto {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 140ms ease;
+}
+
+/* Horizon le saca la linea al carrito con .removing y espera a que termine la
+   animacion antes de borrarla del DOM. */
+@media (prefers-reduced-motion: no-preference) {
+  .cauce-carrito__linea.removing {
+    animation: cauce-linea-sale 220ms ease forwards;
+  }
+
+  .cauce-carrito__linea.adding {
+    animation: cauce-linea-entra 260ms ease;
+  }
+}
+
+@keyframes cauce-linea-sale {
+  to { opacity: 0; transform: translateX(1rem); }
+}
+
+@keyframes cauce-linea-entra {
+  from { opacity: 0; transform: translateY(0.5rem); }
+}
+
+.cauce-carrito__linea-error.hidden { display: none; }
+
+.cauce-carrito__linea-error .cart-item__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.375rem;
+  margin-top: 0.375rem;
+}
+
+.cauce-carrito__linea-error .cauce-icono {
+  width: 1rem;
+  height: 1rem;
+  color: currentColor;
+}
+
+.cauce-carrito__linea-error {
+  color: var(--cauce-error);
+  font-size: 0.7188rem;
+  line-height: 1.4;
+}
+
+.cauce-carrito__linea-error .cart-item__error-text {
+  display: block;
+}
+
+.cauce-carrito__linea-error .cart-item__error-text:empty {
+  display: none;
+}
+
+/* --- Empujon de envio gratis ---------------------------------------------- */
+
+.cauce-carrito__nudge {
+  padding-top: 0.875rem;
+  border-top: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 14%, transparent);
+}
+
+.cauce-carrito__nudge-titulo {
+  margin: 0 0 0.5625rem;
+}
+
+.cauce-carrito__nudge-card {
+  display: grid;
+  grid-template-columns: 2.875rem 1fr auto;
+  gap: 0.6875rem;
+  align-items: center;
+  padding: 0.5625rem;
+  border: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 14%, transparent);
+  border-radius: 4px;
+}
+
+.cauce-carrito__nudge-media {
+  width: 2.875rem;
+  height: 2.875rem;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--cauce-esq-texto) 4%, transparent);
+}
+
+.cauce-carrito__nudge-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.cauce-carrito__nudge-info {
+  min-width: 0;
+}
+
+.cauce-carrito__nudge-texto {
+  display: block;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.cauce-carrito__nudge-precio {
+  display: block;
+  margin-top: 0.125rem;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.78;
+}
+
+.cauce-carrito .cauce-carrito__nudge-boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  min-height: 2.5rem;
+  padding: 0 0.75rem;
+  white-space: nowrap;
+  font-family: var(--cauce-font-texto);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--cauce-acento-label);
+  background-color: var(--cauce-acento);
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.cauce-carrito .cauce-carrito__nudge-boton .cauce-icono {
+  width: 0.8125rem;
+  height: 0.8125rem;
+  color: inherit;
+}
+
+.cauce-carrito .cauce-carrito__nudge-boton:active {
+  transform: scale(0.97);
+}
+
+.cauce-carrito .cauce-carrito__nudge-boton[aria-busy="true"],
+.cauce-carrito .cauce-carrito__nudge-boton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* --- Leyenda legal -------------------------------------------------------- */
+
+.cauce-carrito__legal {
+  padding: 0.75rem 1.125rem 1rem;
+}
+
+.cauce-carrito__legal .cauce-disclaimer {
+  margin: 0;
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  opacity: 0.78;
+}
+
+/* --- Pie del drawer ------------------------------------------------------- */
+
+.cauce-carrito .cauce-carrito__pie {
+  flex: 0 0 auto;
+  padding: 0.75rem 1.125rem calc(0.75rem + env(safe-area-inset-bottom));
+  border-top: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 14%, transparent);
+  background-color: transparent;
+}
+
+.cauce-carrito .cauce-carrito__pie .cauce-carrito__bloque {
+  padding: 0;
+}
+
+.cauce-carrito__totales {
+  display: block;
+}
+
+.cauce-carrito__descuentos {
+  list-style: none;
+  margin: 0 0 0.375rem;
+  padding: 0;
+  font-size: 0.75rem;
+  color: var(--cauce-secundario);
+}
+
+.cauce-carrito__total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.625rem;
+}
+
+.cauce-carrito__total-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.cauce-carrito__total-monto {
+  font-family: var(--cauce-font-dato);
+  font-size: 1.375rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.cauce-carrito__ahorro {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--cauce-exito);
+}
+
+.cauce-carrito__impuestos {
+  display: block;
+  margin: 0.25rem 0 0;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  opacity: 0.78;
+}
+
+.cauce-carrito__pago {
+  margin: 0.625rem 0 0;
+  padding: 0.5rem 0.6875rem;
+  border: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 14%, transparent);
+  border-radius: 4px;
+}
+
+.cauce-carrito__pago-cuotas {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+/* Transferencia (D-052): el ahorro en pesos a la izquierda y el porcentaje en
+   mono a la derecha. Sin color propio: el total de arriba manda, y un verde o
+   un OXIDO aca competiria con el boton de pago que esta justo debajo. */
+.cauce-carrito__pago-transferencia {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.125rem 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+.cauce-carrito__pago-off {
+  font-family: var(--cauce-font-dato);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.cauce-carrito__pago-codigo {
+  margin: 0.125rem 0 0;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  opacity: 0.78;
+}
+
+.cauce-carrito__pago-codigo code {
+  font-family: var(--cauce-font-dato);
+  letter-spacing: 0.04em;
+}
+
+.cauce-carrito__pago-codigo + .cauce-carrito__pago-cuotas {
+  margin-top: 0.375rem;
+  padding-top: 0.375rem;
+  border-top: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 14%, transparent);
+}
+
+/* --- CTA de pago ---------------------------------------------------------- */
+
+.cauce-carrito__ctas {
+  margin-top: 0.6875rem;
+}
+
+.cauce-carrito .cauce-carrito__cta {
+  width: 100%;
+  min-height: 3.25rem;
+  margin: 0;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--cauce-font-texto);
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--cauce-acento-label);
+  background-color: var(--cauce-acento);
+  transition: transform 140ms ease, opacity 140ms ease;
+}
+
+/* Sobre banda oscura el acento vale OXIDO CLARO y la etiqueta CAUCE: 4.27:1, que
+   es AA para texto grande y no para texto chico. En vez de prohibir el esquema,
+   el CTA sube a 1.5rem justo ahi, que es el umbral de texto grande. La regla se
+   aplica sola, como la prohibicion de VADO sobre SEDIMENTO del bloque 0. */
+.cauce-carrito.color-inverse .cauce-carrito__cta,
+.cauce-carrito.color-text .cauce-carrito__cta {
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+.cauce-carrito .cauce-carrito__cta:active {
+  transform: scale(0.99);
+}
+
+.cauce-carrito .cauce-carrito__cta:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Candado y flecha del CTA. Dos cosas se salen del set a proposito:
+
+   - El tamano va en em y no en rem. El CTA salta de 1.8 a 1.5rem cuando el esquema
+     es oscuro (la regla de arriba, por contraste); en em los dos glifos siguen ese
+     salto solos y no hay que repetir el breakpoint de esquema para los iconos.
+   - El color pisa var(--cauce-icono) del set, que esta calibrado contra SEDIMENTO.
+     Aca el fondo es OXIDO y la etiqueta ya resolvio su contraste: los iconos toman
+     currentColor para no poder discrepar del texto que acompanan.
+
+   El trazo sube de 1.4 a 2 porque a 20px sobre un fondo lleno el trazo fino del set
+   se lava. */
+.cauce-carrito .cauce-carrito__cta .cauce-icono--cta {
+  width: 1.15em;
+  height: 1.15em;
+  color: currentColor;
+  stroke-width: 2;
+}
+
+.cauce-carrito__cta-sep {
+  width: 1px;
+  height: 1.25rem;
+  background-color: currentColor;
+  opacity: 0.45;
+}
+
+.cauce-carrito__cta-monto {
+  font-family: var(--cauce-font-dato);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.92em;
+}
+
+.cauce-carrito .cauce-carrito__seguir {
+  width: 100%;
+  margin: 0.5rem 0 0;
+  padding: 0.375rem;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: var(--cauce-font-texto);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: inherit;
+  opacity: 0.78;
+  text-decoration: underline;
+  text-underline-offset: 0.1875rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cauce-carrito .cauce-carrito__seguir:hover {
+    opacity: 1;
+  }
+}
+
+/* --- Medios de pago ------------------------------------------------------- */
+
+.cauce-carrito__pagos {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 14%, transparent);
+}
+
+.cauce-carrito__pagos .cauce-pagos__cuotas {
+  display: none; /* las cuotas ya las dice el bloque de beneficio de pago */
+}
+
+/* --- Carrito vacio -------------------------------------------------------- */
+
+.cauce-carrito .cauce-carrito__vacio-wrap {
+  height: 100%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cauce-carrito__vacio {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  /* el padding de abajo pesa mas que el de arriba: sube el centro optico */
+  padding: 1.25rem 1.875rem 5.625rem;
+}
+
+.cauce-carrito__vacio-glifo {
+  width: 4.5rem;
+  height: 4.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 14%, transparent);
+}
+
+.cauce-carrito__vacio-glifo .cauce-icono {
+  width: 2rem;
+  height: 2rem;
+}
+
+.cauce-carrito__vacio-titulo {
+  margin: 0 0 0.375rem;
+  font-family: var(--cauce-font-titulo);
+  font-size: 1.375rem;
+  line-height: 1.2;
+}
+
+.cauce-carrito__vacio-texto {
+  margin: 0 0 1.25rem;
+  max-width: 32ch;
+  font-size: 0.8438rem;
+  line-height: 1.5;
+  opacity: 0.78;
+}
+
+.cauce-carrito .cauce-carrito__vacio-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.25rem;
+  padding: 0 1.75rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--cauce-acento-label);
+  background-color: var(--cauce-acento);
+}
+
+/* --- /cart ---------------------------------------------------------------- */
+
+/* Misma hoja, otro contenedor: una columna de 40rem, con el pie abajo de los
+   productos, como en Shrine. */
+.cauce-carrito--pagina {
+  display: block;
+  padding-top: var(--padding-top, 2.25rem);
+  padding-bottom: var(--padding-bottom, 3rem);
+}
+
+.cauce-carrito--pagina .cart-items-component {
+  display: block;
+  height: auto;
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.cauce-carrito--pagina .cauce-carrito__cuerpo {
+  overflow: visible;
+}
+
+.cauce-carrito--pagina .cauce-carrito__cabecera {
+  padding-left: 0;
+  padding-right: 0;
+  margin-bottom: var(--cauce-aire-s);
+}
+
+.cauce-carrito--pagina .cauce-carrito__titulo {
+  font-size: 1.875rem;
+}
+
+.cauce-carrito .cauce-carrito__volver {
+  margin-left: auto;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: inherit;
+  opacity: 0.78;
+  text-decoration: underline;
+  text-underline-offset: 0.1875rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cauce-carrito .cauce-carrito__volver:hover {
+    opacity: 1;
+  }
+}
+
+/* El pie de /cart es una columna angosta a la derecha en desktop, como el resto
+   del tema; en mobile queda apilado y a ancho completo. */
+.cauce-carrito--pagina .cauce-carrito__pie {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cauce-aire-s);
+  padding-left: 0;
+  padding-right: 0;
+  border-top: 0;
+}
+
+.cauce-carrito--pagina .cauce-carrito__ctas {
+  margin-top: 0;
+}
+
+.cauce-carrito--pagina .cauce-carrito__nota {
+  display: block;
+  margin-bottom: var(--cauce-aire-s);
+}
+
+.cauce-carrito--pagina .cauce-carrito__nota label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.cauce-carrito--pagina .cauce-carrito__totales {
+  padding-top: var(--cauce-aire-s);
+  border-top: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 14%, transparent);
+}
+
+.cauce-carrito--pagina .cauce-carrito__bloque,
+.cauce-carrito--pagina .cauce-carrito__legal {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.cauce-carrito--pagina .cauce-carrito__items {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.cauce-carrito--pagina .cauce-carrito__vacio {
+  padding: 2.5rem 0 3.75rem;
+}
+
+@media screen and (min-width: 750px) {
+  .cauce-carrito--pagina .cauce-carrito__linea {
+    grid-template-columns: 5.625rem 1fr;
+    gap: 1.125rem;
+  }
+
+  .cauce-carrito--pagina .cauce-carrito__linea-media {
+    width: 5.625rem;
+    height: 6.5rem;
+  }
+}
+
+/* --- Foco visible --------------------------------------------------------- */
+
+/* El carrito declara su propio foco visible. */
+.cauce-carrito :focus-visible {
+  outline: 2px solid var(--cauce-icono);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* --- Avisos del editor ---------------------------------------------------- */
+
+/* Solo se renderizan con request.design_mode. Un monto comercial que falta no se
+   publica como pendiente visible —eso es para los datos legales, ver D-004— pero
+   quien puede cargarlo tiene que verlo. */
+.cauce-carrito__aviso {
+  margin: 0;
+  padding: 0.75rem 1.125rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--cauce-secundario);
+  border: 1px dashed color-mix(in srgb, var(--cauce-esq-texto) 28%, transparent);
+  border-radius: 4px;
+}
+
+/* --- Movimiento reducido -------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .cauce-carrito__envio-pista .cauce-carrito__envio-relleno,
+  .cauce-carrito .cauce-carrito__cta,
+  .cauce-carrito .cauce-carrito__cerrar,
+  .cauce-carrito .cauce-carrito__linea-quitar,
+  .cauce-carrito .cauce-carrito__stepper :is(.quantity-minus, .quantity-plus),
+  .cauce-carrito .cauce-carrito__nudge-boton {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   21. Ancla del bloque de compra
+   Ver docs/DECISIONS.md D-054.
+
+   Los CTA del cuerpo de la landing vuelven al selector de packs con #comprar.
+   El id de la seccion (shopify-section-template--<id>__main) no sirve: lo
+   asigna Shopify por template y cambia en cada uno. El ancla es un bloque
+   custom_liquid justo antes del selector. El margen deja el selector visible
+   debajo del header fijo.
+
+   Es un <span> y no un <div>: base.css oculta div:empty (y a, p, h1-h6, ul
+   vacios), y un ancla con display:none no tiene posicion a la que saltar. El
+   hash cambiaba y la pagina no se movia.
+   ========================================================================== */
+
+.cauce-ancla {
+  display: block;
+  height: 0;
+  scroll-margin-top: var(--cauce-aire-xl);
+}
+
+/* ==========================================================================
+   24. WhatsApp — boton flotante, linea del bloque de compra y pie
+   Ver snippets/cauce-whatsapp.liquid y docs/DECISIONS.md D-066.
+
+   Contraste (WCAG 2.1, sRGB):
+     glifo blanco sobre #168A41 ...................  4.42
+     boton #168A41 contra BLANCO ..................  4.42  componente, pide 3:1
+     boton #168A41 contra RUBOR (#F3E6E9) .........  3.65
+     icono #168A41 de la linea, sobre BLANCO ......  4.42
+   El #25D366 de la marca daba 1.98 y 1.63: por eso no se usa.
+
+   El flotante va abajo a la derecha. En Shrine iba apilado sobre el boton de
+   volver arriba del tema; Horizon no tiene ese boton y baja a la esquina.
+   Cuando aparece la barra fija de compra (blocks/cauce-barra-compra.liquid)
+   sube lo que la barra tapa: assets/cauce.js la mide y escribe
+   --cauce-wa-offset.
+
+   z-index un punto arriba de la barra fija y abajo del carrito, que es un
+   <dialog> modal y va siempre en la capa superior.
+   ========================================================================== */
+
+.cauce-wa--flotante {
+  position: fixed;
+  right: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  z-index: 21;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 50%;
+  background: #168A41;
+  color: #FFFFFF;
+  box-shadow: 0.0625rem 0.0625rem 0.625rem rgba(0, 0, 0, 0.3);
+  transform: translateY(calc(-1 * var(--cauce-wa-offset, 0px)));
+  transition: transform 0.15s ease-in-out;
+}
+
+.cauce-wa--flotante .cauce-wa__icono {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.cauce-wa--flotante:focus-visible {
+  outline: 0.125rem solid #168A41;
+  outline-offset: 0.1875rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cauce-wa--flotante { transition: none; }
+}
+
+.cauce-wa--linea {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+  font-family: var(--cauce-font-texto);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--cauce-cauce);
+}
+
+.cauce-wa--linea .cauce-wa__icono {
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: #168A41;
+}
+
+.cauce-wa--linea a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.1875rem;
+}
+
+/* ==========================================================================
+   26. Aditivo dental para perros — paleta, tipografia y piezas de su PDP
+   Ver templates/product.aditivo-dental.json y docs/DECISIONS.md D-074.
+
+   El producto se testea con un envase verde y su pagina acompana a la etiqueta:
+   verde en vez de la paleta de CAUCE, y toda en DM Sans. La clase
+   plantilla--aditivo-dental en <html> pisa los tokens de marca, los colores
+   base de los esquemas (bloque 0b) y las variables de Horizon que salen de la
+   paleta, y ninguna seccion declara un hex. En Shrine pisaba las variables
+   --color-base-* del tema; en Horizon esas no existen (D-081).
+
+     VERDE BOSQUE  #0F3D24  encabezado, bloques oscuros, titulos   (lugar de CAUCE)
+     VERDE HOJA    #2E7D4F  acentos, tildes, iconos                (lugar de OXIDO y VADO)
+     MENTA         #8FE0AE  el acento sobre VERDE BOSQUE           (lugar de OXIDO CLARO)
+     VERDE CLARO   #DDF0E2  bandas y fichas                        (lugar de SEDIMENTO)
+     FONDO         #F6F8F4  fondo de pagina
+     TEXTO         #14201A  parrafos
+     NARANJA       #E8590C  boton de compra, etiqueta blanca
+
+   Una diferencia con Hormify: aca el acento y el boton no son el mismo color. El
+   acento de marca (--cauce-acento: tildes, iconos, cierres de titulo) es VERDE
+   HOJA; el boton sale de --cauce-base-acento-1, que pasa a NARANJA. Son dos
+   variables distintas justamente para poder separarlos.
+
+   Contraste medido (WCAG 2.1, sRGB):
+                              sobre FONDO   sobre VERDE CLARO   sobre VERDE BOSQUE
+     TEXTO ...................  15.71 AAA     14.10 AAA             —
+     VERDE BOSQUE ............  11.47 AAA     10.29 AAA             —
+     VERDE HOJA ..............   4.72 AA       4.24 grande           —
+     VERDE HOJA TEXTO #256B41    6.03 AA       5.41 AA               —
+     MENTA ...................    —             —                   7.85 AAA
+     Blanco ..................    —             —                  12.26 AAA
+     Blanco sobre VERDE HOJA ..  5.05 AA   (tilde de los pasos)
+     Blanco sobre NARANJA ....   3.58   ->  solo texto grande o en negrita.
+
+   ATENCION: blanco sobre NARANJA da 3.58:1. AA pide 4.5 para texto chico y 3.0
+   para texto de 18.66px en negrita o mas. La etiqueta del boton de compra va en
+   negrita y mayuscula, asi que entra como texto grande; el naranja no se usa
+   para texto chico en ningun otro lugar. Es el color pedido por el comercio.
+   ========================================================================== */
+
+:root.plantilla--aditivo-dental {
+  --cauce-cauce:       #0F3D24; /* VERDE BOSQUE */
+  --cauce-sedimento:   #DDF0E2; /* VERDE CLARO  */
+  --cauce-sedimento-2: #C9E6D1;
+  --cauce-vado:        #2E7D4F; /* VERDE HOJA   */
+  --cauce-vado-texto:  #256B41;
+  --cauce-oxido:       #2E7D4F; /* VERDE HOJA   */
+  --cauce-oxido-claro: #8FE0AE; /* MENTA        */
+  --cauce-fondo:       #F6F8F4;
+  --cauce-texto:       #14201A;
+  --cauce-naranja:     #E8590C;
+
+  --cauce-linea:        rgba(15, 61, 36, 0.14);
+  --cauce-linea-fuerte: rgba(15, 61, 36, 0.28);
+  --cauce-linea-clara:  rgba(221, 240, 226, 0.22);
+
+  /* Toda la pagina en DM Sans. El logo se queda en Archivo: es el de CAUCE. */
+  --cauce-font-titulo: 'DM Sans', var(--font-body--family, system-ui), sans-serif;
+  --cauce-font-texto:  'DM Sans', var(--font-body--family, system-ui), sans-serif;
+  --cauce-font-dato:   'DM Sans', var(--font-body--family, system-ui), sans-serif;
+
+  /* Colores base de los esquemas CAUCE (bloque 0b). */
+  --cauce-base-fondo-1:  var(--cauce-fondo);
+  --cauce-base-acento-1: var(--cauce-naranja);
+
+  /* Lo que Horizon lee de su paleta: fondo y texto de pagina y el boton
+     primario, que en esta plantilla es NARANJA con etiqueta blanca. */
+  --color-background: #F6F8F4;
+  --color-background-rgb: 246 248 244;
+  --color-foreground: #14201A;
+  --color-foreground-rgb: 20 32 26;
+  --color-primary-button-background: #E8590C;
+  --color-primary-button-border: #E8590C;
+  --color-primary-button-text: #FFFFFF;
+  --color-primary-button-hover-background: #C84B09;
+  --color-primary-button-hover-border: #C84B09;
+  --color-primary-button-hover-text: #FFFFFF;
+
+  /* El hito destacado de la linea de tiempo: DORADO, con el texto VERDE BOSQUE
+     encima. Ver D-079. */
+  --cauce-destacado: #D9A514;
+  --cauce-destacado-label: #0F3D24;
+
+  /* La pagina de referencia es de esquinas redondas; CAUCE es de 2px. */
+  --cauce-boton-radio: 10px;
+  --style-border-radius-buttons-primary: 10px;
+  --style-border-radius-buttons-secondary: 10px;
+}
+
+/* El color base de texto hace dos trabajos: es el texto y el fondo de
+   .color-inverse. El fondo tiene que ser VERDE BOSQUE y el parrafo TEXTO, asi
+   que el primer plano de los esquemas claros se pisa aparte. */
+:root.plantilla--aditivo-dental,
+.plantilla--aditivo-dental .color-background-1,
+.plantilla--aditivo-dental .color-background-2 {
+  --cauce-esq-texto: var(--cauce-texto);
+  --cauce-icono: var(--cauce-vado);
+}
+
+.plantilla--aditivo-dental body {
+  background-color: var(--cauce-fondo);
+}
+
+/* Titulos en negrita y en VERDE BOSQUE. Newsreader iba en 400; DM Sans en 400
+   no se distingue del parrafo. Sobre las bandas oscuras heredan el blanco. */
+.plantilla--aditivo-dental :is(h1, h2, h3, h4, .h0, .h1, .h2, .h3, .h4) {
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--cauce-cauce);
+}
+
+.plantilla--aditivo-dental :is(.color-inverse, .color-text, .color-accent-1, .color-accent-2) :is(h1, h2, h3, h4, .h0, .h1, .h2, .h3, .h4) {
+  color: inherit;
+}
+
+/* El cierre del titulo de la linea de tiempo va en cursiva, como en la
+   referencia. */
+.plantilla--aditivo-dental .cauce-medialista--linea .cauce-medialista__titulo .cauce-acento {
+  font-style: italic;
+}
+
+/* Los datos (precios, cuotas) iban en DM Mono con numeros de ancho fijo. En
+   DM Sans se pide lo mismo para que las columnas de precios sigan alineadas. */
+.plantilla--aditivo-dental :is(.cauce-pack__precio, .cauce-pack__tachado, .cauce-pack__detalle, .cauce-pack__ahorro, .cauce-pack__cuotas, .cauce-pack__transferencia) {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Encabezado sobre una banda VERDE BOSQUE. El header de Horizon es global y
+   saca sus colores de su propia configuracion, que va en blanco: aca se le
+   pisan. Horizon escribe el fondo de cada fila como variable en el style del
+   <header-component>, y por eso el !important. El logo es un PNG de un solo
+   color (TINTA) con fondo transparente: el filtro lo lleva a blanco sin subir
+   otro archivo. */
+.plantilla--aditivo-dental #header-component {
+  --color-background-top-row: rgb(15 61 36) !important;
+  --color-background-bottom-row: rgb(15 61 36) !important;
+}
+
+.plantilla--aditivo-dental #header-component .header__row {
+  --color-foreground: #FFFFFF !important;
+  --color-foreground-rgb: 255 255 255 !important;
+  color: #FFFFFF;
+}
+
+.plantilla--aditivo-dental #header-component .header-logo__image {
+  filter: brightness(0) invert(1);
+}
+
+/* La barra de anuncios del tema rota los mensajes de la tienda, y uno ("30
+   dias para devolverlo") no es la garantia de este producto. Esta pagina lleva
+   su propia banda en movimiento, con sus datos, justo debajo del encabezado. */
+.plantilla--aditivo-dental #header-group .shopify-section:has(.announcement-bar) {
+  display: none;
+}
+
+/* Un dato que falta se ve desde lejos: resaltador amarillo, en cualquier fondo.
+   assets/cauce.js envuelve cada "[COMPLETAR: …]" de la pagina con esta clase. */
+.plantilla--aditivo-dental .cauce-pendiente {
+  padding: 0.1em 0.4em;
+  border: 0;
+  border-radius: 0.3em;
+  background: #FFE38A;
+  color: #14201A;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Recuadro de foto pendiente ---------------------------------------------- */
+/* Ver snippets/cauce-foto-pendiente.liquid. */
+
+/* div. y no solo la clase: el recuadro recibe ademas la clase de imagen de la
+   seccion (__imagen), que pone display: block para el <img>. Con el tipo
+   adelante esta regla le gana y el texto queda centrado. */
+div.cauce-foto-pendiente {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: var(--cauce-foto-relacion, 1 / 1);
+  padding: 1rem;
+  border: 2px dashed var(--cauce-linea-fuerte);
+  border-radius: 0.75rem;
+  background-color: var(--cauce-sedimento);
+  background-image: repeating-linear-gradient(-45deg, transparent 0 0.75rem, rgba(255, 255, 255, 0.45) 0.75rem 1.5rem);
+  color: var(--cauce-cauce);
+  text-align: center;
+}
+
+.cauce-foto-pendiente__texto {
+  max-width: 34ch;
+  font-family: var(--cauce-font-texto);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* Bloque de compra -------------------------------------------------------- */
+
+/* La linea que dice que es el producto, debajo del titulo. */
+.cauce-pastilla {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0.75rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.625rem;
+  background: var(--cauce-sedimento);
+  color: var(--cauce-cauce);
+  font-family: var(--cauce-font-texto);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.cauce-pastilla .cauce-icono {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--cauce-oxido);
+}
+
+/* Las fichas cortas debajo del boton: dos por renglon, tambien en telefono. */
+.cauce-fichas {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.cauce-fichas__item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem;
+  border-radius: 0.625rem;
+  background: var(--cauce-sedimento);
+  color: var(--cauce-cauce);
+  font-family: var(--cauce-font-texto);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.cauce-fichas__item .cauce-icono {
+  width: 1.375rem;
+  height: 1.375rem;
+  color: var(--cauce-oxido);
+}
+
+@media screen and (min-width: 750px) {
+  .cauce-fichas__item {
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Pestanas de la columna de compra. Ver snippets/cauce-pestanas.liquid.
+   Reusan <cauce-tabs>; aca solo cambia la forma: una caja con las pestanas como
+   cabecera a todo el ancho, en vez de una fila de enlaces subrayados. Los
+   selectores llevan dos clases para ganarle a .cauce-tabs__* sin !important. */
+.cauce-pestanas {
+  display: block;
+  margin: 1.5rem 0 0;
+  border: 1px solid var(--cauce-linea-fuerte);
+  border-radius: 0.75rem;
+  background: var(--cauce-blanco);
+  overflow: hidden;
+}
+
+.cauce-pestanas .cauce-pestanas__lista {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0;
+  margin: 0;
+  border-bottom: 1px solid var(--cauce-linea-fuerte);
+  overflow: visible;
+}
+
+.cauce-pestanas .cauce-pestanas__boton {
+  margin: 0;
+  padding: 0.75rem 0.375rem;
+  border: 0;
+  border-right: 1px solid var(--cauce-linea-fuerte);
+  background: var(--cauce-sedimento);
+  color: var(--cauce-cauce);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: normal;
+  opacity: 1;
+}
+
+.cauce-pestanas .cauce-pestanas__boton:last-child { border-right: 0; }
+
+.cauce-pestanas .cauce-pestanas__boton[aria-selected="true"] {
+  background: var(--cauce-blanco);
+  font-weight: 700;
+}
+
+.cauce-pestanas .cauce-pestanas__boton:focus-visible {
+  outline: 2px solid var(--cauce-oxido);
+  outline-offset: -2px;
+}
+
+.cauce-pestanas .cauce-pestanas__panel {
+  max-width: none;
+  margin: 0;
+  padding: 1.125rem;
+  color: var(--cauce-texto, var(--cauce-cauce));
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+.cauce-pestanas__panel > :first-child { margin-top: 0; }
+.cauce-pestanas__panel > :last-child { margin-bottom: 0; }
+
+/* Titulo opcional arriba de la caja: se queda con el margen de arriba. */
+.cauce-pestanas__titulo {
+  margin: 1.5rem 0 0.75rem;
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+
+.cauce-pestanas__titulo + .cauce-pestanas { margin-top: 0; }
+
+/* Lista de beneficios adentro de una pestana: un titulo y renglones separados
+   por una linea, sin vinetas. El panel es .rte y Shrine le pone sangria y
+   vineta a .rte ul: por eso la clase del panel adelante. */
+.cauce-pestanas__panel .cauce-beneficios__titulo {
+  margin: 0 0 0.75rem;
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+
+.cauce-pestanas__panel .cauce-beneficios {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cauce-pestanas__panel .cauce-beneficios > li {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--cauce-linea);
+}
+
+.cauce-pestanas__panel .cauce-beneficios > li:last-child {
+  padding-bottom: 0.25rem;
+  border-bottom: 0;
+}
+
+/* Tabla de ingredientes clave, adentro de una pestana. Ver
+   snippets/cauce-ingredientes-clave.liquid y docs/DECISIONS.md D-077.
+   El panel es .rte, y Shrine le pone padding a .rte table td y borde y sombra a
+   .rte img: cada celda y la foto llevan dos clases para ganarles sin !important.
+   La forma angosta es la de base y no la de telefono: entre 750 y 989 px la
+   columna de compra mide menos que en un telefono. En esa forma el texto baja
+   debajo de la foto y el nombre y ocupa todo el ancho de la celda (a 320 px, al
+   lado de la foto le quedaban 88 px), y la tabla le toma 0.5rem de cada lado al
+   padding del panel. */
+.cauce-clave {
+  --cauce-clave-col: 3.5rem;
+  --cauce-clave-col-otros: 2.5rem;
+  --cauce-clave-foto: 2.25rem;
+  width: calc(100% + 1rem);
+  margin: 0 -0.5rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  font-family: var(--cauce-font-texto);
+}
+
+.cauce-clave .cauce-clave__esquina,
+.cauce-clave .cauce-clave__ingrediente,
+.cauce-clave .cauce-clave__nosotros,
+.cauce-clave .cauce-clave__otros {
+  border: 0;
+  border-bottom: 1px solid var(--cauce-linea);
+  vertical-align: middle;
+  text-align: center;
+}
+
+.cauce-clave tbody tr:last-child > * { border-bottom: 0; }
+
+.cauce-clave .cauce-clave__esquina { padding: 0; }
+
+.cauce-clave .cauce-clave__ingrediente {
+  padding: 0.875rem 0.625rem 0.875rem 0;
+  font-weight: 400;
+  text-align: left;
+}
+
+.cauce-clave .cauce-clave__nosotros,
+.cauce-clave .cauce-clave__otros {
+  padding: 0.75rem 0.25rem;
+}
+
+.cauce-clave thead .cauce-clave__nosotros,
+.cauce-clave thead .cauce-clave__otros {
+  color: var(--cauce-cauce);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+/* La columna propia: cabecera VERDE BOSQUE con las puntas de arriba redondas y
+   una banda clara que baja por todas las filas. En el aditivo dental: blanco
+   sobre la cabecera 12.26, la tilde sobre la banda 6.27, la cruz sobre el
+   blanco del panel 8.52. */
+.cauce-clave thead .cauce-clave__nosotros {
+  width: var(--cauce-clave-col);
+  border-bottom-color: transparent;
+  border-radius: 0.5rem 0.5rem 0 0;
+  background: var(--cauce-cauce);
+  color: var(--cauce-blanco);
+  font-weight: 700;
+}
+
+.cauce-clave thead .cauce-clave__otros { width: var(--cauce-clave-col-otros); }
+
+.cauce-clave tbody .cauce-clave__nosotros { background: var(--cauce-sedimento); }
+
+.cauce-clave tbody tr:last-child .cauce-clave__nosotros { border-radius: 0 0 0.5rem 0.5rem; }
+
+.cauce-clave__fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.625rem;
+}
+
+.cauce-clave .cauce-clave__foto {
+  flex: none;
+  display: block;
+  width: var(--cauce-clave-foto);
+  height: var(--cauce-clave-foto);
+  margin: 0;
+  border: 0;
+  border-radius: 50%;
+  box-shadow: none;
+  object-fit: cover;
+}
+
+.cauce-clave .cauce-clave__foto--pendiente {
+  border: 2px dashed var(--cauce-linea-fuerte);
+  background: var(--cauce-sedimento);
+}
+
+.cauce-clave__cuerpo { display: contents; }
+
+.cauce-clave__nombre {
+  flex: 1 1 0;
+  min-width: 0;
+  color: var(--cauce-cauce);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.cauce-clave__texto {
+  flex: 0 0 100%;
+  color: color-mix(in srgb, var(--cauce-esq-texto) 78%, transparent);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.cauce-clave__si,
+.cauce-clave__no {
+  display: block;
+  width: 1.375rem;
+  height: 1.375rem;
+  margin: 0 auto;
+}
+
+.cauce-clave__si { color: var(--cauce-exito); }
+.cauce-clave__no { color: var(--cauce-error); }
+
+@media screen and (min-width: 990px) {
+  .cauce-clave {
+    --cauce-clave-col: 4.75rem;
+    --cauce-clave-col-otros: 3.25rem;
+    --cauce-clave-foto: 3rem;
+    width: 100%;
+    margin: 0;
+  }
+
+  .cauce-clave .cauce-clave__ingrediente { padding: 1rem 0.75rem 1rem 0; }
+
+  .cauce-clave__fila {
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .cauce-clave__cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .cauce-clave__nombre { flex: none; font-size: 0.9375rem; }
+  .cauce-clave__texto { flex: none; }
+  .cauce-clave__si,
+  .cauce-clave__no { width: 1.5rem; height: 1.5rem; }
+}
+
+/* Foto y lista ------------------------------------------------------------ */
+/* Ver sections/cauce-media-lista.liquid. */
+
+.cauce-medialista__inner,
+.cauce-respaldo__inner,
+.cauce-fichas-seccion__inner {
+  padding-top: var(--padding-top, 4.5rem);
+  padding-bottom: var(--padding-bottom, 4.5rem);
+}
+
+@media screen and (max-width: 749px) {
+  .cauce-medialista__inner,
+  .cauce-respaldo__inner,
+  .cauce-fichas-seccion__inner {
+    padding-top: calc(var(--padding-top, 4.5rem) * 0.75);
+    padding-bottom: calc(var(--padding-bottom, 4.5rem) * 0.75);
+  }
+}
+
+.cauce-medialista__inner {
+  display: grid;
+  gap: var(--cauce-aire-m);
+  max-width: min(var(--cauce-medialista-ancho, 1200px), var(--cauce-ancho-pagina));
+}
+
+.cauce-medialista__columna {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+@media screen and (min-width: 990px) {
+  .cauce-medialista__inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  .cauce-medialista__inner--sin-media { grid-template-columns: 1fr; }
+
+  .cauce-medialista__inner--derecha .cauce-medialista__columna--media { order: 2; }
+}
+
+.cauce-medialista__media { margin: 0; }
+
+.cauce-medialista__imagen {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 0.75rem;
+}
+
+.cauce-medialista__epigrafe {
+  margin: var(--cauce-aire-xs) 0 0;
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.cauce-medialista__titulo {
+  margin: 0;
+  text-wrap: balance;
+}
+
+.cauce-medialista__bajada {
+  max-width: 56ch;
+  margin-top: 0.75rem;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.cauce-medialista__bajada > :first-child { margin-top: 0; }
+.cauce-medialista__bajada > :last-child { margin-bottom: 0; }
+
+.cauce-medialista__lista {
+  list-style: none;
+  display: grid;
+  margin: 0;
+  padding: 0;
+}
+
+.cauce-medialista__texto { min-width: 0; }
+
+/* El <h3> de cada item junta la etiqueta y el nombre. Dos clases: es un rotulo
+   de lista y no un titulo de seccion, asi que no toma el cuerpo ni el color de
+   los h3 del tema; los hereda del item, que sabe sobre que fondo esta. */
+.cauce-medialista .cauce-medialista__cabeza {
+  margin: 0;
+  font-family: var(--cauce-font-texto);
+  font-size: inherit;
+  line-height: 1.3;
+  letter-spacing: 0;
+  color: inherit;
+}
+
+.cauce-medialista__etiqueta,
+.cauce-medialista__nombre { display: block; }
+
+.cauce-medialista__nombre {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.cauce-medialista__parrafo {
+  margin-top: 0.375rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.cauce-medialista__parrafo > :first-child { margin-top: 0; }
+.cauce-medialista__parrafo > :last-child { margin-bottom: 0; }
+
+.cauce-medialista__cta { align-self: flex-start; }
+
+/* Recuadro final: un velo del color del texto, asi sirve en claro y en oscuro. */
+.cauce-medialista__recuadro {
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--cauce-esq-texto) 10%, transparent);
+}
+
+.cauce-medialista__recuadro-titulo {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--cauce-acento);
+}
+
+.cauce-medialista__recuadro-texto {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.cauce-medialista__recuadro-texto > :first-child { margin-top: 0; }
+.cauce-medialista__recuadro-texto > :last-child { margin-bottom: 0; }
+
+/* Forma 1 — tarjetas con etiqueta. Cada tarjeta es una superficie clara, aunque
+   la seccion sea oscura: por eso fija su fondo y su color y no los hereda. */
+.cauce-medialista--tarjetas .cauce-medialista__lista { gap: 1rem; }
+
+.cauce-medialista--tarjetas .cauce-medialista__item {
+  padding: 1.25rem;
+  border-left: 0.25rem solid var(--cauce-oxido);
+  border-radius: 0.25rem;
+  background: var(--cauce-sedimento);
+  color: var(--cauce-texto, var(--cauce-cauce));
+}
+
+.cauce-medialista--tarjetas .cauce-medialista__etiqueta {
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Forma 2 — linea de tiempo. La linea y el marcador son pseudo-elementos del
+   <li>, como en cauce-progreso (bloque 13). Ver docs/DECISIONS.md D-079.
+
+   Cinco medidas atan todo: donde cae la linea (--x), cuanto se corre el texto
+   (--sangria), a que altura queda el centro de la pastilla (--centro), el aire
+   entre hitos (--paso) y el hueco entre un marcador y la linea (--corte). El
+   marcador va centrado en la pastilla, y la linea no es continua: cada tramo
+   arranca --corte debajo de un marcador y termina --corte arriba del siguiente. */
+.cauce-medialista--linea {
+  --cauce-linea-x: 0.75rem;
+  --cauce-linea-sangria: 2.25rem;
+  --cauce-linea-centro: 1.0625rem;
+  --cauce-linea-paso: 1.5rem;
+  --cauce-linea-corte: 1.25rem;
+  --cauce-linea-destacado: var(--cauce-destacado, var(--cauce-acento));
+  --cauce-linea-destacado-label: var(--cauce-destacado-label, var(--cauce-acento-label));
+}
+
+.cauce-medialista--linea .cauce-medialista__lista { gap: var(--cauce-linea-paso); }
+
+.cauce-medialista--linea .cauce-medialista__item {
+  position: relative;
+  padding-left: var(--cauce-linea-sangria);
+}
+
+.cauce-medialista--linea .cauce-medialista__item::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--cauce-linea-x) - 0.5px);
+  top: calc(var(--cauce-linea-centro) + var(--cauce-linea-corte));
+  bottom: calc(var(--cauce-linea-corte) - var(--cauce-linea-paso) - var(--cauce-linea-centro));
+  width: 1px;
+  background-color: currentColor;
+  opacity: 0.55;
+}
+
+/* El ultimo tramo termina con el hito, salvo que abajo venga el recuadro: ahi
+   baja hasta casi tocarlo (la columna separa lista y recuadro 1.5rem). */
+.cauce-medialista--linea .cauce-medialista__item:last-child::before { bottom: 0; }
+.cauce-medialista--linea .cauce-medialista__lista--sigue .cauce-medialista__item:last-child::before { bottom: -0.75rem; }
+
+.cauce-medialista--linea .cauce-medialista__item::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--cauce-linea-x) - 0.3125rem);
+  top: calc(var(--cauce-linea-centro) - 0.3125rem);
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+/* Sin flex-wrap: si el titulo no entra al lado de la pastilla, se parte ahi
+   mismo en dos renglones y no baja entero. Alineado arriba, para que la
+   pastilla (y con ella el marcador) no se mueva cuando el titulo se parte. */
+.cauce-medialista--linea .cauce-medialista__cabeza {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.cauce-medialista--linea .cauce-medialista__etiqueta {
+  padding: 0.5625rem 1rem;
+  border-radius: 6.25rem;
+  background: var(--cauce-sedimento);
+  color: var(--cauce-cauce);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex: none;
+}
+
+/* 0.25rem arriba: centra el primer renglon del titulo (1.625rem) en la pastilla
+   (2.125rem). */
+.cauce-medialista--linea .cauce-medialista__nombre {
+  min-width: 0;
+  padding-top: 0.25rem;
+  font-size: 1.25rem;
+}
+
+.cauce-medialista--linea .cauce-medialista__parrafo {
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+
+/* El texto del hito puede ser una lista de un renglon. Shrine le da 1.25rem de
+   sangria a .rte ul; aca la vineta queda casi al filo de la pastilla. Y es un
+   <ul> adentro de un <ol>: sin fijarla, el navegador le pone la vineta hueca
+   de las listas anidadas. */
+.cauce-medialista--linea .cauce-medialista__parrafo :is(ul, ol) {
+  margin: 0;
+  padding-left: 0.625rem;
+}
+
+.cauce-medialista--linea .cauce-medialista__parrafo ul { list-style-type: disc; }
+
+/* Hito destacado: la pastilla, el marcador y la estrella en --cauce-destacado.
+   En el aditivo dental es DORADO #D9A514: 5.45 sobre VERDE BOSQUE (marcador y
+   estrella) y 5.45 con el texto VERDE BOSQUE encima (pastilla). */
+.cauce-medialista--linea .cauce-medialista__item--destacado::after { background-color: var(--cauce-linea-destacado); }
+
+.cauce-medialista--linea .cauce-medialista__item--destacado .cauce-medialista__etiqueta {
+  background: var(--cauce-linea-destacado);
+  color: var(--cauce-linea-destacado-label);
+}
+
+.cauce-medialista--linea .cauce-medialista__estrella {
+  white-space: nowrap;
+  color: var(--cauce-linea-destacado);
+}
+
+.cauce-medialista--linea .cauce-medialista__estrella .cauce-icono {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-left: 0.375rem;
+  vertical-align: -0.1875rem;
+  color: currentColor;
+}
+
+/* El recuadro final cuelga de la misma linea: se corre lo mismo que los hitos y
+   su icono queda centrado sobre ella, a media altura. */
+.cauce-medialista--linea .cauce-medialista__recuadro {
+  position: relative;
+  margin-left: var(--cauce-linea-sangria);
+  padding: 1.5rem 1.75rem;
+  background: color-mix(in srgb, var(--cauce-esq-texto) 14%, transparent);
+}
+
+.cauce-medialista--linea .cauce-medialista__recuadro-titulo { font-size: 1.25rem; }
+.cauce-medialista--linea .cauce-medialista__recuadro-texto { font-size: 1rem; }
+
+.cauce-medialista__recuadro-marca {
+  position: absolute;
+  left: calc(var(--cauce-linea-x) - var(--cauce-linea-sangria) - 0.75rem);
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.3125rem;
+  background: var(--cauce-acento);
+  color: var(--cauce-acento-label);
+  transform: translateY(-50%);
+}
+
+.cauce-medialista__recuadro-marca .cauce-icono {
+  width: 1.125rem;
+  height: 1.125rem;
+  color: currentColor;
+  stroke-width: 2;
+}
+
+/* Formas 3 y 4 — pasos con tilde y filas con icono. Una fila por item, con una
+   regla fina debajo. La regla es el color del texto al 16 %: se ve en los tres
+   esquemas sin una regla por esquema. */
+.cauce-medialista--pasos .cauce-medialista__item,
+.cauce-medialista--filas .cauce-medialista__item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 16%, transparent);
+}
+
+.cauce-medialista--pasos .cauce-medialista__item:first-child,
+.cauce-medialista--filas .cauce-medialista__item:first-child { padding-top: 0; }
+
+.cauce-medialista__marca {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.cauce-medialista--pasos .cauce-medialista__marca {
+  width: 1.75rem;
+  height: 1.75rem;
+  background: var(--cauce-acento);
+  color: var(--cauce-acento-label);
+}
+
+.cauce-medialista--pasos .cauce-medialista__marca .cauce-icono {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  color: currentColor;
+  stroke-width: 2.6;
+}
+
+.cauce-medialista--filas .cauce-medialista__item { gap: 1.25rem; }
+
+.cauce-medialista--filas .cauce-medialista__marca {
+  width: 4rem;
+  height: 4rem;
+  background: var(--cauce-sedimento);
+  color: var(--cauce-oxido);
+}
+
+.cauce-medialista--filas .cauce-medialista__marca .cauce-icono {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: currentColor;
+}
+
+.cauce-medialista__redonda {
+  display: block;
+  width: 6rem;
+  height: 6rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Respaldo ---------------------------------------------------------------- */
+/* Ver sections/cauce-respaldo.liquid. */
+
+.cauce-respaldo__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cauce-aire-m);
+  max-width: min(var(--cauce-respaldo-ancho, 1120px), var(--cauce-ancho-pagina));
+}
+
+.cauce-respaldo__encabezado {
+  max-width: 62ch;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.cauce-respaldo__titulo {
+  margin: 0;
+  text-wrap: balance;
+}
+
+.cauce-respaldo__bajada {
+  margin-top: 0.75rem;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.cauce-respaldo__bajada > :first-child { margin-top: 0; }
+.cauce-respaldo__bajada > :last-child { margin-bottom: 0; }
+
+.cauce-respaldo__grilla {
+  display: grid;
+  gap: 1rem;
+}
+
+@media screen and (min-width: 990px) {
+  .cauce-respaldo__grilla {
+    grid-template-columns: 5fr 7fr;
+    gap: 1.5rem;
+    align-items: stretch;
+  }
+
+  .cauce-respaldo__grilla--una { grid-template-columns: 1fr; }
+}
+
+/* La ficha es una superficie oscura adentro de una seccion clara: fija su fondo
+   y su color, y redeclara los tokens que se definen por superficie (bloque 0). */
+.cauce-respaldo__ficha {
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  background: var(--cauce-cauce);
+  color: var(--cauce-blanco);
+  --cauce-icono: var(--cauce-oxido-claro);
+}
+
+.cauce-respaldo__ficha-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cauce-respaldo__datos {
+  display: grid;
+  gap: 1.125rem;
+  margin: 0;
+}
+
+.cauce-respaldo__dato-etiqueta {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.cauce-respaldo__dato-valor {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.cauce-respaldo__listas {
+  display: grid;
+  gap: 1rem;
+}
+
+@media screen and (min-width: 750px) {
+  .cauce-respaldo__listas { grid-template-columns: 1fr 1fr; }
+}
+
+.cauce-respaldo__grupo {
+  padding: 1.5rem;
+  border: 1px solid var(--cauce-linea);
+  border-radius: 0.75rem;
+  background: var(--cauce-blanco);
+  color: var(--cauce-texto, var(--cauce-cauce));
+}
+
+.cauce-respaldo .cauce-respaldo__grupo-titulo {
+  margin: 0 0 1rem;
+  font-size: 1.125rem;
+  line-height: 1.3;
+  color: var(--cauce-cauce);
+}
+
+.cauce-respaldo__lista {
+  list-style: none;
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+}
+
+.cauce-respaldo__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.cauce-respaldo__item .cauce-icono {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.0625rem;
+  color: var(--cauce-oxido);
+  stroke-width: 2.2;
+}
+
+.cauce-respaldo__lista--no .cauce-icono { color: var(--cauce-vado-texto); }
+
+.cauce-respaldo__pie {
+  max-width: 72ch;
+  margin-inline: auto;
+  font-size: 0.8125rem;
+  text-align: center;
+  opacity: 0.75;
+}
+
+.cauce-respaldo__pie > :first-child { margin-top: 0; }
+.cauce-respaldo__pie > :last-child { margin-bottom: 0; }
+
+/* Carrusel de fichas ------------------------------------------------------ */
+/* Ver sections/cauce-fichas.liquid. */
+
+.cauce-fichas-seccion__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cauce-aire-m);
+  max-width: min(var(--cauce-fichas-ancho, 1200px), var(--cauce-ancho-pagina));
+}
+
+.cauce-fichas-seccion__encabezado {
+  max-width: 62ch;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.cauce-fichas-seccion__titulo {
+  margin: 0;
+  text-wrap: balance;
+}
+
+.cauce-fichas-seccion__bajada {
+  margin-top: 0.75rem;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.cauce-fichas-seccion__bajada > :first-child { margin-top: 0; }
+.cauce-fichas-seccion__bajada > :last-child { margin-bottom: 0; }
+
+/* En telefono la fila se sale del margen de la pagina por los dos lados: la
+   ficha siguiente asoma y se entiende que hay mas. 0.9375rem es el padding de
+   .page-width hasta 750px (bloque 0b). */
+.cauce-fichas-carrusel {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+  margin: 0 -0.9375rem;
+  padding: 0 0.9375rem 0.75rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 0.9375rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cauce-fichas-carrusel:focus-visible {
+  outline: 2px solid var(--cauce-oxido);
+  outline-offset: 4px;
+}
+
+.cauce-fichas-carrusel__ficha {
+  flex: 0 0 80%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--cauce-linea);
+  border-radius: 1rem;
+  background: var(--cauce-blanco);
+  color: var(--cauce-texto, var(--cauce-cauce));
+  scroll-snap-align: start;
+}
+
+@media screen and (min-width: 750px) {
+  .cauce-fichas-carrusel__ficha { flex-basis: 44%; }
+}
+
+@media screen and (min-width: 990px) {
+  .cauce-fichas-carrusel {
+    display: grid;
+    grid-template-columns: repeat(var(--cauce-fichas-cols, 3), minmax(0, 1fr));
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+}
+
+.cauce-fichas-seccion .cauce-fichas-carrusel__nombre {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--cauce-cauce);
+}
+
+.cauce-fichas-carrusel__imagen {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 0.75rem;
+}
+
+.cauce-fichas-carrusel__funcion {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1.35;
+  color: var(--cauce-vado-texto);
+}
+
+summary.cauce-fichas-carrusel__funcion { cursor: pointer; }
+summary.cauce-fichas-carrusel__funcion::-webkit-details-marker { display: none; }
+
+.cauce-fichas-carrusel__funcion .cauce-icono {
+  width: 1.375rem;
+  height: 1.375rem;
+  padding: 0.1875rem;
+  border-radius: 50%;
+  background: var(--cauce-cauce);
+  color: var(--cauce-blanco);
+  stroke-width: 2.4;
+}
+
+.cauce-fichas-carrusel__cerrar,
+.cauce-fichas-carrusel__mas[open] .cauce-fichas-carrusel__abrir { display: none; }
+
+.cauce-fichas-carrusel__mas[open] .cauce-fichas-carrusel__cerrar { display: block; }
+
+.cauce-fichas-carrusel__detalle {
+  margin-top: 0.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.cauce-fichas-carrusel__detalle > :first-child { margin-top: 0; }
+.cauce-fichas-carrusel__detalle > :last-child { margin-bottom: 0; }
+
+.cauce-fichas-seccion__pie {
+  max-width: 72ch;
+  margin-inline: auto;
+  font-size: 0.8125rem;
+  text-align: center;
+  opacity: 0.75;
+}
+
+.cauce-fichas-seccion__pie > :first-child { margin-top: 0; }
+.cauce-fichas-seccion__pie > :last-child { margin-bottom: 0; }
+
+/* ==========================================================================
+   27. PDP — reseñas de clientes
+   Ver sections/cauce-resenas.liquid y docs/DECISIONS.md D-075.
+
+   Un resumen (promedio, cantidad, barras por puntaje) y una grilla de tarjetas:
+   una columna en telefono, dos en tablet y tres en escritorio. Cada tarjeta
+   mide lo que mide su foto y su texto, y se alinea arriba con las de su fila.
+
+   Es CSS grid y no CSS columns (el "muro" de la pagina de referencia). Con
+   columns el navegador reparte por alto, no por orden: tres tarjetas quedaban
+   dos en la primera columna y la tercera vacia, y las reseñas se leian de
+   arriba abajo en vez de izquierda a derecha, que es el orden en que se cargan.
+
+   La estrella es el unico color nuevo. --cauce-estrella vale el acento de la
+   marca salvo que la plantilla lo pise: en el aditivo dental es un ambar
+   (#C77700) elegido para pasar 3:1 como objeto grafico sobre la tarjeta blanca
+   (3.46) y sobre el fondo de pagina (3.24). El ambar clasico de las estrellas,
+   #F2A900, da 2.01 y no se usa. El puntaje ademas va en el aria-label.
+   ========================================================================== */
+
+:root { --cauce-estrella: var(--cauce-oxido); }
+
+:root.plantilla--aditivo-dental { --cauce-estrella: #C77700; }
+
+.cauce-resenas__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: min(var(--cauce-resenas-ancho, 1200px), var(--cauce-ancho-pagina));
+  padding-top: var(--padding-top, 4.5rem);
+  padding-bottom: var(--padding-bottom, 4.5rem);
+}
+
+@media screen and (max-width: 749px) {
+  .cauce-resenas__inner {
+    padding-top: calc(var(--padding-top, 4.5rem) * 0.75);
+    padding-bottom: calc(var(--padding-bottom, 4.5rem) * 0.75);
+  }
+}
+
+.cauce-resenas__titulo {
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* Estrellas --------------------------------------------------------------- */
+
+.cauce-resenas__estrella {
+  flex: 0 0 auto;
+  display: block;
+  width: 1.125rem;
+  height: 1.125rem;
+  fill: currentColor;
+}
+
+.cauce-resenas__estrellas {
+  display: inline-flex;
+  gap: 0.0625rem;
+  color: var(--cauce-estrella);
+}
+
+.cauce-resenas__punto { display: inline-flex; }
+.cauce-resenas__punto--vacio { color: var(--cauce-linea-fuerte); }
+
+/* El promedio se dibuja con dos filas de cinco estrellas, una vacia y otra
+   llena encima, recortada al porcentaje que corresponde: 4,6 llena el 92 %. */
+.cauce-resenas__estrellas--promedio {
+  position: relative;
+  display: inline-block;
+}
+
+.cauce-resenas__fila-vacia,
+.cauce-resenas__fila-llena {
+  display: flex;
+  gap: 0.0625rem;
+}
+
+.cauce-resenas__fila-vacia { color: var(--cauce-linea-fuerte); }
+
+.cauce-resenas__fila-llena {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+
+.cauce-resenas__estrellas--promedio .cauce-resenas__estrella {
+  width: 1.375rem;
+  height: 1.375rem;
+}
+
+/* Resumen ----------------------------------------------------------------- */
+
+.cauce-resenas__resumen {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border: 1px solid var(--cauce-linea);
+  border-radius: 0.75rem;
+  background: var(--cauce-blanco);
+  color: var(--cauce-texto, var(--cauce-cauce));
+}
+
+@media screen and (min-width: 750px) {
+  .cauce-resenas__resumen {
+    grid-template-columns: auto minmax(0, 22.5rem);
+    gap: 3rem;
+    align-items: center;
+    justify-content: start;
+  }
+}
+
+.cauce-resenas__promedio {
+  display: grid;
+  gap: 0.375rem;
+  justify-items: center;
+  text-align: center;
+}
+
+.cauce-resenas__numero {
+  margin: 0;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--cauce-cauce);
+}
+
+.cauce-resenas__cantidad {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.cauce-resenas__barras {
+  list-style: none;
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+}
+
+.cauce-resenas__barra {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.cauce-resenas__barra-nombre {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 2.25rem;
+}
+
+.cauce-resenas__barra-nombre .cauce-resenas__estrella {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--cauce-estrella);
+}
+
+.cauce-resenas__barra-pista {
+  display: block;
+  height: 0.5rem;
+  border-radius: 6.25rem;
+  background: var(--cauce-linea);
+  overflow: hidden;
+}
+
+.cauce-resenas__barra-relleno {
+  display: block;
+  height: 100%;
+  border-radius: 6.25rem;
+  background: var(--cauce-estrella);
+}
+
+.cauce-resenas__barra-cuenta {
+  min-width: 2ch;
+  text-align: right;
+}
+
+/* Aviso del editor: solo se dibuja con request.design_mode. */
+.cauce-resenas__aviso {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 2px dashed var(--cauce-linea-fuerte);
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* Grilla ------------------------------------------------------------------ */
+
+.cauce-resenas__grilla {
+  list-style: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+}
+
+@media screen and (min-width: 750px) {
+  .cauce-resenas__grilla { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media screen and (min-width: 990px) {
+  .cauce-resenas__grilla { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.cauce-resenas__tarjeta {
+  border: 1px solid var(--cauce-linea);
+  border-radius: 0.75rem;
+  background: var(--cauce-blanco);
+  color: var(--cauce-texto, var(--cauce-cauce));
+  overflow: hidden;
+}
+
+.cauce-resenas__tarjeta--pendiente { border: 2px dashed var(--cauce-linea-fuerte); }
+
+img.cauce-resenas__foto {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.cauce-resenas__tarjeta .cauce-foto-pendiente {
+  border-width: 0 0 2px;
+  border-radius: 0;
+}
+
+.cauce-resenas__cuerpo {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.cauce-resenas__autor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.625rem;
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.3;
+}
+
+.cauce-resenas__nombre { font-weight: 700; }
+
+.cauce-resenas__verificada {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--cauce-vado-texto);
+}
+
+.cauce-resenas__verificada .cauce-icono {
+  width: 1rem;
+  height: 1rem;
+  color: currentColor;
+}
+
+/* Dos clases: es el titulo de una tarjeta, no un titulo de seccion. */
+.cauce-resenas .cauce-resenas__encabezado-tarjeta {
+  margin: 0;
+  font-family: var(--cauce-font-texto);
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+.cauce-resenas__texto {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.cauce-resenas__fecha {
+  margin: 0;
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+/* El resto de las reseñas. Abierto, el boton sobra y se va. */
+.cauce-resenas__mas-boton {
+  display: flex;
+  width: fit-content;
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+.cauce-resenas__mas-boton::-webkit-details-marker { display: none; }
+
+.cauce-resenas__mas[open] > .cauce-resenas__mas-boton { display: none; }
+
+/* Abierto, el resto sigue a la primera grilla con el mismo aire que hay entre
+   dos filas: el gap del contenedor (1.5rem) menos lo que falta para 1rem. */
+.cauce-resenas__mas[open] { margin-top: -0.5rem; }
+
+.cauce-resenas__pie {
+  max-width: 72ch;
+  font-size: 0.8125rem;
+  opacity: 0.75;
+}
+
+.cauce-resenas__pie > :first-child { margin-top: 0; }
+.cauce-resenas__pie > :last-child { margin-bottom: 0; }
+
+/* ==========================================================================
+   28. PDP — mes a mes
+   Ver sections/cauce-meses.liquid y docs/DECISIONS.md D-080.
+
+   Un titulo, una fila de pestanas (una por mes) y una fila de fotos. El mes
+   elegido lleva la foto cuadrada y su texto debajo; los demas, la foto en 4:3
+   y nada mas. Las medidas salen de la captura de la referencia: las pestanas
+   ocupan el 20 % del bloque cada una, las fotos van 16px adentro del titulo y
+   16px separadas entre si, con 12px de radio.
+
+   El subrayado esta al reves de lo habitual, y es asi en la referencia: el mes
+   elegido lleva una linea llana y tenue, y los demas, guiones del color del
+   texto.
+
+   Dos formas. En telefono es un carrusel de scroll-snap y cada mes es una
+   tarjeta completa (foto cuadrada y texto); desde 750px es una grilla y solo el
+   mes elegido se abre.
+
+   Al cambiar de mes no se mueve nada alrededor. Cada foto vive en un casillero
+   cuadrado que no cambia de tamano: la foto pasa de 75 % a 100 % de alto ahi
+   adentro, y object-fit hace el recorte. El texto de los meses sin elegir se
+   apaga con opacity y sigue ocupando su lugar, asi que la fila mide siempre lo
+   que mide el texto mas largo.
+   ========================================================================== */
+
+.cauce-meses {
+  --cauce-meses-tinta: var(--cauce-cauce);
+  --cauce-meses-linea: color-mix(in srgb, var(--cauce-esq-texto) 10%, transparent);
+}
+
+.cauce-meses.color-inverse { --cauce-meses-tinta: currentColor; }
+
+.cauce-meses__inner {
+  max-width: min(var(--cauce-meses-ancho, 1200px), var(--cauce-ancho-pagina));
+  padding-top: var(--padding-top, 3.5rem);
+  padding-bottom: var(--padding-bottom, 3.5rem);
+}
+
+@media screen and (max-width: 749px) {
+  .cauce-meses__inner {
+    padding-top: calc(var(--padding-top, 3.5rem) * 0.75);
+    padding-bottom: calc(var(--padding-bottom, 3.5rem) * 0.75);
+  }
+}
+
+.cauce-meses__titulo {
+  margin: 0 0 0.5rem;
+  text-wrap: balance;
+}
+
+.cauce-meses__cuerpo { display: block; }
+
+/* Pestanas ---------------------------------------------------------------- */
+
+.cauce-meses__pestanas {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+}
+
+.cauce-meses__pestana {
+  appearance: none;
+  margin: 0;
+  padding: 0.625rem 0.5rem 0.625rem 0;
+  border: 0;
+  border-bottom: 1px dashed currentColor;
+  border-radius: 0;
+  background: none;
+  color: var(--cauce-meses-tinta);
+  font-family: var(--cauce-font-texto);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cauce-meses__pestana[aria-pressed="true"] { border-bottom: 1px solid var(--cauce-meses-linea); }
+
+.cauce-meses__pestana:focus-visible {
+  outline: 2px solid var(--cauce-oxido);
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .cauce-meses__pestana[aria-pressed="false"]:hover { border-bottom-style: solid; }
+}
+
+/* Fotos ------------------------------------------------------------------- */
+
+/* En telefono la fila se sale del margen de la pagina por los dos lados, como
+   el carrusel de fichas: la tarjeta siguiente asoma. 0.9375rem es el padding de
+   .page-width hasta 750px. Sin barra: las pestanas dicen donde se esta. */
+.cauce-meses__lista {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+  margin: 1rem -0.9375rem 0;
+  padding: 0 0.9375rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 0.9375rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.cauce-meses__lista::-webkit-scrollbar { display: none; }
+
+.cauce-meses__item {
+  flex: 0 0 80%;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.cauce-meses__media {
+  position: relative;
+  aspect-ratio: 1 / 1;
+}
+
+/* El recuadro de foto pendiente recibe esta misma clase: ocupa el casillero
+   igual que la foto. */
+.cauce-meses__imagen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.75rem;
+}
+
+.cauce-meses__texto {
+  margin-top: 0.5rem;
+  overflow-wrap: break-word;
+}
+
+/* Dos clases: es el titulo de una tarjeta, no un titulo de seccion. relative
+   por el nombre del mes que va oculto adentro (.visually-hidden es absolute):
+   sin un ancestro posicionado adentro del carrusel, no se desplaza con la
+   tarjeta, queda fuera de la fila y le da scroll horizontal a la pagina. */
+.cauce-meses .cauce-meses__nombre {
+  position: relative;
+  margin: 0;
+  font-family: var(--cauce-font-texto);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0;
+  color: var(--cauce-meses-tinta);
+}
+
+.cauce-meses__parrafo {
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.cauce-meses__parrafo > :first-child { margin-top: 0; }
+.cauce-meses__parrafo > :last-child { margin-bottom: 0; }
+
+@media screen and (min-width: 750px) {
+  .cauce-meses__pestanas {
+    width: calc(var(--cauce-meses-n, 3) * 20%);
+    max-width: 100%;
+  }
+
+  .cauce-meses__pestana { padding-inline: 1rem; }
+
+  .cauce-meses__lista {
+    display: grid;
+    grid-template-columns: repeat(var(--cauce-meses-n, 3), minmax(0, 1fr));
+    margin: 1rem 0 0;
+    padding: 0 1rem;
+    overflow: visible;
+  }
+
+  .cauce-meses__imagen { transition: height 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+
+  .cauce-meses__texto { transition: opacity 0.2s ease; }
+
+  .cauce-meses__parrafo {
+    font-size: 0.875rem;
+    line-height: 1.32;
+  }
+
+  .cauce-meses__item:not(.cauce-meses__item--activo) .cauce-meses__imagen {
+    height: 75%;
+    cursor: pointer;
+  }
+
+  .cauce-meses__item:not(.cauce-meses__item--activo) .cauce-meses__texto {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* El texto entra cuando la foto ya arranco a crecer. */
+  .cauce-meses__item--activo .cauce-meses__texto { transition-delay: 0.1s; }
+
+  /* Sin JS no hay con que elegir: las tres abiertas. Va despues de las dos
+     reglas de arriba, con la misma especificidad. */
+  .no-js .cauce-meses__item .cauce-meses__imagen { height: 100%; }
+  .no-js .cauce-meses__item .cauce-meses__texto { opacity: 1; }
+}
+
+.no-js .cauce-meses__pestanas { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cauce-meses__imagen,
+  .cauce-meses__texto {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   29. Piezas nuevas de la migracion a Horizon
+   Las que en Shrine eran secciones del tema configuradas y en Horizon pasan a
+   ser de CAUCE: banda en movimiento (horizontal-ticker), garantia
+   (custom-columns), barra fija de compra (sticky_atc), texto y formulario
+   (rich-text, custom-liquid y contact-form) y la home que redirige.
+   Ver docs/DECISIONS.md D-081.
+   ========================================================================== */
+
+/* --- Padding de seccion --------------------------------------------------- */
+
+/* Mismo criterio que las demas cauce-*: el padding llega como variable y en
+   telefono baja al 75 %, que es la reduccion que usaba Shrine. */
+.cauce-garantia__inner,
+.cauce-texto__inner,
+.cauce-form__inner {
+  padding-top: var(--padding-top, 4.5rem);
+  padding-bottom: var(--padding-bottom, 4.5rem);
+}
+
+@media screen and (max-width: 749px) {
+  .cauce-garantia__inner,
+  .cauce-texto__inner,
+  .cauce-form__inner {
+    padding-top: calc(var(--padding-top, 4.5rem) * 0.75);
+    padding-bottom: calc(var(--padding-bottom, 4.5rem) * 0.75);
+  }
+}
+
+/* --- Banda en movimiento ------------------------------------------------- */
+/* sections/cauce-banda.liquid. Dos copias de la misma fila que se corren un
+   ancho entero: cuando la primera termina de salir, la segunda esta en su
+   lugar y el salto no se ve. */
+
+.cauce-banda {
+  overflow: hidden;
+  padding-top: var(--padding-top, 0.875rem);
+  padding-bottom: var(--padding-bottom, 0.875rem);
+}
+
+.cauce-banda__marco {
+  display: flex;
+  width: max-content;
+}
+
+.cauce-banda__pista {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--cauce-banda-gap, 2.5rem);
+  margin: 0;
+  padding: 0 calc(var(--cauce-banda-gap, 2.5rem) / 2);
+  list-style: none;
+  animation: cauce-banda var(--cauce-banda-duracion, 35s) linear infinite;
+}
+
+.cauce-banda--pausa:hover .cauce-banda__pista { animation-play-state: paused; }
+
+.cauce-banda__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--cauce-font-texto);
+  font-size: var(--cauce-banda-texto, 0.8125rem);
+  line-height: 1.3;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.cauce-banda--negrita .cauce-banda__item { font-weight: 700; }
+
+.cauce-banda__icono {
+  width: 1.25em;
+  height: 1.25em;
+  color: var(--cauce-icono);
+}
+
+@media screen and (min-width: 750px) {
+  .cauce-banda__pista {
+    gap: var(--cauce-banda-gap-desktop, 4.5rem);
+    padding: 0 calc(var(--cauce-banda-gap-desktop, 4.5rem) / 2);
+  }
+
+  .cauce-banda__item { font-size: var(--cauce-banda-texto-desktop, 0.9375rem); }
+}
+
+@keyframes cauce-banda {
+  to { transform: translateX(-100%); }
+}
+
+/* Quieta y centrada en renglones: el ticker de Shrine no respetaba esto
+   (AUDIT-SHRINE §2, bloque 11). La segunda copia sobra. */
+@media (prefers-reduced-motion: reduce) {
+  .cauce-banda__marco { width: auto; justify-content: center; }
+
+  .cauce-banda__pista {
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 0.5rem;
+    animation: none;
+  }
+
+  .cauce-banda__pista[aria-hidden='true'],
+  .cauce-banda__item[aria-hidden='true'] { display: none; }
+}
+
+/* --- Garantia ------------------------------------------------------------ */
+/* sections/cauce-garantia.liquid. En Shrine: custom-columns de 5 y 7 columnas
+   de 12, con 64 px entre columnas y los iconos en accent-2. */
+
+.cauce-garantia__inner {
+  display: grid;
+  gap: 1.875rem;
+  max-width: min(var(--cauce-garantia-ancho, 1200px), var(--cauce-ancho-pagina));
+}
+
+@media screen and (min-width: 990px) {
+  .cauce-garantia__inner {
+    grid-template-columns: 5fr 7fr;
+    align-items: start;
+    gap: 4rem;
+  }
+}
+
+.cauce-garantia__columna--texto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+
+.cauce-garantia__titulo { margin: 0; text-wrap: balance; }
+
+.cauce-garantia__texto > :first-child { margin-top: 0; }
+.cauce-garantia__texto > :last-child { margin-bottom: 0; }
+
+.cauce-garantia__lista {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cauce-garantia .cauce-garantia__item-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0 0 0.375rem;
+  font-family: var(--cauce-font-titulo);
+  font-size: 1.0875rem;
+  line-height: 1.3;
+}
+
+.cauce-garantia__icono {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--cauce-secundario);
+}
+
+.cauce-garantia__item-texto {
+  padding-left: 2.375rem;
+}
+
+.cauce-garantia__item-texto > :first-child { margin-top: 0; }
+.cauce-garantia__item-texto > :last-child { margin-bottom: 0; }
+
+/* --- Barra fija de compra ------------------------------------------------ */
+/* blocks/cauce-barra-compra.liquid. Abajo, a todo el ancho en telefono; en
+   escritorio con la foto y el nombre del producto a la izquierda. */
+
+.cauce-barra {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  padding: 0.625rem 0.9375rem calc(0.625rem + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 14%, transparent);
+  box-shadow: 0 -0.25rem 1rem rgba(0, 0, 0, 0.08);
+  transform: translateY(0);
+  transition: transform 0.2s ease;
+}
+
+.cauce-barra[hidden] { display: none; }
+
+.cauce-barra--oculta { transform: translateY(110%); }
+
+.cauce-barra__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: var(--cauce-ancho-pagina);
+  margin: 0 auto;
+}
+
+.cauce-barra__producto {
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.cauce-barra__imagen {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.375rem;
+  object-fit: cover;
+}
+
+.cauce-barra__titulo {
+  overflow: hidden;
+  font-family: var(--cauce-font-texto);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cauce-barra .cauce-barra__boton { width: 100%; }
+
+@media screen and (min-width: 750px) {
+  .cauce-barra__producto { display: flex; }
+  .cauce-barra .cauce-barra__boton { width: auto; min-width: 15rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cauce-barra { transition: none; }
+}
+
+/* --- Texto ---------------------------------------------------------------- */
+/* sections/cauce-texto.liquid */
+
+.cauce-texto__inner--angosto { max-width: 45.375rem; }
+
+@media screen and (max-width: 989px) {
+  .cauce-texto__inner--angosto { max-width: none; }
+}
+
+.cauce-texto__inner--centro { text-align: center; }
+
+.cauce-texto__titulo { margin: 0 0 1.25rem; text-wrap: balance; }
+
+.cauce-texto__texto + .cauce-texto__texto { margin-top: 1.5rem; }
+
+.cauce-texto__texto :is(h2, h3) {
+  margin: 2rem 0 0.75rem;
+  font-family: var(--cauce-font-titulo);
+}
+
+/* --- Formulario ----------------------------------------------------------- */
+/* sections/cauce-formulario.liquid: arrepentimiento y contacto. */
+
+.cauce-form__inner { max-width: 45.375rem; }
+
+@media screen and (max-width: 989px) {
+  .cauce-form__inner { max-width: none; }
+}
+
+.cauce-form__titulo { margin: 0 0 1rem; }
+
+.cauce-form__bajada { margin-bottom: 1.5rem; }
+
+.cauce-form__campos {
+  display: grid;
+  gap: 1rem;
+}
+
+@media screen and (min-width: 750px) {
+  .cauce-form__campos { grid-template-columns: 1fr 1fr; }
+  .cauce-form__campo--completo { grid-column: 1 / -1; }
+}
+
+.cauce-form__campo label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.cauce-form__campo :is(input, textarea) {
+  width: 100%;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid color-mix(in srgb, var(--cauce-esq-texto) 35%, transparent);
+  border-radius: 3px;
+  background: var(--cauce-blanco);
+  color: var(--cauce-cauce);
+  font-family: var(--cauce-font-texto);
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.cauce-form__campo :is(input, textarea):focus-visible {
+  outline: 2px solid var(--cauce-icono);
+  outline-offset: 1px;
+}
+
+.cauce-form__nota {
+  margin-top: 1.25rem;
+  font-size: 0.8125rem;
+  opacity: 0.85;
+}
+
+.cauce-form__boton { margin-top: 1.5rem; }
+
+.cauce-form__exito,
+.cauce-form__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0 0 1.5rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.cauce-form__exito { color: var(--cauce-exito); }
+.cauce-form__error { color: var(--cauce-error); }
+
+.cauce-form__exito .cauce-icono,
+.cauce-form__error .cauce-icono {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: currentColor;
+}
+
+/* --- Home que redirige ---------------------------------------------------- */
+
+.cauce-redireccion__inner {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  text-align: center;
+}
+
+.cauce-redireccion__texto a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* --- Ficha de producto de Horizon en el aditivo dental -------------------- */
+/* La columna de compra es la seccion product-information de Horizon. Sus
+   bloques nativos (titulo, texto) toman la tipografia de la plantilla. */
+
+.plantilla--aditivo-dental .product-details :is(h1, .h1) {
+  font-family: var(--cauce-font-titulo);
+  font-size: 1.6875rem;
+  font-weight: 700;
+  line-height: 1.1667;
+  letter-spacing: -0.015em;
+  color: var(--cauce-cauce);
+}
+
+@media screen and (min-width: 750px) {
+  .plantilla--aditivo-dental .product-details :is(h1, .h1) { font-size: 2.25rem; }
+}
+
+.plantilla--aditivo-dental .product-details .text-block,
+.plantilla--aditivo-dental .product-details .text-block p {
+  font-family: var(--cauce-font-texto);
+}

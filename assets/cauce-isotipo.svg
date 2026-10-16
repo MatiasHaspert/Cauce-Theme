@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 76" role="img" aria-label="CAUCE">
+  <title>CAUCE</title>
+  <desc>Corte de cauce con linea de nivel</desc>
+  <path
+    d="M17 8 C17 48 29 64 50 64 C71 64 83 48 83 8"
+    fill="none"
+    stroke="#10262A"
+    stroke-width="8.5"
+    stroke-linecap="round"
+  />
+  <path
+    d="M27 51 H73"
+    fill="none"
+    stroke="#B03A22"
+    stroke-width="6"
+    stroke-linecap="round"
+  />
+</svg>

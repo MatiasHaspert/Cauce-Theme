@@ -1,7 +1,23 @@
 <!doctype html>
+{%- comment -%}
+  CAUCE: la clase plantilla--<sufijo> deja que cauce-brand.css cambie la paleta y
+  la tipografia de un template entero (bloque 26, aditivo dental). Va en <html>
+  para que una regla `:root.plantilla--x` pueda pisar los tokens. Ver D-054 y D-081.
+{%- endcomment -%}
+{%- liquid
+  assign cauce_plantilla = template.suffix | handle
+  assign cauce_clases = ''
+  if request.design_mode
+    assign cauce_clases = 'shopify-design-mode'
+  endif
+  if cauce_plantilla != blank
+    assign cauce_clases = cauce_clases | append: ' plantilla--' | append: cauce_plantilla
+  endif
+  assign cauce_clases = cauce_clases | strip
+-%}
 <html
-  {% if request.design_mode %}
-    class="shopify-design-mode"
+  {% if cauce_clases != blank %}
+    class="{{ cauce_clases }}"
   {% endif %}
   lang="{{ request.locale.iso_code }}"
 >
@@ -12,6 +28,13 @@
         type="image/png"
         href="{{ settings.favicon | image_url: width: 32, height: 32 }}"
       >
+    {%- else -%}
+      {% comment %}
+        CAUCE: fallback de favicon con el isotipo inline. Es el unico lugar donde el
+        isotipo va suelto sin el wordmark (regla de marca). Si se sube un PNG en
+        Configuracion del tema > Logo > Favicon, este fallback se apaga solo.
+      {% endcomment %}
+      <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%2076%27%3E%3Cpath%20d%3D%27M17%208%20C17%2048%2029%2064%2050%2064%20C71%2064%2083%2048%2083%208%27%20fill%3D%27none%27%20stroke%3D%27%2310262A%27%20stroke-width%3D%2712%27%20stroke-linecap%3D%27round%27%2F%3E%3Cpath%20d%3D%27M27%2050%20H73%27%20fill%3D%27none%27%20stroke%3D%27%23B03A22%27%20stroke-width%3D%279%27%20stroke-linecap%3D%27round%27%2F%3E%3C%2Fsvg%3E">
     {%- endif -%}
 
     {% comment %}
@@ -48,6 +71,36 @@
     {% endif %}
 
     {{ content_for_header }}
+
+    {% comment %}
+      CAUCE: tipografias de marca, tokens y comportamiento de las piezas cauce-*.
+      Va DESPUES de content_for_header a proposito: ahi Shopify inyecta los estilos
+      de los {% stylesheet %} de Horizon, y cauce-brand.css tiene que cargar ultimo
+      para pisar lo que haga falta sin subir especificidad. Ver D-081.
+
+      Las fuentes de Horizon (Configuracion del tema > Tipografia) quedan en una
+      fuente de sistema, que no se descarga: las familias reales las pone
+      cauce-brand.css. Archivo se pide como variable con eje de ancho (wdth)
+      porque el logo usa Archivo Expanded y el cuerpo Archivo Regular.
+
+      La PDP del aditivo dental va entera en DM Sans (bloque 26) y no usa las
+      otras tres: en esa plantilla se pide solo DM Sans. Ver D-074.
+    {% endcomment %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    {%- if cauce_plantilla == 'aditivo-dental' -%}
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&display=swap"
+      >
+    {%- else -%}
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..600&family=Newsreader:opsz,wght@6..72,400&family=DM+Mono:wght@400&display=swap"
+      >
+    {%- endif -%}
+    {{ 'cauce-brand.css' | asset_url | stylesheet_tag }}
+    <script src="{{ 'cauce.js' | asset_url }}" defer="defer"></script>
   </head>
 
   <body class="page-width-{{ settings.page_width }} card-hover-effect-{{ settings.card_hover_effect }}">
@@ -183,8 +236,21 @@
       </footer>
     </div>
 
-    {% render 'cart-drawer', render_wrapper: true %}
+    {% comment %}
+      CAUCE: el carrito lateral se renderiza como seccion estatica (y no con
+      render 'cart-drawer'), para que sus bloques CAUCE se editen desde el editor.
+      Shopify le pone el mismo envoltorio #shopify-section-cart-drawer-section
+      que el snippet armaba a mano. Ver sections/cart-drawer-section.liquid.
+    {% endcomment %}
+    {% section 'cart-drawer-section' %}
     {% render 'theme-drawer' %}
+
+    {%- comment -%}
+      CAUCE: boton flotante de WhatsApp, en todas las paginas. En una ficha de
+      producto el mensaje precargado nombra el producto. Si settings.cauce_whatsapp
+      esta vacio no dibuja nada. Ver snippets/cauce-whatsapp.liquid y D-066.
+    {%- endcomment -%}
+    {% render 'cauce-whatsapp', variante: 'flotante', producto: product %}
 
     {% render 'search-modal' %}
 

@@ -1,0 +1,90 @@
+{% comment %}
+  CAUCE — barra de progreso hacia el envio gratis.
+
+  Portado de snippets/free-shipping-bar.liquid de Numen. Lo que se conserva de ahi,
+  que es lo que la hace mejor que la progress_bar nativa de Shrine:
+
+  1. role="progressbar" con aria-valuenow y aria-valuetext REALES. La de Shrine
+     dibuja una barra decorativa sin rol, asi que un lector de pantalla no anuncia
+     el progreso.
+
+  2. La base del calculo es cart.items_subtotal_price — el subtotal de LISTA, no
+     cart.total_price. Asi un descuento de carrito no mueve la barra: si moviera,
+     un cupon podria "desbloquear" un envio gratis que la tienda calcula sobre
+     otro numero. Es la misma base que usa el nudge de cauce-carrito-nudge.liquid,
+     a proposito: las dos piezas tienen que hablar del mismo monto.
+
+  3. El estado logrado va en verde sobrio (--cauce-ok, medido en el bloque de
+     paleta), nunca fluo, y la transicion respeta prefers-reduced-motion.
+
+  Lo que NO se porta de Numen: los colores literales dentro de un {% style %} y el
+  <style> por snippet. Aca los colores son tokens (D-002) y el CSS vive entero en
+  el bloque 17 de assets/cauce-brand.css.
+
+  El umbral sale de settings.cauce_umbral_envio_gratis, que es un `number` desde
+  este cambio: era `text`, no tenia valor guardado y no lo consumia nadie, asi que
+  migrarlo salio gratis. Con `text` un "45.000" se convertia en 45 al pasarlo por
+  `plus: 0` y la barra le decia al cliente que le faltaban $44.955.
+
+  Sin umbral cargado no se renderiza nada para el cliente y aparece un aviso solo
+  en el editor: un monto comercial ausente no se muestra como pendiente visible
+  (eso es para los datos legales, ver D-004), se calla — pero quien puede cargarlo
+  tiene que verlo.
+
+  Con el carrito vacio tampoco se dibuja: el drawer la renderiza aunque no haya
+  productos, y con el umbral en 1 (envio gratis en todo, D-069) decia "Te faltan
+  $1,00". Al agregar algo, el carrito se vuelve a dibujar y la barra aparece.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_umbral = settings.cauce_umbral_envio_gratis | times: 100
+  assign cauce_actual = cart.items_subtotal_price
+-%}
+
+{%- if cauce_umbral > 0 and cart.item_count == 0 -%}
+{%- elsif cauce_umbral > 0 -%}
+  {%- liquid
+    if cauce_actual >= cauce_umbral
+      assign cauce_logrado = true
+      assign cauce_pct = 100
+      assign cauce_mensaje = 'cauce.carrito.envio_logrado' | t
+    else
+      assign cauce_logrado = false
+      assign cauce_falta = cauce_umbral | minus: cauce_actual
+      assign cauce_pct = cauce_actual | times: 100 | divided_by: cauce_umbral
+      assign cauce_falta_money = cauce_falta | money
+      capture cauce_falta_html
+        echo '<b class="cauce-carrito__envio-monto">'
+        echo cauce_falta_money
+        echo '</b>'
+      endcapture
+      assign cauce_mensaje = 'cauce.carrito.envio_falta' | t | replace: '[monto]', cauce_falta_html
+    endif
+  -%}
+  <div class="cauce-carrito__envio{% if cauce_logrado %} cauce-carrito__envio--logrado{% endif %}">
+    <p class="cauce-carrito__envio-texto">
+      {%- if cauce_logrado -%}
+        {%- render 'cauce-iconos', icono: 'visto', clase: 'cauce-carrito__envio-icono' -%}
+      {%- else -%}
+        {%- render 'cauce-iconos', icono: 'envio', clase: 'cauce-carrito__envio-icono' -%}
+      {%- endif -%}
+      <span>{{ cauce_mensaje }}</span>
+    </p>
+    <div
+      class="cauce-carrito__envio-pista"
+      role="progressbar"
+      aria-label="{{ 'cauce.carrito.envio_progreso' | t }}"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="{{ cauce_pct }}"
+      aria-valuetext="{{ cauce_mensaje | strip_html | escape }}"
+    >
+      <div class="cauce-carrito__envio-relleno" style="width: {{ cauce_pct }}%;"></div>
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <p class="cauce-carrito__aviso">
+    Barra de envio gratis: cargá el monto en Configuración del tema → CAUCE →
+    Envíos para que aparezca. Hasta entonces no se muestra en la tienda.
+  </p>
+{%- endif -%}

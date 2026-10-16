@@ -1,0 +1,102 @@
+{% comment %}
+  CAUCE: las cuatro lineas que van abajo del precio por unidad en cada pack de
+  blocks/cauce-comprar.liquid. Ahorro en pesos, envio gratis, precio con transferencia y
+  cuotas, en ese orden.
+
+  Parametros:
+    indice     {number}  requerido. 1..4. Cual de los cuatro escalones es.
+    total      {number}  requerido. Total del escalon EN CENTAVOS, ya descontado.
+    ahorro     {number}  requerido. Tachado menos total, en centavos.
+    cuotas_en  {string}  opcional. 'option_1'..'option_4', 'todos' o vacio: en
+                         que escalon se dibujan las cuotas. Sale del setting
+                         cauce_cuotas_escalon del bloque.
+    sin_ahorro {boolean} opcional. true no dibuja la linea de ahorro: el tachado
+                         de al lado ya lo dice. Sale del setting cauce_sin_ahorro
+                         del bloque. Ver D-073.
+    redondear  {boolean} opcional. true redondea la cuota al peso, sin
+                         centavos. Sale del setting cauce_redondear del bloque.
+                         Ver D-074.
+
+  Las cuatro se calculan, ninguna se escribe a mano:
+
+    ahorro  = tachado - total, que es lo que el bloque usa para el token
+              [amount_saved]. Si da 0 no se dibuja, asi el escalon de 1 frasco
+              -donde tachado y precio son el mismo numero- no muestra "Ahorras $0".
+    envio   = snippets/cauce-envio-escalon.liquid contra cauce_umbral_envio_gratis.
+    transf  = el total del escalon menos settings.cauce_transferencia_pct, con la
+              misma condicion que la card del carrito
+              (snippets/cauce-carrito-pago.liquid): porcentaje Y codigo cargados.
+              Va en todos los escalones. Aca se muestra el precio y no el
+              ahorro, al reves que en el carrito: la linea de ahorro ya esta
+              arriba, y dos "Ahorras" en la misma tarjeta se leen como uno.
+              Ver D-052.
+    cuotas  = settings.cauce_cuotas, el mismo numero que usa el carrito
+              (snippets/cauce-carrito-pago.liquid), dividiendo el total del
+              escalon. Solo en el escalon que indique cuotas_en, porque cuantas
+              cuotas conviene anunciar y en donde es decision comercial, no del
+              tema.
+
+  Los cuatro textos salen de locales/es.json > cauce.pdp.*. Ninguno se escribe aca.
+
+  Los importes usan money_without_trailing_zeros, el mismo filtro que los precios
+  de la tarjeta, para que el formato no se parta entre la linea de ahorro y el
+  precio de al lado.
+
+  Todo se resuelve en el servidor. En Horizon, al cambiar de variante la seccion
+  se vuelve a renderizar entera, asi que estas lineas siguen al precio.
+
+  Ver docs/DECISIONS.md D-051.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_ahorro = ahorro | plus: 0
+  assign cauce_total = total | plus: 0
+  assign cauce_cuotas_n = settings.cauce_cuotas | plus: 0
+  assign cauce_indice_actual = 'option_' | append: indice
+  assign cauce_ahorro_money = cauce_ahorro | money_without_trailing_zeros
+-%}
+
+{%- if cauce_ahorro > 0 and sin_ahorro != true -%}
+  <span class="cauce-pack__ahorro">
+    {{- 'cauce.pdp.ahorro_escalon' | t: monto: cauce_ahorro_money -}}
+  </span>
+{%- endif -%}
+
+{%- capture cauce_envio %}{% render 'cauce-envio-escalon', total: cauce_total %}{% endcapture -%}
+{%- if cauce_envio != blank -%}
+  <span class="cauce-pack__envio">{{ cauce_envio }}</span>
+{%- endif -%}
+
+{%- liquid
+  assign cauce_transf_pct = settings.cauce_transferencia_pct | plus: 0
+  assign cauce_transf_codigo = settings.cauce_transferencia_codigo | strip
+-%}
+{%- if cauce_transf_pct > 0 and cauce_transf_codigo != blank and cauce_total > 0 -%}
+  {%- liquid
+    assign cauce_transf_ahorro = cauce_total | times: cauce_transf_pct | divided_by: 100
+    assign cauce_transf_total = cauce_total | minus: cauce_transf_ahorro
+    assign cauce_transf_money = cauce_transf_total | money_without_trailing_zeros
+  -%}
+  <span class="cauce-pack__transferencia">
+    {{- 'cauce.pdp.transferencia_escalon' | t: monto: cauce_transf_money -}}
+  </span>
+{%- endif -%}
+
+{%- liquid
+  assign cauce_cuotas_aca = false
+  if cuotas_en == cauce_indice_actual or cuotas_en == 'todos'
+    assign cauce_cuotas_aca = true
+  endif
+-%}
+{%- if cauce_cuotas_n > 0 and cauce_cuotas_aca -%}
+  {%- liquid
+    assign cauce_cuota_monto = cauce_total | divided_by: cauce_cuotas_n
+    if redondear
+      assign cauce_cuota_monto = cauce_total | times: 1.0 | divided_by: cauce_cuotas_n | divided_by: 100 | round | times: 100
+    endif
+    assign cauce_cuota_money = cauce_cuota_monto | money_without_trailing_zeros
+  -%}
+  <span class="cauce-pack__cuotas">
+    {{- 'cauce.pdp.cuotas_escalon' | t: cuotas: cauce_cuotas_n, monto: cauce_cuota_money -}}
+  </span>
+{%- endif -%}

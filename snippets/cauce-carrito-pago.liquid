@@ -1,0 +1,81 @@
+{% comment %}
+  CAUCE — beneficio de pago del carrito: transferencia y cuotas en una sola card.
+
+  Portado de snippets/cart-transfer-benefit.liquid de Numen. Las razones de ese
+  snippet se respetan todas:
+
+  1. "Vive dentro de la region re-renderizada del footer, para que el monto se
+     recalcule al cambiar cantidades." En Horizon <cart-items-component> vuelve
+     a dibujar el carrito ENTERO (drawer y /cart) en cada cambio, asi que la
+     condicion se cumple en cualquier bloque (D-081).
+
+  2. Se muestra el AHORRO, nunca un segundo precio, y NUNCA se tacha un precio.
+     El total manda arriba, en el bloque de subtotales.
+
+  3. El beneficio no se autoaplica: se comunica el codigo y se aclara que baja
+     en el checkout. Shopify no puede atar un codigo a un medio de pago; que el
+     pedido con el codigo se pague de verdad por transferencia se controla a
+     mano (D-052).
+
+  4. Transferencia y cuotas van en UNA sola card, para no duplicar wrapper ni
+     gating ni dejar una card vacia.
+
+  Transferencia: settings.cauce_transferencia_pct y cauce_transferencia_codigo.
+  Se dibuja solo con los DOS cargados: un porcentaje sin codigo es una promesa
+  sin mecanismo para cumplirla. El ahorro se calcula sobre
+  cart.items_subtotal_price, que segun la documentacion de Shopify es el
+  subtotal "despues de los descuentos de linea": ya trae los descuentos
+  automaticos de los packs (R6) y no los codigos a nivel carrito. Es la misma
+  base sobre la que Shopify aplica un descuento de pedido, asi que el numero
+  coincide con el del checkout. La misma condicion y el mismo porcentaje los usa
+  la linea de los escalones (snippets/cauce-escalon-extras.liquid).
+
+  Cuotas: settings.cauce_cuotas y cauce.pdp.cuotas, el mismo par que usa
+  snippets/cauce-medios-pago.liquid, para que la PDP, el pie y el carrito no
+  puedan decir numeros distintos.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_transf_pct = settings.cauce_transferencia_pct | plus: 0
+  assign cauce_transf_codigo = settings.cauce_transferencia_codigo | strip
+  assign cauce_transf_activa = false
+  if cauce_transf_pct > 0 and cauce_transf_codigo != blank
+    assign cauce_transf_activa = true
+  endif
+
+  assign cauce_pago_config = false
+  if cauce_transf_activa or settings.cauce_cuotas > 0
+    assign cauce_pago_config = true
+  endif
+-%}
+
+{%- if cart != empty and cauce_pago_config -%}
+  <div class="cauce-carrito__pago">
+    {%- if cauce_transf_activa -%}
+      {%- liquid
+        assign cauce_transf_ahorro = cart.items_subtotal_price | times: cauce_transf_pct | divided_by: 100
+        assign cauce_transf_ahorro_money = cauce_transf_ahorro | money
+      -%}
+      <p class="cauce-carrito__pago-transferencia">
+        <span>{{- 'cauce.carrito.transferencia_ahorro' | t: monto: cauce_transf_ahorro_money -}}</span>
+        <span class="cauce-carrito__pago-off">{{- 'cauce.carrito.transferencia_off' | t: pct: cauce_transf_pct -}}</span>
+      </p>
+      <p class="cauce-carrito__pago-codigo">
+        {{- 'cauce.carrito.transferencia_codigo_html' | t: codigo: cauce_transf_codigo -}}
+      </p>
+    {%- endif -%}
+
+    {%- if settings.cauce_cuotas > 0 -%}
+      <p class="cauce-carrito__pago-cuotas">
+        {{- 'cauce.pdp.cuotas' | t: cuotas: settings.cauce_cuotas -}}
+      </p>
+    {%- endif -%}
+  </div>
+{%- elsif request.design_mode and cauce_pago_config == false -%}
+  <p class="cauce-carrito__aviso">
+    Beneficio de pago: no hay nada cargado. La transferencia necesita el porcentaje y el
+    código en Configuración del tema → CAUCE → Pagos, y el mismo código creado en
+    Shopify → Descuentos. Las cuotas necesitan el número, y sólo si el plan está activo
+    de verdad en Mercado Pago.
+  </p>
+{%- endif -%}

@@ -1,0 +1,279 @@
+{% comment %}
+  CAUCE — set de iconos.
+
+  SVG inline con currentColor en vez de Material Symbols (ver docs/DECISIONS.md D-005):
+  el tema trae una variable font de iconos desde fonts.gstatic.com y para media docena
+  de glifos es un round-trip de red que no se justifica contra el presupuesto de LCP.
+
+  El color lo pone .cauce-icono desde cauce-brand.css: VADO-ICONO sobre SEDIMENTO,
+  VADO puro sobre TINTA. Ningun icono declara color propio.
+
+  Uso:
+    {% render 'cauce-iconos', icono: 'molecula' %}
+    {% render 'cauce-iconos', icono: 'capsula', clase: 'cauce-icono--grande' %}
+
+  Si el nombre no existe no renderiza nada: las secciones tienen que aguantar
+  settings vacios sin romper.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_icono = icono | strip | downcase
+  assign cauce_clase = clase | default: ''
+-%}
+
+{%- case cauce_icono -%}
+  {%- when 'molecula' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="5" r="2.4"/><circle cx="5" cy="17" r="2.4"/><circle cx="19" cy="17" r="2.4"/>
+      <path d="M10.7 7.1 6.3 14.9M13.3 7.1l4.4 7.8M7.4 17h9.2"/>
+    </svg>
+
+  {%- when 'capsula' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <rect x="2.5" y="8" width="19" height="8" rx="4"/><path d="M12 8v8"/>
+    </svg>
+
+  {%- when 'laboratorio' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M9.5 3v6.2L4.3 18a2 2 0 0 0 1.7 3h12a2 2 0 0 0 1.7-3l-5.2-8.8V3"/>
+      <path d="M8 3h8M7.2 14.5h9.6"/>
+    </svg>
+
+  {%- when 'nacional' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 3.9 5.6 3.9 9s-1.3 6.4-3.9 9c-2.6-2.6-3.9-5.6-3.9-9S9.4 5.6 12 3Z"/>
+    </svg>
+
+  {%- when 'trazabilidad' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M8.5 13h7M8.5 17h4.5"/>
+    </svg>
+
+  {%- when 'escudo' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M12 2.5 4.5 5.6v5.9c0 4.7 3.1 8.4 7.5 10 4.4-1.6 7.5-5.3 7.5-10V5.6Z"/><path d="m8.8 12 2.3 2.3 4.1-4.6"/>
+    </svg>
+
+  {%- when 'envio' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M2.5 6.5h11v10h-11zM13.5 10h3.8l3.2 3.4v3.1h-7z"/><circle cx="7" cy="18.5" r="1.9"/><circle cx="17" cy="18.5" r="1.9"/>
+    </svg>
+
+  {%- when 'devolucion' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4.5V10h5.5"/>
+    </svg>
+
+  {%- when 'reloj' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="9"/><path d="M12 6.8V12l3.4 2"/>
+    </svg>
+
+  {%- when 'hoja' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M20 4c0 9-5.4 13-10 13a5.6 5.6 0 0 1-5.6-5.6C4.4 7.2 9.9 4 20 4Z"/><path d="M4 20c3.2-4.8 6.6-7.7 11-10"/>
+    </svg>
+
+  {%- when 'chequeo' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="9"/><path d="m8.2 12.2 2.6 2.6 5-5.6"/>
+    </svg>
+
+  {%- when 'candado' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>
+    </svg>
+
+  {%- comment -%}
+    Unico icono del set con relleno: a 9 px una estrella de trazo se cierra y se lee
+    como una mancha. El resto sigue siendo stroke.
+  {%- endcomment -%}
+  {%- when 'estrella' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true" focusable="false">
+      <path d="m12 3.4 2.68 5.43 5.99.87-4.33 4.22 1.02 5.97L12 17.07l-5.36 2.82 1.02-5.97-4.33-4.22 5.99-.87Z"/>
+    </svg>
+
+  {%- when 'balanza' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M12 4v16M6 20h12M4 8h16M7 8l-3 6h6ZM17 8l-3 6h6Z"/>
+    </svg>
+
+  {%- comment -%}
+    La cruz y el triangulo son los dos unicos iconos del set que marcan algo negativo.
+    Van SIN recuadro: el marco lo dibuja quien los usa (ver .cauce-dolor__marca), asi el
+    mismo glifo sirve suelto dentro de una comparativa y enmarcado dentro de una lista.
+    Trazo mas corto que el viewBox para que, dentro de un recuadro de 2.4rem, la cruz no
+    toque los bordes.
+  {%- endcomment -%}
+  {%- when 'cruz' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M7.5 7.5 16.5 16.5M16.5 7.5 7.5 16.5"/>
+    </svg>
+
+  {%- comment -%}
+    Gota y rayo entran para la grilla de beneficios (ver sections/cauce-solucion.liquid).
+    Los dos se dibujan a 4rem ahi, asi que el trazo ocupa casi todo el viewBox: a ese
+    tamano un glifo chico dentro de una caja grande se lee como un error de alineacion.
+  {%- endcomment -%}
+  {%- when 'gota' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M12 2.8c4.1 5.3 6.2 8.6 6.2 11a6.2 6.2 0 0 1-12.4 0c0-2.4 2.1-5.7 6.2-11Z"/>
+    </svg>
+
+  {%- when 'rayo' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M13.6 2.4 5.2 13.2h5.3L10.4 21.6 18.8 10.8h-5.3Z"/>
+    </svg>
+
+  {%- when 'alerta' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M12 4.2 2.8 20h18.4Z"/><path d="M12 10.2v4M12 17.2h.01"/>
+    </svg>
+
+  {%- comment -%}
+    Tilde suelta, sin circulo alrededor: la de 'chequeo' es un sello y esta es una
+    vineta. Se usa a 1.6rem al lado de una linea de texto (ver .cauce-progreso__check),
+    asi que el trazo cruza el viewBox entero para que no se lea flotando.
+  {%- endcomment -%}
+  {%- when 'visto' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="m4.5 12.5 5 5.5L19.5 6"/>
+    </svg>
+  {%- comment -%}
+    Los cuatro que siguen son del carrito (drawer y /cart, ver bloque 17 de
+    cauce-brand.css). Van aca y no como <svg> suelto en el markup por D-029.
+
+    Para el boton de cerrar del drawer NO se agrego un glifo nuevo: se reusa
+    'cruz', que ya es una equis a trazo. Un segundo glifo identico byte a byte es
+    justo lo que D-029 descarto cuando reescribio material-icon.
+  {%- endcomment -%}
+  {%- when 'tacho' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M4 6.5h16M9.5 6.5V5a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 14.5 5v1.5"/>
+      <path d="m6.5 6.5.8 12a1.5 1.5 0 0 0 1.5 1.4h6.4a1.5 1.5 0 0 0 1.5-1.4l.8-12"/>
+    </svg>
+
+  {%- comment -%}
+    Menos y mas son los botones del stepper de cantidad. El trazo cruza casi todo el
+    viewBox porque se dibujan a 1.4rem dentro de un area de toque de 4.4rem: un glifo
+    chico en una caja grande se lee como un error de alineacion (mismo criterio que
+    'gota' y 'rayo' en D-034).
+  {%- endcomment -%}
+  {%- when 'menos' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M4.5 12h15"/>
+    </svg>
+
+  {%- when 'mas' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M12 4.5v15M4.5 12h15"/>
+    </svg>
+
+  {%- comment -%}
+    Bolsa del empty state. Es una bolsa y no un changuito porque settings.cart_icon
+    del tema ya esta en 'bag_2': el glifo del header y el del carrito vacio tienen que
+    ser el mismo objeto.
+  {%- endcomment -%}
+  {%- when 'bolsa' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M5.2 7.5h13.6l1 13a1.5 1.5 0 0 1-1.5 1.6H5.7a1.5 1.5 0 0 1-1.5-1.6Z"/>
+      <path d="M8.7 10.5V6.2a3.3 3.3 0 0 1 6.6 0v4.3"/>
+    </svg>
+
+  {%- comment -%}
+    Flecha de avance del CTA de pago. Es el unico glifo del set que significa una
+    direccion y no un objeto, asi que el trazo sube a 2 en .cauce-icono--cta: a 1.4
+    sobre OXIDO la punta se empasta y queda un guion.
+  {%- endcomment -%}
+  {%- when 'flecha' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M4.5 12h15M13.2 5.7 19.5 12l-6.3 6.3"/>
+    </svg>
+
+  {%- comment -%}
+    Los cinco que siguen entran con Hormify (ver D-054): la grilla de beneficios, la
+    comparacion con y sin equilibrio y los ingredientes necesitaban nombrar cosas que
+    el set no tenia (ciclo, descanso, animo, calor, digestion). Se dibujan a 4rem en
+    la grilla, asi que siguen el criterio de 'gota' y 'rayo': el trazo ocupa casi todo
+    el viewBox.
+  {%- endcomment -%}
+  {%- when 'flor' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="2.6"/>
+      <path d="M12 9.4C10 7.6 10 4.4 12 2.8c2 1.6 2 4.8 0 6.6ZM12 14.6c2 1.8 2 5 0 6.6-2-1.6-2-4.8 0-6.6ZM9.4 12c-1.8 2-5 2-6.6 0 1.6-2 4.8-2 6.6 0ZM14.6 12c1.8-2 5-2 6.6 0-1.6 2-4.8 2-6.6 0Z"/>
+    </svg>
+
+  {%- when 'luna' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M19.8 14.6A8.2 8.2 0 1 1 9.4 4.2a6.6 6.6 0 0 0 10.4 10.4Z"/>
+    </svg>
+
+  {%- when 'corazon' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M12 20.2S3 15 3 8.9A4.6 4.6 0 0 1 12 7.2a4.6 4.6 0 0 1 9 1.7c0 6.1-9 11.3-9 11.3Z"/>
+    </svg>
+
+  {%- when 'llama' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M12 21.4a6.4 6.4 0 0 1-6.4-6.4c0-3.6 2.6-5.6 3.6-9 1.9 1.3 2.8 3.2 2.8 5 1.2-.6 2-1.9 2.2-3.5 2.4 2 4.2 4.8 4.2 7.5a6.4 6.4 0 0 1-6.4 6.4Z"/>
+      <path d="M12 21.4a2.6 2.6 0 0 1-2.6-2.6c0-1.6 1.4-2.6 2.6-4.2 1.2 1.6 2.6 2.6 2.6 4.2a2.6 2.6 0 0 1-2.6 2.6Z"/>
+    </svg>
+
+  {%- when 'ola' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M2.6 8.2c2.3-2 4.7-2 7 0s4.7 2 7 0 4.2-1.6 4.8-1.2M2.6 13c2.3-2 4.7-2 7 0s4.7 2 7 0 4.2-1.6 4.8-1.2M2.6 17.8c2.3-2 4.7-2 7 0s4.7 2 7 0 4.2-1.6 4.8-1.2"/>
+    </svg>
+
+  {%- when 'infinito' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"/>
+    </svg>
+
+  {%- comment -%}
+    Los dos que siguen entran con la migracion a Horizon (D-081): reemplazan al
+    icon-caret y al icono "info" de Material que venian de Shrine. 'caret' es el
+    indicador de las preguntas (cauce-faq); gira con el <details> por CSS.
+  {%- endcomment -%}
+  {%- when 'caret' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="m6 9.5 6 6 6-6"/>
+    </svg>
+
+  {%- when 'info' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.8h.01"/>
+    </svg>
+
+  {%- comment -%}
+    Los dos que siguen son de la garantia del aditivo dental (sections/
+    cauce-garantia.liquid). Reemplazan a 'payments' y 'person' de Material.
+  {%- endcomment -%}
+  {%- when 'pago' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/>
+    </svg>
+
+  {%- when 'persona' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5c.8-3.9 3.8-6 7.5-6s6.7 2.1 7.5 6"/>
+    </svg>
+
+  {%- comment -%}
+    Redes del pie (sections/cauce-pie.liquid). Glifos genericos de trazo, del
+    mismo set: no son los logos oficiales redibujados.
+  {%- endcomment -%}
+  {%- when 'instagram' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="12" cy="12" r="3.8"/><path d="M17 7h.01"/>
+    </svg>
+
+  {%- when 'facebook' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M14.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.6-1.5h1.5V4.4a20 20 0 0 0-2.3-.1c-2.3 0-3.8 1.4-3.8 3.9v2.3H9v3h2.5V21"/>
+    </svg>
+
+  {%- when 'tiktok' -%}
+    <svg class="cauce-icono {{ cauce_clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M14 3.5v11.2a3.3 3.3 0 1 1-3.3-3.3"/><path d="M14 3.5c.4 2.6 2.1 4.2 4.8 4.4"/>
+    </svg>
+{%- endcase -%}

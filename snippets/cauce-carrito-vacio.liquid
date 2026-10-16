@@ -1,0 +1,31 @@
+{% comment %}
+  CAUCE — cuerpo del carrito vacio. Compartido por el drawer y /cart.
+
+  Parametros:
+    url  {string}  opcional. A donde lleva el boton. Default: todos los productos.
+
+  En Shrine este <a> tenia que ser el primer link del drawer por un trapFocus
+  del JS del tema (D-046 §1e). En Horizon el foco lo maneja <theme-drawer> y esa
+  restriccion ya no existe; el link sigue siendo la salida del carrito vacio.
+{% endcomment %}
+
+{%- liquid
+  comment
+    El destino lo resuelve snippets/cauce-carrito.liquid desde
+    settings.cauce_carrito_vacio_url (Configuracion del tema → CAUCE), con
+    /collections/all de respaldo. En una tienda de un solo producto conviene
+    que sea la ficha del producto.
+  endcomment
+  assign cauce_vacio_url = url | default: routes.all_products_collection_url
+-%}
+
+<div class="cauce-carrito__vacio">
+  <span class="cauce-carrito__vacio-glifo" aria-hidden="true">
+    {%- render 'cauce-iconos', icono: 'bolsa' -%}
+  </span>
+  <p class="cauce-carrito__vacio-titulo">{{ 'cauce.carrito.vacio_titulo' | t }}</p>
+  <p class="cauce-carrito__vacio-texto">{{ 'cauce.carrito.vacio_texto' | t }}</p>
+  <a href="{{ cauce_vacio_url }}" class="cauce-carrito__vacio-cta">
+    {{- 'cauce.carrito.vacio_cta' | t -}}
+  </a>
+</div>

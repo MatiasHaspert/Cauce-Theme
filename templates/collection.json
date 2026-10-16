@@ -6,7 +6,8 @@
  * or related systems. Please exercise caution as any changes
  * made to this file may be overwritten.
  * ------------------------------------------------------------
- */{
+ */
+{
   "sections": {
     "section": {
       "type": "section",
@@ -213,10 +214,25 @@
         "padding-block-start": 0,
         "padding-block-end": 32
       }
+    },
+    "cauce_newsletter": {
+      "type": "cauce-newsletter",
+      "settings": {
+        "volanta": "Novedades",
+        "titulo": "10 % en tu primer pedido",
+        "heading_size": "h2",
+        "bajada": "<p>Suscribite y te mandamos el código. Después, pocos mails: fórmulas nuevas y un aviso cuando se te esté por terminar el frasco.</p>",
+        "boton": "Suscribirme",
+        "pagina_privacidad": "",
+        "color_scheme": "background-2",
+        "padding_top": 72,
+        "padding_bottom": 72
+      }
     }
   },
   "order": [
     "section",
-    "main"
+    "main",
+    "cauce_newsletter"
   ]
 }

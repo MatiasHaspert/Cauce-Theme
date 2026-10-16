@@ -1,0 +1,122 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "faq": {
+      "type": "cauce-faq",
+      "settings": {
+        "volanta": "Ayuda",
+        "titulo": "Preguntas frecuentes",
+        "heading_size": "h1",
+        "pie": "<p>¿No encontraste lo que buscabas? Escribinos por WhatsApp o a cauce@caucearg.com, de lunes a viernes de 9 a 18 h.</p>",
+        "producto": "",
+        "emitir_schema": true,
+        "color_scheme": "background-1",
+        "padding_top": 72,
+        "padding_bottom": 72
+      },
+      "blocks": {
+        "p1": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Hacen envíos a todo el país?",
+            "respuesta": "<p>Sí. Despachamos desde Buenos Aires a cualquier punto de Argentina. La entrega tarda entre 3 y 10 días hábiles.</p>"
+          }
+        },
+        "p2": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Cuánto cuesta el envío?",
+            "respuesta": "<p>Nada. El envío es gratis en todas las compras, sin monto mínimo y a cualquier punto del país.</p>"
+          }
+        },
+        "p3": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Puedo seguir mi pedido?",
+            "respuesta": "<p>Por ahora los envíos no tienen código de seguimiento. Si querés saber en qué anda tu pedido, escribinos por WhatsApp o a cauce@caucearg.com con tu número de pedido y te contamos.</p>"
+          }
+        },
+        "p4": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Qué medios de pago aceptan?",
+            "respuesta": "<p>Tarjeta de crédito o débito (Visa, Mastercard, American Express, Cabal y Naranja X) a través de Mercado Pago, o transferencia bancaria. Nosotros no vemos ni guardamos los datos de tu tarjeta: el pago lo procesa Mercado Pago.</p>"
+          }
+        },
+        "p5": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Hay cuotas sin interés?",
+            "respuesta": "<p>Sí: hasta 3 cuotas sin interés con tarjeta de crédito, a través de Mercado Pago.</p>"
+          }
+        },
+        "p6": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Cómo funciona el 10 % por transferencia?",
+            "respuesta": "<p>En el checkout elegí <strong>Transferencia bancaria</strong> como medio de pago y aplicá el código <strong>TRANSFERENCIA10</strong>. Te mandamos los datos de la cuenta por mail y despachamos cuando se acredita el pago.</p><p>El código es solo para pagos por transferencia: si se usa con otro medio de pago, cancelamos el pedido y te devolvemos el total. No se suma al 10 % de bienvenida.</p>"
+          }
+        },
+        "p7": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Puedo devolver lo que compré?",
+            "respuesta": "<p>Sí. Tenés 30 días corridos desde que recibís el pedido para devolverlo, sin explicar por qué, con el frasco cerrado. Si compraste un pack, podés devolver los frascos que no abriste. Te devolvemos lo que pagaste por ellos y el envío de vuelta corre por nuestra cuenta.</p><p>Todos los detalles están en la <a href=\"/policies/refund-policy\">política de devoluciones</a>.</p>"
+          }
+        },
+        "p8": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Qué es el botón de arrepentimiento?",
+            "respuesta": "<p>Es tu derecho a arrepentirte de una compra online dentro de los 10 días corridos de recibirla (Res. SCI 424/2020). Está al pie de todas las páginas, o lo podés usar desde <a href=\"/pages/arrepentimiento\">acá</a>. Además, nosotros extendemos el plazo de devolución a 30 días.</p>"
+          }
+        },
+        "p9": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Qué pasa si el pedido llega dañado o equivocado?",
+            "respuesta": "<p>Escribinos apenas lo recibas, por WhatsApp o a cauce@caucearg.com, con una foto del paquete y del producto. Te mandamos uno nuevo o te devolvemos el dinero, sin costo para vos, aunque lo hayas abierto.</p>"
+          }
+        },
+        "p10": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Dónde veo qué tiene el producto y cómo se toma?",
+            "respuesta": "<p>En la <a href=\"/products/acido-r-alfa-lipoico-de-maxima-potencia-apoyo-para-el-azucar-en-sangre\">página del Ácido R-Alfa Lipoico</a>: ahí están la composición, la cantidad por cápsula y cómo se toma.</p>"
+          }
+        },
+        "p11": {
+          "type": "pregunta",
+          "settings": {
+            "pregunta": "¿Cómo los contacto?",
+            "respuesta": "<p>Por WhatsApp al <a href=\"https://wa.me/5493406461636\">+54 9 3406 46-1636</a> o por mail a <a href=\"mailto:cauce@caucearg.com\">cauce@caucearg.com</a>. Atendemos de lunes a viernes de 9 a 18 h.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10",
+        "p11"
+      ]
+    }
+  },
+  "order": [
+    "faq"
+  ]
+}

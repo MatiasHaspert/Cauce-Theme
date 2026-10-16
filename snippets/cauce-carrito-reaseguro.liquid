@@ -1,0 +1,47 @@
+{% comment %}
+  CAUCE — reaseguro del carrito. Una linea, muteada, sin badges ni emojis.
+
+  Portado de snippets/cart-trust.liquid de Numen, con los tokens de CAUCE. La
+  tecnica que se copia tal cual es la del separador: el punto medio lo pone el CSS
+  con ::before del propio segmento, asi VIAJA CON SU TEXTO. Si la linea wrapea en
+  mobile nunca queda un "·" huerfano colgando al final de un renglon, que es lo
+  que pasa cuando el separador se escribe como un nodo de texto suelto entre
+  spans. Cada token va en su propio span con white-space: nowrap.
+
+  Ningun token esta escrito aca: salen de locales/es.json (cauce.carrito.*) o de
+  un setting. Ver regla 1 de docs/CLAIMS-AUDIT.md.
+
+  El token de envio va detras de un checkbox APAGADO por defecto porque depende de
+  capacidad operativa: "envio a todo el pais" es una afirmacion sobre las zonas de
+  envio configuradas en Shopify, no sobre el producto, y publicarla sin poder
+  cumplirla es Ley 24.240. Mismo criterio que dispatch_today_enabled en Numen.
+
+  Parametros:
+    arrepentimiento  {bool}  default true.  Sale de settings.cauce_dias_arrepentimiento.
+    iva              {bool}  default true.
+    envio            {bool}  default false. Ver el parrafo de arriba.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_ver_arrep = arrepentimiento | default: true, allow_false: true
+  assign cauce_ver_iva = iva | default: true, allow_false: true
+  assign cauce_ver_envio = envio | default: false, allow_false: true
+  assign cauce_dias = settings.cauce_dias_arrepentimiento | default: 10
+-%}
+
+{%- if cauce_ver_arrep or cauce_ver_iva or cauce_ver_envio -%}
+  <p class="cauce-carrito__reaseguro">
+    {%- render 'cauce-iconos', icono: 'escudo', clase: 'cauce-carrito__reaseguro-icono' -%}
+    {%- if cauce_ver_arrep -%}
+      <span class="cauce-carrito__reaseguro-item">
+        {{- 'cauce.carrito.reaseguro_arrepentimiento' | t: dias: cauce_dias -}}
+      </span>
+    {%- endif -%}
+    {%- if cauce_ver_iva -%}
+      <span class="cauce-carrito__reaseguro-item">{{ 'cauce.carrito.reaseguro_iva' | t }}</span>
+    {%- endif -%}
+    {%- if cauce_ver_envio -%}
+      <span class="cauce-carrito__reaseguro-item">{{ 'cauce.carrito.reaseguro_envio' | t }}</span>
+    {%- endif -%}
+  </p>
+{%- endif -%}

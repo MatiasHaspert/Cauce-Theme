@@ -1,0 +1,168 @@
+{% comment %}
+  CAUCE — garantia: titulo, texto y boton a la izquierda; una lista de puntos
+  con icono a la derecha. En Shrine era la seccion custom-columns (D-074 §1); en
+  Horizon pasa a ser propia, con el sistema de esquemas de CAUCE. Ver D-081.
+
+  El copy de la garantia es una promesa comercial: vive en templates/*.json y lo
+  decide el comercio. Este archivo no escribe ninguna.
+{% endcomment %}
+
+<div class="cauce-garantia cauce-seccion color-{{ section.settings.color_scheme }}">
+  <div
+    class="page-width cauce-garantia__inner"
+    style="--padding-top: {{ section.settings.padding_top }}px; --padding-bottom: {{ section.settings.padding_bottom }}px; --cauce-garantia-ancho: {{ section.settings.ancho_maximo }}px;"
+  >
+    <div class="cauce-garantia__columna cauce-garantia__columna--texto">
+      {%- if section.settings.titulo != blank -%}
+        <h2 class="cauce-garantia__titulo {{ section.settings.heading_size }}">{{ section.settings.titulo }}</h2>
+      {%- endif -%}
+      {%- if section.settings.texto != blank -%}
+        <div class="cauce-garantia__texto rte">{{ section.settings.texto }}</div>
+      {%- endif -%}
+      {%- if section.settings.boton_texto != blank and section.settings.boton_link != blank -%}
+        <a class="cauce-garantia__cta button" href="{{ section.settings.boton_link }}">{{ section.settings.boton_texto }}</a>
+      {%- endif -%}
+    </div>
+
+    {%- if section.blocks.size > 0 -%}
+      <ul class="cauce-garantia__lista" role="list">
+        {%- for block in section.blocks -%}
+          <li class="cauce-garantia__item" {{ block.shopify_attributes }}>
+            <h3 class="cauce-garantia__item-titulo">
+              {%- if block.settings.icono != 'ninguno' -%}
+                {% render 'cauce-iconos', icono: block.settings.icono, clase: 'cauce-garantia__icono' %}
+              {%- endif -%}
+              <span>{{ block.settings.titulo }}</span>
+            </h3>
+            {%- if block.settings.texto != blank -%}
+              <div class="cauce-garantia__item-texto rte">{{ block.settings.texto }}</div>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "CAUCE · Garantía",
+  "tag": "section",
+  "class": "cauce-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "titulo",
+      "label": "Titulo",
+      "default": "Garantía"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Tamaño del titulo",
+      "options": [
+        { "value": "h2", "label": "Chico" },
+        { "value": "h1", "label": "Mediano" },
+        { "value": "h0", "label": "Grande" }
+      ],
+      "default": "h1"
+    },
+    {
+      "type": "richtext",
+      "id": "texto",
+      "label": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "boton_texto",
+      "label": "Texto del boton"
+    },
+    {
+      "type": "url",
+      "id": "boton_link",
+      "label": "Link del boton",
+      "info": "#comprar lleva al selector de packs."
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "options": [
+        { "value": "background-1", "label": "Fondo" },
+        { "value": "background-2", "label": "Superficie" },
+        { "value": "inverse", "label": "Oscuro" }
+      ],
+      "default": "background-2"
+    },
+    {
+      "type": "range",
+      "id": "ancho_maximo",
+      "label": "Ancho maximo",
+      "min": 800,
+      "max": 1400,
+      "step": 20,
+      "unit": "px",
+      "default": 1200
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Espacio arriba",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Espacio abajo",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 72
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Punto",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icono",
+          "label": "Icono",
+          "options": [
+            { "value": "ninguno", "label": "Ninguno" },
+            { "value": "reloj", "label": "Reloj" },
+            { "value": "pago", "label": "Pago" },
+            { "value": "chequeo", "label": "Chequeo" },
+            { "value": "persona", "label": "Persona" },
+            { "value": "devolucion", "label": "Devolucion" },
+            { "value": "escudo", "label": "Escudo" },
+            { "value": "envio", "label": "Envio" }
+          ],
+          "default": "chequeo"
+        },
+        {
+          "type": "text",
+          "id": "titulo",
+          "label": "Titulo"
+        },
+        {
+          "type": "richtext",
+          "id": "texto",
+          "label": "Texto"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "CAUCE · Garantía"
+    }
+  ]
+}
+{% endschema %}

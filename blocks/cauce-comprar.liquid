@@ -1,0 +1,448 @@
+{%- comment -%}
+  CAUCE — bloque de compra: selector de packs + boton de agregar, en un solo
+  formulario. Reemplaza al quantity_selector + buy_buttons de Shrine (D-081).
+
+  POR QUE UN BLOQUE PROPIO Y NO EL buy-buttons DE HORIZON. El buy-buttons de
+  Horizon trae el bloque `quantity` como bloque estatico: no se puede sacar. Con
+  los packs al lado el formulario mandaria dos campos `quantity`, el del packs y
+  el del stepper. Aca el formulario es el mismo que arma Horizon (mismo
+  <product-form-component>, mismo id de form, mismo bloque estatico
+  `add-to-cart`) y la cantidad la ponen los radios de los packs: un solo campo,
+  y funciona igual que en Shrine.
+
+  CONTRATO CON assets/product-form.js (Horizon):
+    <product-form-component> con data-section-id, data-product-id y
+    on:submit="/handleSubmit" ............ el submit lo maneja Horizon.
+    input[name="id"][ref="variantId"] ...... la variante; Horizon la actualiza
+                                             al cambiar de variante.
+    radios name="quantity" ................. new FormData(form) los toma; sin
+                                             bloque quantity, refs.quantitySelector
+                                             no existe y Horizon no valida aparte.
+    ref="liveRegion" ....................... avisos para lectores de pantalla.
+    bloque estatico add-to-cart ............ el boton, con su animacion.
+
+  LOS PRECIOS SON DE VITRINA. Igual que en Shrine: el descuento lo aplica un
+  descuento automatico de Shopify por cantidad. Si el descuento no existe o no
+  coincide, el carrito cobra otra cosa que la tarjeta. Ver D-047 y D-074 §6.
+
+  Tokens en los textos de cada pack (todos opcionales, se reemplazan todos y no
+  solo el primero, que era el limite del snippet de Shrine):
+    [quantity] [price] [compare_price] [price_each] [compare_price_each]
+    [amount_saved] [amount_saved_rounded] [duracion] [precio_dia]
+
+  Las lineas de ahorro, envio gratis, transferencia y cuotas no se escriben: las
+  calcula snippets/cauce-escalon-extras.liquid desde los settings de CAUCE.
+{%- endcomment -%}
+
+{%- liquid
+  assign product = closest.product
+  if request.visual_preview_mode and product == blank
+    assign product = collections.all.products.first
+  endif
+
+  assign variant = product.selected_or_first_available_variant
+  assign product_form_id = 'BuyButtons-ProductForm-' | append: section.id
+
+  assign can_add_to_cart = false
+  assign add_to_cart_text = 'products.product.unavailable' | t
+  if variant.available
+    assign can_add_to_cart = true
+    assign add_to_cart_text = block.settings.boton_texto | default: ''
+    if add_to_cart_text == blank
+      assign add_to_cart_text = 'products.product.add_to_cart' | t
+    endif
+  elsif variant.inventory_management == 'shopify' and variant.inventory_quantity <= 0 and variant.inventory_policy == 'deny'
+    assign add_to_cart_text = 'products.product.sold_out' | t
+  endif
+
+  assign precio = variant.price
+  assign cauce_destacado = block.settings.destacado
+  assign cauce_preseleccion = block.settings.preseleccionado
+
+  comment
+    Dias que dura una unidad, para [precio_dia]. Mandan los metafields de dosis
+    si estan (cauce.unidades_envase / cauce.dosis_diaria); si no, el setting.
+  endcomment
+  assign cauce_dias_unidad = block.settings.dias_unidad | plus: 0
+  assign cauce_md_envase = product.metafields.cauce.unidades_envase.value | plus: 0
+  assign cauce_md_dosis = product.metafields.cauce.dosis_diaria.value | plus: 0
+  if cauce_md_envase > 0 and cauce_md_dosis > 0
+    assign cauce_dias_unidad = cauce_md_envase | divided_by: cauce_md_dosis
+  endif
+
+  assign cauce_hay_packs = false
+  for i in (1..4)
+    assign clave = 'cantidad_' | append: i
+    assign cantidad = block.settings[clave] | plus: 0
+    if cantidad > 0
+      assign cauce_hay_packs = true
+    endif
+  endfor
+-%}
+
+<div
+  class="cauce-comprar"
+  id="cauce-comprar-{{ section.id }}"
+  {{ block.shopify_attributes }}
+>
+  {%- if product != blank -%}
+    <product-form-component
+      data-section-id="{{ section.id }}"
+      data-product-id="{{ product.id }}"
+      data-product-url="{{ product.url }}"
+      on:submit="/handleSubmit"
+      data-quantity-default="1"
+      data-quantity-error-max="{{ 'products.product.quantity_error_max' | t }}"
+    >
+      <div
+        class="visually-hidden"
+        aria-live="assertive"
+        role="status"
+        aria-atomic="true"
+        ref="liveRegion"
+      ></div>
+      {%- form 'product', product, id: product_form_id, data-type: 'add-to-cart-form' -%}
+        <input
+          type="hidden"
+          name="id"
+          ref="variantId"
+          value="{{ variant.id }}"
+        >
+
+        {%- if cauce_hay_packs -%}
+          <fieldset
+            class="cauce-packs{% if block.settings.indicador %} cauce-packs--indicador{% endif %}"
+            id="cauce-packs-{{ section.id }}"
+          >
+            {%- if block.settings.titulo != blank -%}
+              <legend class="cauce-packs__titulo">
+                <span aria-hidden="true"></span>
+                <span>{{ block.settings.titulo }}</span>
+                <span aria-hidden="true"></span>
+              </legend>
+            {%- else -%}
+              <legend class="visually-hidden">{{ 'cauce.pdp.packs_leyenda' | t }}</legend>
+            {%- endif -%}
+            {%- if block.settings.subtitulo != blank -%}
+              <p class="cauce-packs__subtitulo">{{ block.settings.subtitulo }}</p>
+            {%- endif -%}
+
+            <div class="cauce-packs__lista">
+              {%- for i in (1..4) -%}
+                {%- liquid
+                  assign opcion = 'option_' | append: i
+                  assign clave = 'cantidad_' | append: i
+                  assign cantidad = block.settings[clave] | plus: 0
+                  if cantidad < 1
+                    continue
+                  endif
+
+                  assign clave = 'descuento_' | append: i
+                  assign descuento = block.settings[clave] | plus: 0 | times: 100
+                  assign clave = 'porcentaje_' | append: i
+                  assign porcentaje = block.settings[clave] | plus: 0
+                  assign resto = 100 | minus: porcentaje | divided_by: 100.0
+
+                  assign total = precio | times: cantidad | times: resto | minus: descuento | round
+                  if total < 0
+                    assign total = 0
+                  endif
+
+                  assign base_tachado = precio
+                  assign clave = 'tachado_' | append: i
+                  if block.settings[clave] and variant.compare_at_price > precio
+                    assign base_tachado = variant.compare_at_price
+                  endif
+                  assign tachado = base_tachado | times: cantidad
+                  assign ahorro = tachado | minus: total
+                  assign ahorro_redondo = ahorro | divided_by: 100.0 | round | times: 100
+
+                  assign por_unidad = total | divided_by: cantidad
+                  if block.settings.redondear
+                    assign por_unidad = total | times: 1.0 | divided_by: cantidad | divided_by: 100 | round | times: 100
+                  endif
+                  assign tachado_unidad = tachado | divided_by: cantidad
+
+                  capture duracion
+                    render 'cauce-duracion', producto: product, cantidad: cantidad
+                  endcapture
+                  assign duracion = duracion | strip
+
+                  assign precio_dia = ''
+                  if cauce_dias_unidad > 0
+                    assign dias = cauce_dias_unidad | times: cantidad
+                    assign precio_dia = total | times: 1.0 | divided_by: dias | divided_by: 100 | round | times: 100 | money_without_trailing_zeros
+                  endif
+
+                  assign m_total = total | money_without_trailing_zeros
+                  assign m_tachado = tachado | money_without_trailing_zeros
+                  assign m_unidad = por_unidad | money_without_trailing_zeros
+                  assign m_tachado_unidad = tachado_unidad | money_without_trailing_zeros
+                  assign m_ahorro = ahorro | money_without_trailing_zeros
+                  assign m_ahorro_redondo = ahorro_redondo | money_without_trailing_zeros
+
+                  assign clave = 'etiqueta_' | append: i
+                  assign etiqueta = block.settings[clave] | default: ''
+                  assign clave = 'detalle_' | append: i
+                  assign detalle = block.settings[clave] | default: ''
+                  assign clave = 'cinta_' | append: i
+                  assign cinta = block.settings[clave] | default: ''
+
+                  assign etiqueta = etiqueta | replace: '[quantity]', cantidad | replace: '[price_each]', m_unidad | replace: '[compare_price_each]', m_tachado_unidad | replace: '[compare_price]', m_tachado | replace: '[price]', m_total | replace: '[amount_saved_rounded]', m_ahorro_redondo | replace: '[amount_saved]', m_ahorro | replace: '[duracion]', duracion | replace: '[precio_dia]', precio_dia
+                  assign detalle = detalle | replace: '[quantity]', cantidad | replace: '[price_each]', m_unidad | replace: '[compare_price_each]', m_tachado_unidad | replace: '[compare_price]', m_tachado | replace: '[price]', m_total | replace: '[amount_saved_rounded]', m_ahorro_redondo | replace: '[amount_saved]', m_ahorro | replace: '[duracion]', duracion | replace: '[precio_dia]', precio_dia
+                  assign cinta = cinta | replace: '[quantity]', cantidad | replace: '[price_each]', m_unidad | replace: '[compare_price_each]', m_tachado_unidad | replace: '[compare_price]', m_tachado | replace: '[price]', m_total | replace: '[amount_saved_rounded]', m_ahorro_redondo | replace: '[amount_saved]', m_ahorro | replace: '[duracion]', duracion | replace: '[precio_dia]', precio_dia
+                  assign etiqueta = etiqueta | strip
+                  assign detalle = detalle | strip
+                  assign cinta = cinta | strip
+                  assign radio_id = 'cauce-pack-' | append: section.id | append: '-' | append: i
+                -%}
+                <input
+                  class="cauce-packs__radio"
+                  type="radio"
+                  name="quantity"
+                  value="{{ cantidad }}"
+                  id="{{ radio_id }}"
+                  {% if cauce_preseleccion == opcion %}
+                    checked
+                  {% endif %}
+                >
+                <label
+                  for="{{ radio_id }}"
+                  class="cauce-pack{% if cauce_destacado == opcion %} cauce-pack--destacado{% endif %}{% if cinta != blank %} cauce-pack--con-cinta{% endif %}"
+                >
+                  {%- if cinta != blank -%}
+                    <span class="cauce-pack__cinta">{{ cinta }}</span>
+                  {%- endif -%}
+                  <span class="cauce-pack__contenido">
+                    <span class="cauce-pack__izq">
+                      {%- if etiqueta != blank -%}
+                        <span class="cauce-pack__etiqueta">{{ etiqueta }}</span>
+                      {%- endif -%}
+                      {%- if detalle != blank -%}
+                        <span class="cauce-pack__detalle">{{ detalle }}</span>
+                      {%- endif -%}
+                      {% render 'cauce-escalon-extras',
+                        indice: i,
+                        total: total,
+                        ahorro: ahorro,
+                        cuotas_en: block.settings.cuotas_en,
+                        sin_ahorro: block.settings.sin_ahorro,
+                        redondear: block.settings.redondear
+                      %}
+                    </span>
+                    <span class="cauce-pack__der">
+                      <span class="cauce-pack__precio">{{ m_total }}</span>
+                      {%- if tachado > total -%}
+                        <span class="visually-hidden">{{ 'cauce.pdp.precio_anterior' | t }}</span>
+                        <s class="cauce-pack__tachado">{{ m_tachado }}</s>
+                      {%- endif -%}
+                    </span>
+                  </span>
+                </label>
+              {%- endfor -%}
+            </div>
+          </fieldset>
+        {%- else -%}
+          <input type="hidden" name="quantity" value="1">
+          {%- if request.design_mode -%}
+            <p class="cauce-carrito__aviso">Cargá al menos un pack con cantidad mayor a 0. Sin packs el botón agrega una unidad.</p>
+          {%- endif -%}
+        {%- endif -%}
+
+        {%- if block.settings.nota != blank -%}
+          <p class="cauce-comprar__nota">
+            {%- if block.settings.nota_icono != 'ninguno' -%}
+              {% render 'cauce-iconos', icono: block.settings.nota_icono %}
+            {%- endif -%}
+            <span>{{ block.settings.nota }}</span>
+          </p>
+        {%- endif -%}
+
+        <div class="product-form-buttons cauce-comprar__boton">
+          {% content_for 'block',
+            type: 'add-to-cart',
+            id: 'add-to-cart',
+            can_add_to_cart: can_add_to_cart,
+            add_to_cart_text: add_to_cart_text
+          %}
+        </div>
+      {%- endform -%}
+    </product-form-component>
+  {%- endif -%}
+</div>
+
+{% render 'buy-buttons-styles' %}
+
+{% schema %}
+{
+  "name": "CAUCE · Packs y compra",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Selector de packs y boton de agregar al carrito. Los precios de cada pack son de vitrina: tiene que existir un descuento automatico de Shopify que cobre lo mismo."
+    },
+    {
+      "type": "text",
+      "id": "titulo",
+      "label": "Encabezado"
+    },
+    {
+      "type": "text",
+      "id": "subtitulo",
+      "label": "Bajada del encabezado"
+    },
+    {
+      "type": "select",
+      "id": "preseleccionado",
+      "label": "Pack elegido al entrar",
+      "options": [
+        { "value": "option_1", "label": "Pack 1" },
+        { "value": "option_2", "label": "Pack 2" },
+        { "value": "option_3", "label": "Pack 3" },
+        { "value": "option_4", "label": "Pack 4" }
+      ],
+      "default": "option_1"
+    },
+    {
+      "type": "select",
+      "id": "destacado",
+      "label": "Pack con fondo destacado",
+      "info": "El destaque es fijo: no sigue a la seleccion. Ver D-051.",
+      "options": [
+        { "value": "ninguno", "label": "Ninguno" },
+        { "value": "option_1", "label": "Pack 1" },
+        { "value": "option_2", "label": "Pack 2" },
+        { "value": "option_3", "label": "Pack 3" },
+        { "value": "option_4", "label": "Pack 4" }
+      ],
+      "default": "ninguno"
+    },
+    {
+      "type": "checkbox",
+      "id": "indicador",
+      "label": "Mostrar el punto de seleccion",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "cuotas_en",
+      "label": "Pack que muestra las cuotas",
+      "info": "La cantidad de cuotas sale de Configuracion del tema → CAUCE.",
+      "options": [
+        { "value": "ninguno", "label": "Ninguno" },
+        { "value": "option_1", "label": "Pack 1" },
+        { "value": "option_2", "label": "Pack 2" },
+        { "value": "option_3", "label": "Pack 3" },
+        { "value": "option_4", "label": "Pack 4" },
+        { "value": "todos", "label": "Todos" }
+      ],
+      "default": "todos"
+    },
+    {
+      "type": "checkbox",
+      "id": "sin_ahorro",
+      "label": "Ocultar la linea \"Ahorras $X\"",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "redondear",
+      "label": "Precio por unidad y cuota sin centavos",
+      "default": false
+    },
+    {
+      "type": "number",
+      "id": "dias_unidad",
+      "label": "Dias que dura una unidad",
+      "info": "Para el token [precio_dia]. Si el producto tiene los metafields cauce.unidades_envase y cauce.dosis_diaria, mandan ellos."
+    },
+    {
+      "type": "header",
+      "content": "Pack 1"
+    },
+    { "type": "number", "id": "cantidad_1", "label": "Cantidad", "default": 1, "info": "0 oculta el pack." },
+    { "type": "text", "id": "etiqueta_1", "label": "Nombre", "default": "1 unidad" },
+    { "type": "text", "id": "detalle_1", "label": "Detalle", "info": "Tokens: [price_each], [duracion], [precio_dia], [amount_saved]..." },
+    { "type": "text", "id": "cinta_1", "label": "Cinta" },
+    { "type": "number", "id": "descuento_1", "label": "Descuento fijo (pesos)", "default": 0 },
+    { "type": "number", "id": "porcentaje_1", "label": "Descuento (%)", "default": 0 },
+    { "type": "checkbox", "id": "tachado_1", "label": "Tachar con el precio de comparacion de Shopify", "default": true },
+    {
+      "type": "header",
+      "content": "Pack 2"
+    },
+    { "type": "number", "id": "cantidad_2", "label": "Cantidad", "default": 2, "info": "0 oculta el pack." },
+    { "type": "text", "id": "etiqueta_2", "label": "Nombre", "default": "2 unidades" },
+    { "type": "text", "id": "detalle_2", "label": "Detalle", "default": "[price_each] cada una" },
+    { "type": "text", "id": "cinta_2", "label": "Cinta" },
+    { "type": "number", "id": "descuento_2", "label": "Descuento fijo (pesos)", "default": 0 },
+    { "type": "number", "id": "porcentaje_2", "label": "Descuento (%)", "default": 0 },
+    { "type": "checkbox", "id": "tachado_2", "label": "Tachar con el precio de comparacion de Shopify", "default": true },
+    {
+      "type": "header",
+      "content": "Pack 3"
+    },
+    { "type": "number", "id": "cantidad_3", "label": "Cantidad", "default": 3, "info": "0 oculta el pack." },
+    { "type": "text", "id": "etiqueta_3", "label": "Nombre", "default": "3 unidades" },
+    { "type": "text", "id": "detalle_3", "label": "Detalle", "default": "[price_each] cada una" },
+    { "type": "text", "id": "cinta_3", "label": "Cinta" },
+    { "type": "number", "id": "descuento_3", "label": "Descuento fijo (pesos)", "default": 0 },
+    { "type": "number", "id": "porcentaje_3", "label": "Descuento (%)", "default": 0 },
+    { "type": "checkbox", "id": "tachado_3", "label": "Tachar con el precio de comparacion de Shopify", "default": true },
+    {
+      "type": "header",
+      "content": "Pack 4"
+    },
+    { "type": "number", "id": "cantidad_4", "label": "Cantidad", "default": 0, "info": "0 oculta el pack." },
+    { "type": "text", "id": "etiqueta_4", "label": "Nombre" },
+    { "type": "text", "id": "detalle_4", "label": "Detalle" },
+    { "type": "text", "id": "cinta_4", "label": "Cinta" },
+    { "type": "number", "id": "descuento_4", "label": "Descuento fijo (pesos)", "default": 0 },
+    { "type": "number", "id": "porcentaje_4", "label": "Descuento (%)", "default": 0 },
+    { "type": "checkbox", "id": "tachado_4", "label": "Tachar con el precio de comparacion de Shopify", "default": true },
+    {
+      "type": "header",
+      "content": "Nota y boton"
+    },
+    {
+      "type": "text",
+      "id": "nota",
+      "label": "Nota debajo de los packs"
+    },
+    {
+      "type": "select",
+      "id": "nota_icono",
+      "label": "Icono de la nota",
+      "options": [
+        { "value": "ninguno", "label": "Ninguno" },
+        { "value": "info", "label": "Informacion" },
+        { "value": "envio", "label": "Envio" },
+        { "value": "escudo", "label": "Escudo" }
+      ],
+      "default": "info"
+    },
+    {
+      "type": "text",
+      "id": "boton_texto",
+      "label": "Texto del boton",
+      "info": "Vacio: \"Agregar al carrito\"."
+    }
+  ],
+  "presets": [
+    {
+      "name": "CAUCE · Packs y compra",
+      "category": "t:categories.product",
+      "blocks": {
+        "add-to-cart": {
+          "type": "add-to-cart",
+          "static": true,
+          "settings": {
+            "style_class": "button"
+          }
+        }
+      }
+    }
+  ]
+}
+{% endschema %}

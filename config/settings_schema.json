@@ -2116,5 +2116,181 @@
         "default": "equal-width-buttons"
       }
     ]
+  },
+  {
+    "name": "CAUCE",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Datos de marca que usan todas las secciones cauce-*. Lo que cargues acá aparece en el footer legal, en la PDP y en las páginas de políticas, sin tener que repetirlo en cada sección."
+      },
+      {
+        "type": "header",
+        "content": "Identificación del vendedor"
+      },
+      {
+        "type": "text",
+        "id": "cauce_razon_social",
+        "label": "Razón social",
+        "info": "Obligatorio por Ley 24.240. Aparece en el footer de todas las páginas."
+      },
+      {
+        "type": "text",
+        "id": "cauce_cuit",
+        "label": "CUIT"
+      },
+      {
+        "type": "text",
+        "id": "cauce_domicilio",
+        "label": "Domicilio comercial"
+      },
+      {
+        "type": "text",
+        "id": "cauce_email",
+        "label": "Email de contacto"
+      },
+      {
+        "type": "text",
+        "id": "cauce_telefono",
+        "label": "Teléfono de contacto"
+      },
+      {
+        "type": "text",
+        "id": "cauce_whatsapp",
+        "label": "WhatsApp",
+        "info": "Número en formato internacional, solo dígitos y sin el +. Un celular argentino lleva 549 + característica + número, sin el 15: 5493406461636. Vacío saca el botón flotante, la línea del bloque de compra y el link del pie."
+      },
+      {
+        "type": "text",
+        "id": "cauce_horario",
+        "label": "Horario de atención",
+        "info": "Se publica en la columna de contacto del pie, después de \"Horario de atención:\". Ejemplo: lunes a viernes de 9 a 18 h."
+      },
+      {
+        "type": "header",
+        "content": "Obligatorios de Argentina"
+      },
+      {
+        "type": "paragraph",
+        "content": "Los tres primeros son exigibles y se muestran en todas las páginas. Si alguno queda vacío, la barra legal muestra un placeholder visible en vez de ocultarlo."
+      },
+      {
+        "type": "url",
+        "id": "cauce_url_arrepentimiento",
+        "label": "Formulario de arrepentimiento",
+        "info": "Link directo al formulario, no a una página intermedia. Res. SCI 424/2020."
+      },
+      {
+        "type": "text",
+        "id": "cauce_url_libro_quejas",
+        "label": "Libro de Quejas Online",
+        "info": "Sistema de la Secretaría de Comercio. Res. 270/2020.",
+        "default": "https://autogestion.produccion.gob.ar/consumidores"
+      },
+      {
+        "type": "text",
+        "id": "cauce_url_data_fiscal",
+        "label": "Link de Data Fiscal AFIP",
+        "info": "La URL que te da AFIP al generar el código QR de Data Fiscal."
+      },
+      {
+        "type": "image_picker",
+        "id": "cauce_img_data_fiscal",
+        "label": "Imagen de Data Fiscal"
+      },
+      {
+        "type": "textarea",
+        "id": "cauce_disclaimer_texto",
+        "label": "Leyenda de suplemento dietario",
+        "info": "Leyenda de la barra legal y del carrito. Si queda vacío vuelve el texto por defecto del tema. Dónde se muestra se elige en la sección \"CAUCE · Legales\" del pie."
+      },
+      {
+        "type": "textarea",
+        "id": "cauce_disclaimer_consulta",
+        "label": "Frase de consulta médica",
+        "info": "Acompaña a la leyenda en la versión larga. En el pie, que usa la versión compacta, no aparece."
+      },
+      {
+        "type": "text",
+        "id": "cauce_rnpa",
+        "label": "RNPA / RNE",
+        "info": "Número de registro del producto. Mientras esté vacío, el disclaimer muestra un pendiente visible."
+      },
+      {
+        "type": "range",
+        "id": "cauce_dias_arrepentimiento",
+        "label": "Días de arrepentimiento",
+        "info": "El mínimo legal es 10 días corridos. Se puede ofrecer más, nunca menos.",
+        "min": 10,
+        "max": 45,
+        "step": 1,
+        "unit": "d",
+        "default": 10
+      },
+      {
+        "type": "header",
+        "content": "Envíos"
+      },
+      {
+        "type": "number",
+        "id": "cauce_umbral_envio_gratis",
+        "label": "Envío gratis a partir de",
+        "info": "Monto en pesos, solo el número. Ej: 45000. Decide el chip \"Envío gratis\" de cada pack y la barra del carrito. Con 1, el envío es gratis en todas las compras. Vacío o 0 los apaga. Los textos de la banda, las fichas y la FAQ se escriben a mano: si cambia, revisarlos."
+      },
+      {
+        "type": "header",
+        "content": "Medios de pago"
+      },
+      {
+        "type": "text",
+        "id": "cauce_medios_pago",
+        "label": "Medios a mostrar",
+        "info": "Separados por coma, sin espacios. Disponibles: mercadopago, visa, mastercard, amex, cabal, naranja, pagofacil, rapipago, transferencia, efectivo. Las que Shopify no dibuja salen como chip tipográfico.",
+        "default": "mercadopago,visa,mastercard,amex,cabal,naranja"
+      },
+      {
+        "type": "image_picker",
+        "id": "cauce_img_medios_pago",
+        "label": "Imagen de medios de pago",
+        "info": "Opcional. Si subís una tira con los logos oficiales, reemplaza a los chips de texto."
+      },
+      {
+        "type": "range",
+        "id": "cauce_cuotas",
+        "label": "Cuotas sin interés",
+        "info": "0 desactiva la leyenda de cuotas. Solo poner un número si el plan está realmente activo en Mercado Pago.",
+        "min": 0,
+        "max": 18,
+        "step": 1,
+        "default": 0
+      },
+      {
+        "type": "range",
+        "id": "cauce_transferencia_pct",
+        "label": "Descuento por transferencia",
+        "info": "0 lo apaga en el carrito y en los packs. Tiene que ser el mismo porcentaje del código creado en Shopify → Descuentos.",
+        "min": 0,
+        "max": 30,
+        "step": 1,
+        "unit": "%",
+        "default": 0
+      },
+      {
+        "type": "text",
+        "id": "cauce_transferencia_codigo",
+        "label": "Código de descuento por transferencia",
+        "info": "El código que el cliente carga en el checkout, ej. TRANSFERENCIA10. Vacío no se muestra nada: sin código no hay cómo aplicar el descuento."
+      },
+      {
+        "type": "header",
+        "content": "Carrito"
+      },
+      {
+        "type": "url",
+        "id": "cauce_carrito_vacio_url",
+        "label": "Botón del carrito vacío",
+        "info": "A dónde lleva \"Ver productos\" con el carrito vacío. Con un solo producto en venta, conviene la ficha del producto. Vacío: todos los productos."
+      }
+    ]
   }
 ]

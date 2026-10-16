@@ -1,0 +1,262 @@
+{% comment %}
+  CAUCE — mes a mes.
+
+  Un titulo, una fila de pestanas (una por mes) y una fila de fotos (una por
+  mes). El mes elegido lleva la foto cuadrada y, debajo, su titulo y su texto;
+  los demas muestran la foto en 4:3 y nada mas. Es el bloque "Una boca mas sana,
+  mes a mes" de la PDP del aditivo dental. Ver docs/DECISIONS.md D-080.
+
+  Por que no cauce-tabs ni cauce-etapas: en cauce-tabs el panel que no esta
+  elegido desaparece, y aca las tres fotos se ven siempre; cauce-etapas es una
+  lista de filas, una debajo de la otra, sin nada que elegir.
+
+  Dos formas (cauce-brand.css, bloque 28):
+
+    desde 750px  grilla. Elegir un mes agranda su foto y muestra su texto.
+    telefono     carrusel de scroll-snap, como los demas del tema: cada mes es
+                 una tarjeta completa, con su foto cuadrada y su texto, y las
+                 pestanas marcan cual se esta viendo.
+
+  Cuatro cosas que la seccion resuelve por construccion:
+
+  - Las pestanas son <button> con aria-pressed, no role="tab": en telefono los
+    tres textos estan a la vista a la vez, y un tabpanel sin elegir tendria que
+    estar oculto. El texto de un mes sin elegir se apaga con opacity y sigue en
+    el DOM, asi que un lector de pantalla lee los tres; el nombre del mes va
+    oculto adelante de cada titulo.
+  - Sin JS no hay pestanas (no harian nada): quedan las fotos cuadradas con su
+    texto. El comportamiento es <cauce-meses>, en assets/cauce.js.
+  - Sin foto, snippets/cauce-foto-pendiente.liquid dibuja el pedido de
+    produccion en el lugar de la foto.
+  - Un mes sin etiqueta no se dibuja: no tendria pestana.
+
+  ADVERTENCIA DE CLAIMS (SENASA, productos veterinarios). Decir que pasa en cada
+  mes es prometer un plazo de resultado. El texto vive entero en
+  templates/*.json. No escribas copy adentro de este archivo.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_n = 0
+  for block in section.blocks
+    if block.settings.etiqueta != blank
+      assign cauce_n = cauce_n | plus: 1
+    endif
+  endfor
+
+  assign cauce_hay = false
+  if cauce_n > 0 or section.settings.titulo != blank
+    assign cauce_hay = true
+  endif
+
+  comment
+    sizes en px y sin var(), por lo mismo que en cauce-dolor (D-033). Desde 750px
+    cada foto es una columna de la grilla: el bloque menos 100px del padding de
+    page-width, 32px del padding de la fila y los gaps de 16px. En telefono la
+    tarjeta mide el 80 % del ancho util.
+  endcomment
+  assign cauce_cols = cauce_n | at_least: 1
+  assign cauce_resto = cauce_cols | minus: 1 | times: 16 | plus: 132
+  assign cauce_col = section.settings.ancho_maximo | minus: cauce_resto | divided_by: cauce_cols
+  assign cauce_sizes = '(min-width: ' | append: section.settings.ancho_maximo | append: 'px) ' | append: cauce_col | append: 'px, (min-width: 750px) calc((100vw - ' | append: cauce_resto | append: 'px) / ' | append: cauce_cols | append: '), calc((100vw - 30px) * 0.8)'
+
+  assign cauce_grupo = section.settings.etiqueta_a11y | default: section.settings.titulo | strip_html | escape
+-%}
+
+{%- if cauce_hay -%}
+  <div class="cauce-meses color-{{ section.settings.color_scheme }} cauce-seccion">
+    <div
+      class="page-width cauce-meses__inner"
+      style="--padding-top: {{ section.settings.padding_top }}px; --padding-bottom: {{ section.settings.padding_bottom }}px; --cauce-meses-ancho: {{ section.settings.ancho_maximo }}px; --cauce-meses-n: {{ cauce_cols }};"
+    >
+      {%- if section.settings.titulo != blank -%}
+        <h2 class="cauce-meses__titulo {{ section.settings.heading_size }}">{{ section.settings.titulo }}</h2>
+      {%- endif -%}
+
+      {%- if cauce_n > 0 -%}
+        <cauce-meses class="cauce-meses__cuerpo">
+          {%- if cauce_n > 1 -%}
+            <div class="cauce-meses__pestanas" role="group" aria-label="{{ cauce_grupo }}">
+              {%- assign cauce_i = 0 -%}
+              {%- for block in section.blocks -%}
+                {%- liquid
+                  if block.settings.etiqueta == blank
+                    continue
+                  endif
+                  assign cauce_i = cauce_i | plus: 1
+                -%}
+                <button
+                  type="button"
+                  class="cauce-meses__pestana"
+                  aria-pressed="{% if cauce_i == 1 %}true{% else %}false{% endif %}"
+                  aria-controls="CauceMes-{{ section.id }}-{{ cauce_i }}"
+                  data-cauce-mes-boton
+                >
+                  {{- block.settings.etiqueta -}}
+                </button>
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+
+          <ul class="cauce-meses__lista" role="list">
+            {%- assign cauce_i = 0 -%}
+            {%- for block in section.blocks -%}
+              {%- liquid
+                if block.settings.etiqueta == blank
+                  continue
+                endif
+                assign cauce_i = cauce_i | plus: 1
+                assign cauce_alt = block.settings.alt | default: block.settings.imagen.alt
+              -%}
+              <li
+                class="cauce-meses__item{% if cauce_i == 1 %} cauce-meses__item--activo{% endif %}"
+                id="CauceMes-{{ section.id }}-{{ cauce_i }}"
+                data-cauce-mes
+                {{ block.shopify_attributes }}
+              >
+                {%- if block.settings.imagen != blank or block.settings.foto_pendiente != blank -%}
+                  <div class="cauce-meses__media">
+                    {%- if block.settings.imagen != blank -%}
+                      {{
+                        block.settings.imagen
+                        | image_url: width: 1200
+                        | image_tag:
+                          loading: 'lazy',
+                          widths: '320, 480, 640, 800, 1200',
+                          sizes: cauce_sizes,
+                          class: 'cauce-meses__imagen',
+                          alt: cauce_alt
+                      }}
+                    {%- else -%}
+                      {%- render 'cauce-foto-pendiente',
+                        etiqueta: block.settings.foto_pendiente,
+                        relacion: '1 / 1',
+                        clase: 'cauce-meses__imagen'
+                      -%}
+                    {%- endif -%}
+                  </div>
+                {%- endif -%}
+
+                <div class="cauce-meses__texto">
+                  <h3 class="cauce-meses__nombre">
+                    <span class="visually-hidden">{{ block.settings.etiqueta }}: </span>
+                    {{- block.settings.titulo -}}
+                  </h3>
+                  {%- if block.settings.texto != blank -%}
+                    <div class="cauce-meses__parrafo rte">{{ block.settings.texto }}</div>
+                  {%- endif -%}
+                </div>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </cauce-meses>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "CAUCE · Mes a mes",
+  "tag": "section",
+  "class": "cauce-section",
+  "max_blocks": 4,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Una pestana y una foto por mes. Decir que pasa en cada mes es prometer un plazo de resultado: en un producto veterinario lo tiene que poder sostener el laboratorio (SENASA)."
+    },
+
+    { "type": "header", "content": "Texto" },
+    { "type": "inline_richtext", "id": "titulo", "label": "Titulo" },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Tamano del titulo",
+      "options": [
+        { "value": "h2", "label": "Chico" },
+        { "value": "h1", "label": "Mediano" },
+        { "value": "h0", "label": "Grande" }
+      ],
+      "default": "h1"
+    },
+    {
+      "type": "text",
+      "id": "etiqueta_a11y",
+      "label": "Nombre accesible de las pestanas",
+      "info": "Si esta vacio se usa el titulo."
+    },
+
+    { "type": "header", "content": "Presentacion" },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "options": [
+        { "value": "background-1", "label": "Fondo" },
+        { "value": "background-2", "label": "Superficie" },
+        { "value": "inverse", "label": "Oscuro" }
+      ],
+      "default": "background-1"
+    },
+    {
+      "type": "range",
+      "id": "ancho_maximo",
+      "min": 720,
+      "max": 1400,
+      "step": 40,
+      "unit": "px",
+      "label": "Ancho del bloque",
+      "default": 1200
+    },
+
+    { "type": "header", "content": "Espaciado" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8, "unit": "px", "label": "Arriba", "default": 56 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 160, "step": 8, "unit": "px", "label": "Abajo", "default": 56 }
+  ],
+  "blocks": [
+    {
+      "type": "mes",
+      "name": "Mes",
+      "settings": [
+        {
+          "type": "text",
+          "id": "etiqueta",
+          "label": "Pestana",
+          "info": "\"Mes 1\", \"Mes 3+\". Sin esto el mes no se dibuja.",
+          "default": "Mes"
+        },
+        { "type": "text", "id": "titulo", "label": "Titulo" },
+        { "type": "richtext", "id": "texto", "label": "Texto" },
+        {
+          "type": "image_picker",
+          "id": "imagen",
+          "label": "Foto",
+          "info": "Cuadrada (1:1), con lo importante en el centro: cuando el mes no esta elegido se ve en 4:3 y pierde una franja arriba y otra abajo."
+        },
+        {
+          "type": "text",
+          "id": "alt",
+          "label": "Texto alternativo",
+          "info": "Describi la escena. Si lo dejas vacio se usa el alt cargado en Shopify."
+        },
+        {
+          "type": "text",
+          "id": "foto_pendiente",
+          "label": "Pedido de foto",
+          "info": "Mientras no haya foto, se dibuja un recuadro con este texto."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "CAUCE · Mes a mes",
+      "blocks": [
+        { "type": "mes" },
+        { "type": "mes" },
+        { "type": "mes" }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,435 @@
+{% comment %}
+  CAUCE — foto de un lado, lista del otro.
+
+  Una columna con la foto y otra con una lista de items. El titulo puede ir con la
+  foto (arriba o abajo de ella) o encabezando la lista. La lista tiene cuatro
+  formas, que son las cuatro veces que esta disposicion aparece en la PDP del
+  aditivo dental (D-074):
+
+    tarjetas  fichas claras con una etiqueta chica arriba ("01 · Placa"), un
+              titulo y un parrafo. El bloque del problema.
+    linea     hitos colgados de una linea vertical, cada uno con su pastilla.
+              La rutina en el tiempo. Un hito puede ir destacado (pastilla y
+              marcador en dorado, estrella al lado del titulo) y el recuadro
+              final cuelga de la misma linea, con su icono. Ver D-079.
+    pasos     filas con tilde, separadas por una regla fina. Como se usa.
+    filas     filas con un icono (o una foto redonda) a la izquierda. Beneficios.
+
+  Por que una seccion y no cuatro: las cuatro comparten la grilla, la foto, el
+  encabezado, el recuadro final y el boton, y solo cambia como se dibuja cada
+  item. Con cuatro archivos, cada ajuste de la grilla se haria cuatro veces.
+
+  Tres cosas que la seccion resuelve por construccion:
+
+  - Sin foto cargada no cae en placeholder_svg_tag sino en
+    snippets/cauce-foto-pendiente.liquid: un recuadro del tamano de la foto final
+    con el pedido de produccion escrito adentro. Sin foto y sin pedido, la
+    columna no se dibuja y la lista ocupa todo el ancho.
+  - `linea` y `pasos` son <ol>: son secuencias. `tarjetas` y `filas` son <ul>.
+  - La linea y sus marcadores son pseudo-elementos, igual que en cauce-progreso.
+
+  ADVERTENCIA DE CLAIMS. En la PDP del aditivo dental aplica el marco de SENASA
+  para productos veterinarios: sin efectos que no se puedan demostrar, sin plazos
+  de resultado, sin enfermedades. El texto vive entero en templates/*.json y no
+  aca. No escribas copy adentro de este archivo.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_hay_items = false
+  for block in section.blocks
+    if block.settings.titulo != blank or block.settings.texto != blank
+      assign cauce_hay_items = true
+      break
+    endif
+  endfor
+
+  assign cauce_hay = cauce_hay_items
+  if section.settings.titulo != blank
+    assign cauce_hay = true
+  endif
+
+  assign cauce_con_media = false
+  if section.settings.imagen != blank or section.settings.foto_pendiente != blank
+    assign cauce_con_media = true
+  endif
+
+  assign cauce_estilo = section.settings.estilo
+  assign cauce_lista_tag = 'ul'
+  if cauce_estilo == 'linea' or cauce_estilo == 'pasos'
+    assign cauce_lista_tag = 'ol'
+  endif
+
+  assign cauce_hay_recuadro = false
+  if section.settings.recuadro_titulo != blank or section.settings.recuadro_texto != blank
+    assign cauce_hay_recuadro = true
+  endif
+
+  assign cauce_alt = section.settings.alt | default: section.settings.imagen.alt
+  assign cauce_estilo_foto = 'aspect-ratio: ' | append: section.settings.relacion
+
+  comment
+    sizes en px y sin var(), por lo mismo que en cauce-dolor (D-033): el atributo
+    lo parsea el HTML y las unidades relativas se miden contra 16px. La foto ocupa
+    la mitad del bloque desde 990px, menos el gap de 48px.
+  endcomment
+  assign cauce_tope = section.settings.ancho_maximo
+  assign cauce_col = cauce_tope | minus: 148 | divided_by: 2
+  assign cauce_sizes = '(min-width: ' | append: cauce_tope | append: 'px) ' | append: cauce_col | append: 'px, (min-width: 990px) calc((100vw - 148px) / 2), (min-width: 750px) calc(100vw - 100px), calc(100vw - 30px)'
+-%}
+
+{%- capture cauce_encabezado -%}
+  {%- if section.settings.volanta != blank or section.settings.titulo != blank or section.settings.bajada != blank -%}
+    <div class="cauce-medialista__encabezado">
+      {%- if section.settings.volanta != blank -%}
+        <p class="cauce-eyebrow">{{ section.settings.volanta }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.titulo != blank -%}
+        <h2 class="cauce-medialista__titulo {{ section.settings.heading_size }}">
+          {{- section.settings.titulo -}}
+          {%- if section.settings.titulo_acento != blank -%}
+            <span class="cauce-acento"> {{ section.settings.titulo_acento }}</span>
+          {%- endif -%}
+        </h2>
+      {%- endif -%}
+
+      {%- if section.settings.bajada != blank -%}
+        <div class="cauce-medialista__bajada rte">{{ section.settings.bajada }}</div>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- if cauce_hay -%}
+  <div class="cauce-medialista cauce-medialista--{{ cauce_estilo }} color-{{ section.settings.color_scheme }} cauce-seccion">
+    <div
+      class="page-width cauce-medialista__inner cauce-medialista__inner--{{ section.settings.posicion_imagen }}{% unless cauce_con_media %} cauce-medialista__inner--sin-media{% endunless %}"
+      style="--padding-top: {{ section.settings.padding_top }}px; --padding-bottom: {{ section.settings.padding_bottom }}px; --cauce-medialista-ancho: {{ section.settings.ancho_maximo }}px;"
+    >
+      {%- if cauce_con_media or section.settings.titulo_en != 'lista' -%}
+        <div class="cauce-medialista__columna cauce-medialista__columna--media">
+          {%- if section.settings.titulo_en == 'media_arriba' -%}
+            {{ cauce_encabezado }}
+          {%- endif -%}
+
+          {%- if cauce_con_media -%}
+            <figure class="cauce-medialista__media">
+              {%- if section.settings.imagen != blank -%}
+                {{
+                  section.settings.imagen
+                  | image_url: width: 1600
+                  | image_tag:
+                    loading: 'lazy',
+                    widths: '480, 720, 960, 1200, 1600',
+                    sizes: cauce_sizes,
+                    class: 'cauce-medialista__imagen',
+                    style: cauce_estilo_foto,
+                    alt: cauce_alt
+                }}
+              {%- else -%}
+                {%- render 'cauce-foto-pendiente',
+                  etiqueta: section.settings.foto_pendiente,
+                  relacion: section.settings.relacion,
+                  clase: 'cauce-medialista__imagen'
+                -%}
+              {%- endif -%}
+
+              {%- if section.settings.epigrafe != blank -%}
+                <figcaption class="cauce-medialista__epigrafe">{{ section.settings.epigrafe }}</figcaption>
+              {%- endif -%}
+            </figure>
+          {%- endif -%}
+
+          {%- if section.settings.titulo_en == 'media_abajo' -%}
+            {{ cauce_encabezado }}
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <div class="cauce-medialista__columna cauce-medialista__columna--lista">
+        {%- if section.settings.titulo_en == 'lista' -%}
+          {{ cauce_encabezado }}
+        {%- endif -%}
+
+        {%- if cauce_hay_items -%}
+          <{{ cauce_lista_tag }} class="cauce-medialista__lista{% if cauce_hay_recuadro %} cauce-medialista__lista--sigue{% endif %}" role="list">
+            {%- for block in section.blocks -%}
+              {%- liquid
+                if block.settings.titulo == blank and block.settings.texto == blank
+                  continue
+                endif
+                assign cauce_item_alt = block.settings.alt | default: block.settings.imagen.alt
+                assign cauce_destacado = false
+                if cauce_estilo == 'linea' and block.settings.destacado
+                  assign cauce_destacado = true
+                endif
+              -%}
+              <li class="cauce-medialista__item{% if cauce_destacado %} cauce-medialista__item--destacado{% endif %}" {{ block.shopify_attributes }}>
+                {%- if cauce_estilo == 'pasos' -%}
+                  <span class="cauce-medialista__marca">
+                    {%- render 'cauce-iconos', icono: 'visto' -%}
+                  </span>
+                {%- elsif cauce_estilo == 'filas' -%}
+                  {%- if block.settings.imagen != blank -%}
+                    {{
+                      block.settings.imagen
+                      | image_url: width: 240
+                      | image_tag:
+                        loading: 'lazy',
+                        widths: '120, 180, 240',
+                        sizes: '96px',
+                        class: 'cauce-medialista__redonda',
+                        alt: cauce_item_alt
+                    }}
+                  {%- elsif block.settings.icono != blank and block.settings.icono != 'ninguno' -%}
+                    <span class="cauce-medialista__marca">
+                      {%- render 'cauce-iconos', icono: block.settings.icono -%}
+                    </span>
+                  {%- endif -%}
+                {%- endif -%}
+
+                <div class="cauce-medialista__texto">
+                  {%- if block.settings.etiqueta != blank or block.settings.titulo != blank -%}
+                    <h3 class="cauce-medialista__cabeza">
+                      {%- if block.settings.etiqueta != blank -%}
+                        <span class="cauce-medialista__etiqueta">{{ block.settings.etiqueta }}</span>
+                      {%- endif -%}
+                      {%- if block.settings.titulo != blank -%}
+                        <span class="cauce-medialista__nombre">
+                          {{- block.settings.titulo -}}
+                          {%- comment -%} &#8288; pega la estrella a la ultima palabra: no baja sola de renglon. {%- endcomment -%}
+                          {%- if cauce_destacado -%}
+                            <span class="cauce-medialista__estrella">&#8288;{%- render 'cauce-iconos', icono: 'estrella' -%}</span>
+                          {%- endif -%}
+                        </span>
+                      {%- endif -%}
+                    </h3>
+                  {%- endif -%}
+
+                  {%- if block.settings.texto != blank -%}
+                    <div class="cauce-medialista__parrafo rte">{{ block.settings.texto }}</div>
+                  {%- endif -%}
+                </div>
+              </li>
+            {%- endfor -%}
+          </{{ cauce_lista_tag }}>
+        {%- endif -%}
+
+        {%- if cauce_hay_recuadro -%}
+          <div class="cauce-medialista__recuadro">
+            {%- if cauce_estilo == 'linea' -%}
+              <span class="cauce-medialista__recuadro-marca">
+                {%- render 'cauce-iconos', icono: 'infinito' -%}
+              </span>
+            {%- endif -%}
+            {%- if section.settings.recuadro_titulo != blank -%}
+              <p class="cauce-medialista__recuadro-titulo">{{ section.settings.recuadro_titulo }}</p>
+            {%- endif -%}
+            {%- if section.settings.recuadro_texto != blank -%}
+              <div class="cauce-medialista__recuadro-texto rte">{{ section.settings.recuadro_texto }}</div>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.boton_texto != blank and section.settings.boton_link != blank -%}
+          <a class="cauce-medialista__cta button" href="{{ section.settings.boton_link }}">
+            {{- section.settings.boton_texto -}}
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "CAUCE · Foto y lista",
+  "tag": "section",
+  "class": "cauce-section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Foto de un lado y lista del otro. En un producto veterinario: sin plazos de resultado, sin porcentajes, sin enfermedades y sin efectos que no se puedan demostrar (SENASA)."
+    },
+
+    { "type": "header", "content": "Imagen" },
+    { "type": "image_picker", "id": "imagen", "label": "Imagen" },
+    {
+      "type": "text",
+      "id": "alt",
+      "label": "Texto alternativo",
+      "info": "Describi la escena. Si lo dejas vacio se usa el alt cargado en Shopify."
+    },
+    {
+      "type": "text",
+      "id": "foto_pendiente",
+      "label": "Pedido de foto",
+      "info": "Mientras no haya imagen, se dibuja un recuadro del mismo tamano con este texto: que foto va y en que proporcion. Vacio y sin imagen = sin columna de foto."
+    },
+    {
+      "type": "select",
+      "id": "relacion",
+      "label": "Relacion de aspecto",
+      "options": [
+        { "value": "16 / 9", "label": "16:9" },
+        { "value": "3 / 2", "label": "3:2" },
+        { "value": "4 / 3", "label": "4:3" },
+        { "value": "1 / 1", "label": "1:1 cuadrada" },
+        { "value": "4 / 5", "label": "4:5 vertical" }
+      ],
+      "default": "4 / 3"
+    },
+    {
+      "type": "select",
+      "id": "posicion_imagen",
+      "label": "Posicion en escritorio",
+      "options": [
+        { "value": "izquierda", "label": "A la izquierda" },
+        { "value": "derecha", "label": "A la derecha" }
+      ],
+      "default": "izquierda"
+    },
+    { "type": "text", "id": "epigrafe", "label": "Epigrafe" },
+
+    { "type": "header", "content": "Texto" },
+    { "type": "text", "id": "volanta", "label": "Volanta" },
+    { "type": "inline_richtext", "id": "titulo", "label": "Titulo" },
+    {
+      "type": "inline_richtext",
+      "id": "titulo_acento",
+      "label": "Cierre del titulo en acento",
+      "info": "Se agrega al final del titulo, en el color de acento."
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Tamano del titulo",
+      "options": [
+        { "value": "h2", "label": "Chico" },
+        { "value": "h1", "label": "Mediano" },
+        { "value": "h0", "label": "Grande" }
+      ],
+      "default": "h1"
+    },
+    { "type": "richtext", "id": "bajada", "label": "Bajada" },
+    {
+      "type": "select",
+      "id": "titulo_en",
+      "label": "Donde va el titulo",
+      "options": [
+        { "value": "lista", "label": "Arriba de la lista" },
+        { "value": "media_arriba", "label": "Con la foto, arriba" },
+        { "value": "media_abajo", "label": "Con la foto, abajo" }
+      ],
+      "default": "lista"
+    },
+
+    { "type": "header", "content": "Lista" },
+    {
+      "type": "select",
+      "id": "estilo",
+      "label": "Forma de la lista",
+      "options": [
+        { "value": "tarjetas", "label": "Tarjetas con etiqueta" },
+        { "value": "linea", "label": "Linea de tiempo" },
+        { "value": "pasos", "label": "Pasos con tilde" },
+        { "value": "filas", "label": "Filas con icono o foto" }
+      ],
+      "default": "pasos"
+    },
+
+    { "type": "header", "content": "Recuadro final" },
+    { "type": "text", "id": "recuadro_titulo", "label": "Titulo", "info": "Vacio y sin texto = sin recuadro." },
+    { "type": "richtext", "id": "recuadro_texto", "label": "Texto" },
+
+    { "type": "header", "content": "Boton" },
+    { "type": "text", "id": "boton_texto", "label": "Texto", "info": "Vacio = sin boton." },
+    { "type": "url", "id": "boton_link", "label": "Enlace" },
+
+    { "type": "header", "content": "Presentacion" },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "options": [
+        { "value": "background-1", "label": "Fondo" },
+        { "value": "background-2", "label": "Superficie" },
+        { "value": "inverse", "label": "Oscuro" }
+      ],
+      "default": "background-1"
+    },
+    {
+      "type": "range",
+      "id": "ancho_maximo",
+      "min": 720,
+      "max": 1400,
+      "step": 40,
+      "unit": "px",
+      "label": "Ancho del bloque",
+      "default": 1200
+    },
+
+    { "type": "header", "content": "Espaciado" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8, "unit": "px", "label": "Arriba", "default": 72 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 160, "step": 8, "unit": "px", "label": "Abajo", "default": 72 }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "etiqueta",
+          "label": "Etiqueta",
+          "info": "Texto chico que va antes del titulo: \"01 · Placa\", \"Primer dia\". Opcional."
+        },
+        { "type": "text", "id": "titulo", "label": "Titulo" },
+        { "type": "richtext", "id": "texto", "label": "Texto" },
+        {
+          "type": "checkbox",
+          "id": "destacado",
+          "label": "Destacar este item",
+          "info": "Solo en la forma \"Linea de tiempo\": pastilla y marcador en dorado y una estrella al lado del titulo.",
+          "default": false
+        },
+        {
+          "type": "select",
+          "id": "icono",
+          "label": "Icono",
+          "info": "Solo en la forma \"Filas\", y solo si el item no tiene foto.",
+          "options": [
+            { "value": "ninguno", "label": "Ninguno" },
+            { "value": "gota", "label": "Gota" },
+            { "value": "hoja", "label": "Hoja" },
+            { "value": "escudo", "label": "Escudo" },
+            { "value": "chequeo", "label": "Chequeo" },
+            { "value": "corazon", "label": "Corazon" },
+            { "value": "visto", "label": "Tilde" },
+            { "value": "reloj", "label": "Reloj" },
+            { "value": "estrella", "label": "Estrella" }
+          ],
+          "default": "ninguno"
+        },
+        {
+          "type": "image_picker",
+          "id": "imagen",
+          "label": "Foto redonda",
+          "info": "Solo en la forma \"Filas\". Reemplaza al icono."
+        },
+        { "type": "text", "id": "alt", "label": "Texto alternativo de la foto" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "CAUCE · Foto y lista",
+      "blocks": [
+        { "type": "item" },
+        { "type": "item" },
+        { "type": "item" }
+      ]
+    }
+  ]
+}
+{% endschema %}

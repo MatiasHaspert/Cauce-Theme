@@ -1,0 +1,175 @@
+{% comment %}
+  CAUCE — barra legal de Argentina.
+
+  Es una seccion propia y no un conjunto de bloques del footer a proposito: los
+  obligatorios legales no pueden depender de que nadie los borre al rediseñar el
+  pie. Vive en sections/footer-group.json, asi que aparece en todas las paginas,
+  home incluida. Ver docs/DECISIONS.md D-004.
+
+  Que cubre, y por que:
+  - Boton de arrepentimiento con link directo al formulario (Res. SCI 424/2020).
+  - Libro de Quejas Online de la Secretaria de Comercio (Res. 270/2020).
+  - Data Fiscal de AFIP.
+  - Identificacion del vendedor: razon social, CUIT, domicilio, email, telefono
+    (Ley 24.240 art. 4).
+  - Leyenda de precio final en pesos con IVA incluido.
+  - Leyenda de suplemento dietario y RNPA (CAA art. 1381, Disp. ANMAT 4980/05).
+
+  Todos los valores salen de los settings globales del grupo CAUCE. Los que
+  faltan se muestran como pendiente visible, nunca ocultos.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_dias = settings.cauce_dias_arrepentimiento | default: 10
+-%}
+
+<div class="cauce-legal cauce-seccion color-inverse">
+  <div class="page-width cauce-legal__inner">
+    <div class="cauce-legal__acciones">
+      {%- liquid
+        assign cauce_url_arr = settings.cauce_url_arrepentimiento
+        if cauce_url_arr == blank
+          assign cauce_url_arr = section.settings.url_arrepentimiento_fallback
+        endif
+      -%}
+
+      {%- if cauce_url_arr != blank -%}
+        <a href="{{ cauce_url_arr }}" class="cauce-legal__boton">
+          {{ 'cauce.legal.arrepentimiento_titulo' | t }}
+        </a>
+      {%- else -%}
+        <span class="cauce-legal__boton cauce-legal__boton--pendiente">
+          {{ 'cauce.legal.arrepentimiento_titulo' | t }}
+          <span class="cauce-pendiente">{% raw %}{{ PENDIENTE: url_arrepentimiento }}{% endraw %}</span>
+        </span>
+      {%- endif -%}
+
+      {%- if settings.cauce_url_libro_quejas != blank -%}
+        <a href="{{ settings.cauce_url_libro_quejas }}" class="cauce-legal__boton" target="_blank" rel="noopener">
+          {{ 'cauce.legal.libro_quejas_cta' | t }}
+        </a>
+      {%- else -%}
+        <span class="cauce-legal__boton cauce-legal__boton--pendiente">
+          {{ 'cauce.legal.libro_quejas_cta' | t }}
+          <span class="cauce-pendiente">{% raw %}{{ PENDIENTE: url_libro_quejas }}{% endraw %}</span>
+        </span>
+      {%- endif -%}
+
+      {%- if settings.cauce_img_data_fiscal != blank and settings.cauce_url_data_fiscal != blank -%}
+        <a
+          href="{{ settings.cauce_url_data_fiscal }}"
+          class="cauce-legal__fiscal"
+          target="_blank"
+          rel="noopener"
+        >
+          {%- assign cauce_alt_fiscal = 'cauce.legal.data_fiscal_alt' | t -%}
+          {{
+            settings.cauce_img_data_fiscal
+            | image_url: width: 160
+            | image_tag: loading: 'lazy', alt: cauce_alt_fiscal
+          }}
+        </a>
+      {%- else -%}
+        {%comment%}<span class="cauce-pendiente">{% raw %}{{ }}{% endraw %}</span>{%endcomment%}
+      {%- endif -%}
+    </div>
+
+    <div class="cauce-legal__datos">
+      <p class="cauce-legal__vendedor">
+        <strong>{% render 'cauce-dato-legal', valor: settings.cauce_razon_social, clave: 'razon_social' %}</strong>
+        · CUIT {% render 'cauce-dato-legal', valor: settings.cauce_cuit, clave: 'cuit' %}
+      </p>
+      {%- comment -%}
+        El domicilio es parte de la identificacion del vendedor que exige la Ley 24.240
+        art. 4, igual que la razon social y el CUIT. El comentario de arriba lo listaba
+        desde el principio pero el markup no lo imprimia. Ver D-045.
+      {%- endcomment -%}
+      <p class="cauce-legal__domicilio">
+        {% render 'cauce-dato-legal', valor: settings.cauce_domicilio, clave: 'domicilio' %}
+      </p>
+      <p class="cauce-legal__contacto">
+        {%- if settings.cauce_email != blank -%}
+          <a href="mailto:{{ settings.cauce_email }}">{{ settings.cauce_email }}</a>
+        {%- else -%}
+          {% render 'cauce-dato-legal', valor: '', clave: 'email' %}
+        {%- endif -%}
+        ·
+        {%- if settings.cauce_telefono != blank -%}
+          <a href="tel:{{ settings.cauce_telefono | remove: ' ' | remove: '-' }}">{{ settings.cauce_telefono }}</a>
+        {%- else -%}
+          {% render 'cauce-dato-legal', valor: '', clave: 'telefono' %}
+        {%- endif -%}
+      </p>
+      <p class="cauce-legal__precio">
+        {{ 'cauce.legal.precio_iva' | t }}
+        {{ 'cauce.legal.arrepentimiento_resumen' | t: dias: cauce_dias }}
+      </p>
+    </div>
+
+    <div class="cauce-legal__disclaimer">
+      {%- comment -%}
+        La leyenda es la de suplemento dietario (CAA art. 1381). El aditivo dental
+        para perros no es un suplemento ni lo regula ANMAT: en su plantilla la
+        leyenda no va, porque diria algo falso del producto. Ver D-074.
+
+        Con la migracion a Horizon (D-081) se elige desde el editor: si la tienda
+        solo vende el aditivo, la leyenda tampoco va en el resto de las paginas.
+      {%- endcomment -%}
+      {%- liquid
+        assign cauce_suplemento = false
+        case section.settings.leyenda_suplemento
+          when 'siempre'
+            assign cauce_suplemento = true
+          when 'fuera_aditivo'
+            unless template.suffix == 'aditivo-dental'
+              assign cauce_suplemento = true
+            endunless
+        endcase
+      -%}
+      {%- if cauce_suplemento -%}
+        {% render 'cauce-disclaimer' %}
+      {%- endif -%}
+      {%- if section.settings.mostrar_defensa -%}
+        <p class="cauce-legal__defensa">{{ 'cauce.legal.defensa_consumidor' | t }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "CAUCE · Legales",
+  "tag": "section",
+  "class": "cauce-legal-section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Casi todo sale de Configuracion del tema > CAUCE. Lo que falte se muestra como pendiente visible en la pagina: es intencional, para que un dato legal ausente no pase un QA."
+    },
+    {
+      "type": "url",
+      "id": "url_arrepentimiento_fallback",
+      "label": "Formulario de arrepentimiento",
+      "info": "Solo se usa si el setting global esta vacio."
+    },
+    {
+      "type": "select",
+      "id": "leyenda_suplemento",
+      "label": "Leyenda de suplemento dietario",
+      "info": "Va donde se vende un suplemento. El aditivo dental para perros no lo es.",
+      "options": [
+        { "value": "fuera_aditivo", "label": "En todas las paginas menos la del aditivo dental" },
+        { "value": "siempre", "label": "En todas las paginas" },
+        { "value": "nunca", "label": "En ninguna pagina" }
+      ],
+      "default": "fuera_aditivo"
+    },
+    {
+      "type": "checkbox",
+      "id": "mostrar_defensa",
+      "label": "Mostrar la leyenda de Defensa del Consumidor",
+      "default": true
+    }
+  ]
+}
+{% endschema %}

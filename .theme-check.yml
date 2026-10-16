@@ -1,0 +1,10 @@
+# CAUCE: config de theme-check para el tema base Horizon (D-081).
+# carpetalocal/ son plantillas de mails de notificacion y notas locales: no son
+# parte del tema ni se suben. docs/ es documentacion del proyecto.
+root: "."
+
+extends: :default
+
+ignore:
+  - carpetalocal/**
+  - docs/**

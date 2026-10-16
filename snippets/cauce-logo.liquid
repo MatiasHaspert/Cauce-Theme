@@ -1,0 +1,69 @@
+{% comment %}
+  CAUCE — lockup del logo.
+
+  El wordmark es texto real en Archivo Expanded 600 con tracking +0.14em, no una
+  imagen: queda nitido en cualquier densidad, pesa cero y hereda el color del
+  contexto (SEDIMENTO sobre TINTA, TINTA sobre SEDIMENTO).
+
+  Regla de marca: el isotipo no va suelto. Este snippet siempre lo emite junto al
+  wordmark. El unico uso aislado permitido es el favicon (ver layout/theme.liquid).
+
+  Parametros (todos opcionales):
+    tamano       'sm' | 'md' | 'lg'   (default 'md')
+    descriptor   true para mostrar FORMULAS DE USO DIARIO
+    url          si viene, envuelve en <a>; si no, en <span>
+    etiqueta     texto accesible del link (default: nombre de la tienda)
+{% endcomment %}
+
+{%- liquid
+  assign cauce_tamano = tamano | default: 'md'
+  case cauce_tamano
+    when 'sm'
+      assign cauce_size = '1rem'
+    when 'lg'
+      assign cauce_size = '2rem'
+    else
+      assign cauce_size = '1.375rem'
+  endcase
+  assign cauce_etiqueta = etiqueta | default: shop.name
+-%}
+
+{%- capture cauce_marca -%}
+  <svg class="cauce-logo__isotipo" viewBox="0 0 100 76" aria-hidden="true" focusable="false">
+    <path
+      d="M17 8 C17 48 29 64 50 64 C71 64 83 48 83 8"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="8.5"
+      stroke-linecap="round"
+    />
+    <path
+      d="M27 51 H73"
+      fill="none"
+      stroke="var(--cauce-acento)"
+      stroke-width="6"
+      stroke-linecap="round"
+    />
+  </svg>
+  <span class="cauce-logo__texto">
+    <span class="cauce-logo__marca">{{ 'cauce.marca.nombre' | t }}</span>
+    {%- if descriptor -%}
+      <span class="cauce-logo__descriptor">{{ 'cauce.marca.descriptor' | t }}</span>
+    {%- endif -%}
+  </span>
+{%- endcapture -%}
+
+{%- if url != blank -%}
+  <a
+    class="cauce-logo"
+    href="{{ url }}"
+    style="font-size: {{ cauce_size }};"
+    aria-label="{{ cauce_etiqueta | escape }}"
+  >
+    {{ cauce_marca }}
+  </a>
+{%- else -%}
+  <span class="cauce-logo" style="font-size: {{ cauce_size }};" role="img" aria-label="{{ cauce_etiqueta | escape }}">
+    {{ cauce_marca }}
+  </span>
+{%- endif -%}

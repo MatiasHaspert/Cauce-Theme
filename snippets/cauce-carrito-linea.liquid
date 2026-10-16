@@ -1,0 +1,149 @@
+{% comment %}
+  CAUCE — linea de producto del carrito. COMPARTIDA por el drawer y /cart.
+
+  Una sola linea para las dos superficies es lo que evita que /cart y el drawer
+  se desincronicen al primer cambio (D-046 §7).
+
+  Parametros:
+    item      {object}  requerido. Line item del carrito.
+    formato   {bool}    mostrar el chip de cauce.formato. Default true.
+    por_dia   {bool}    mostrar el precio por dia de uso. Default true.
+
+  CONTRATO CON assets/component-cart-items.js (Horizon). En Shrine los hooks
+  eran ids ('CartDrawer-Item-N') y un custom element por boton; en Horizon son
+  refs dentro de <cart-items-component> (D-081):
+
+    ref="cartItemRows[]" + data-key ........ el JS busca la fila por indice de
+                                             linea: tiene que haber UNA por item,
+                                             en el orden de cart.items.
+    snippets/quantity-selector.liquid ...... con line_index dibuja el
+                                             <cart-quantity-selector-component>
+                                             que dispara el cambio de cantidad.
+    on:click="/onLineItemRemove/N" ......... quitar. Es un <button>: con un <a>
+                                             el navegador seguiria el link ademas
+                                             del AJAX.
+    ref="cartItemErrorContainer-N" / ref="cartItemError-N"
+                                             el JS escribe el error y le saca
+                                             .hidden al contenedor.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_i = item.index | plus: 1
+  assign cauce_ver_formato = formato | default: true, allow_false: true
+  assign cauce_ver_por_dia = por_dia | default: true, allow_false: true
+
+  comment
+    Chip de presentacion: cauce.formato ("30 capsulas", "1 litro"). Sin el
+    metafield no hay chip, nunca un chip vacio (METAFIELDS.md).
+  endcomment
+  assign cauce_formato = item.product.metafields.cauce.formato.value
+
+  comment
+    Precio por dia de uso, desde unidades_envase / dosis_diaria. Se divide
+    item.final_price (lo que se paga por unidad) para que el dato no mienta con
+    un descuento de linea. Sin los dos metafields no se muestra nada.
+  endcomment
+  assign cauce_envase = item.product.metafields.cauce.unidades_envase.value | plus: 0
+  assign cauce_dosis = item.product.metafields.cauce.dosis_diaria.value | plus: 0
+  assign cauce_por_dia = 0
+  if cauce_envase > 0 and cauce_dosis > 0
+    assign cauce_dias = cauce_envase | divided_by: cauce_dosis
+    if cauce_dias > 0
+      assign cauce_por_dia = item.final_price | divided_by: cauce_dias
+    endif
+  endif
+
+  assign cauce_puede_cantidad = item.instructions.can_update_quantity | default: true, allow_false: true
+  assign cauce_puede_quitar = item.instructions.can_remove | default: true, allow_false: true
+-%}
+
+<li
+  class="cauce-carrito__linea"
+  id="CartItem-{{ item.key }}"
+  ref="cartItemRows[]"
+  data-key="{{ item.key }}"
+  data-parent-key="{{ item.parent_relationship.parent.key }}"
+>
+  {%- if item.image -%}
+    <a href="{{ item.url }}" class="cauce-carrito__linea-media" tabindex="-1" aria-hidden="true">
+      {{
+        item.image
+        | image_url: width: 300
+        | image_tag: loading: 'lazy', width: 150, alt: item.image.alt
+      }}
+    </a>
+  {%- else -%}
+    <span class="cauce-carrito__linea-media" aria-hidden="true"></span>
+  {%- endif -%}
+
+  <div class="cauce-carrito__linea-cuerpo">
+    <div class="cauce-carrito__linea-top">
+      <a href="{{ item.url }}" class="cauce-carrito__linea-nombre">
+        {{- item.product.title | escape -}}
+      </a>
+      <button
+        type="button"
+        class="cauce-carrito__linea-quitar"
+        aria-label="{{ 'accessibility.remove_item' | t: title: item.title | escape }}"
+        on:click="/onLineItemRemove/{{ cauce_i }}"
+        {% unless cauce_puede_quitar %}
+          hidden
+        {% endunless %}
+      >
+        {%- render 'cauce-iconos', icono: 'tacho' -%}
+      </button>
+    </div>
+
+    {%- if cauce_ver_formato and cauce_formato != blank -%}
+      <span class="cauce-carrito__linea-chip cauce-dato">{{ cauce_formato }}</span>
+    {%- endif -%}
+
+    {%- if item.product.has_only_default_variant == false or item.selling_plan_allocation != null -%}
+      <p class="cauce-carrito__linea-variante">
+        {%- if item.product.has_only_default_variant == false -%}
+          {{ item.options_with_values | map: 'value' | join: ' / ' }}
+        {%- endif -%}
+        {%- if item.selling_plan_allocation != null %} {{ item.selling_plan_allocation.selling_plan.name }}{% endif -%}
+      </p>
+    {%- endif -%}
+
+    <div class="cauce-carrito__linea-pie">
+      <div class="cauce-carrito__linea-precios">
+        {%- if item.original_line_price != item.final_line_price -%}
+          <span class="visually-hidden">{{ 'content.price_regular' | t }}</span>
+          <s class="cauce-carrito__linea-antes">{{ item.original_line_price | money }}</s>
+          <span class="visually-hidden">{{ 'content.price_sale' | t }}</span>
+          <span class="cauce-carrito__linea-precio">{{ item.final_line_price | money }}</span>
+        {%- else -%}
+          <span class="cauce-carrito__linea-precio">{{ item.original_line_price | money }}</span>
+        {%- endif -%}
+
+        {%- if cauce_ver_por_dia and cauce_por_dia > 0 -%}
+          {%- assign cauce_por_dia_money = cauce_por_dia | money -%}
+          <span class="cauce-carrito__linea-dia cauce-dato">
+            {{- 'cauce.carrito.precio_por_dia' | t: monto: cauce_por_dia_money -}}
+          </span>
+        {%- endif -%}
+      </div>
+
+      {% render 'quantity-selector',
+        product: item.product,
+        variant: item.variant,
+        in_cart_quantity: item.quantity,
+        line_index: item.index,
+        class: 'cauce-carrito__stepper',
+        can_update_quantity: cauce_puede_cantidad
+      %}
+    </div>
+
+    <div
+      class="cauce-carrito__linea-error hidden"
+      ref="cartItemErrorContainer-{{ cauce_i }}"
+    >
+      <div class="cart-item__error" role="alert">
+        {%- render 'cauce-iconos', icono: 'alerta' -%}
+        <small class="cart-item__error-text" ref="cartItemError-{{ cauce_i }}"></small>
+      </div>
+    </div>
+  </div>
+</li>

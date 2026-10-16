@@ -1,0 +1,17 @@
+{% comment %}
+  CAUCE — imprime un dato legal o, si falta, un placeholder visible.
+
+  El placeholder es a proposito ruidoso. Un CUIT vacio que se oculta solo es un
+  incumplimiento que nadie ve en un QA visual; un CUIT vacio que grita es un
+  incumplimiento que se arregla antes de publicar.
+
+  Parametros:
+    valor  {string}  el dato. Si viene vacio se muestra el pendiente.
+    clave  {string}  nombre del dato, para el texto del pendiente.
+{% endcomment %}
+
+{%- if valor != blank -%}
+  {{ valor }}
+{%- else -%}
+  <span class="cauce-pendiente">{% raw %}{{ PENDIENTE:{% endraw %} {{ clave }} }}</span>
+{%- endif -%}

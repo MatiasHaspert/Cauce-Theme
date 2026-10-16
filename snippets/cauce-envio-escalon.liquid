@@ -1,0 +1,34 @@
+{% comment %}
+  CAUCE: marca de envio gratis dentro de un escalon de cantidad.
+
+  Parametros:
+    total  {number}  requerido. Total del pack EN CENTAVOS, ya con el descuento
+                     aplicado. Lo calcula blocks/cauce-comprar.liquid.
+
+  Devuelve el texto solo si ese total alcanza el umbral cargado en
+  settings.cauce_umbral_envio_gratis. Sin umbral cargado no devuelve nada, igual
+  que la barra de progreso del carrito.
+
+  Por que se calcula y no se escribe a mano en el editor: el umbral vive en un
+  solo setting y los totales los calcula el bloque desde el descuento de cada pack.
+  Escribir "Envio gratis" en la cinta de un pack lo dejaria mintiendo el dia que
+  cambie cualquiera de los dos, que es exactamente lo que paso tres veces entre
+  D-047c y D-050. Asi la promesa no puede quedar desfasada del precio.
+
+  Se resuelve en el servidor: en Horizon la seccion se vuelve a renderizar al
+  cambiar de variante, asi que la marca sigue al precio.
+
+  El texto sale de locales/es.json > cauce.pdp.envio_gratis_escalon. Nunca se
+  escribe aca adentro.
+
+  Ver snippets/cauce-carrito-envio.liquid y docs/DECISIONS.md D-050c.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_umbral_envio = settings.cauce_umbral_envio_gratis | times: 100
+  assign cauce_total_escalon = total | plus: 0
+
+  if cauce_umbral_envio > 0 and cauce_total_escalon >= cauce_umbral_envio
+    echo 'cauce.pdp.envio_gratis_escalon' | t
+  endif
+-%}

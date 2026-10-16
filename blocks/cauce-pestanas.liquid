@@ -1,0 +1,197 @@
+{% comment %}
+  CAUCE: pestanas dentro de la columna de compra de la PDP.
+
+  Son las pestanas de <cauce-tabs> (assets/cauce.js, patron tabs del APG). En
+  Shrine eran un snippet llamado desde un bloque custom_liquid, y las filas de
+  la tabla de ingredientes eran bloques sueltos de main-product que el snippet
+  juntaba recorriendo section.blocks (D-077). En Horizon las filas pasan a ser
+  bloques hijos de este bloque (_cauce-ingrediente-clave): se agregan, se sacan
+  y se reordenan adentro de la pestana, que es donde se ven. Ver D-081.
+
+  Tres pestanas fijas:
+    1. texto (HTML)
+    2. tabla de ingredientes clave, armada con los bloques hijos
+    3. texto (HTML)
+  Una pestana sin titulo o sin contenido no se dibuja. Sin JS los paneles quedan
+  visibles uno debajo del otro, que es la degradacion correcta.
+
+  El copy vive en templates/*.json, no aca. Estilos: cauce-brand.css, bloque 26.
+  Ver docs/DECISIONS.md D-074, D-077 y D-078.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_id = block.id
+  assign cauce_t1 = block.settings.titulo_1
+  assign cauce_c1 = block.settings.contenido_1
+  assign cauce_t2 = block.settings.titulo_2
+  assign cauce_t3 = block.settings.titulo_3
+  assign cauce_c3 = block.settings.contenido_3
+
+  assign cauce_filas = 0
+  for fila in block.blocks
+    if fila.type == '_cauce-ingrediente-clave' and fila.settings.nombre != blank
+      assign cauce_filas = cauce_filas | plus: 1
+    endif
+  endfor
+-%}
+
+{%- capture cauce_filas_html -%}{% content_for 'blocks' %}{%- endcapture -%}
+
+{%- capture cauce_c2 -%}
+  {%- if cauce_filas > 0 -%}
+    <table class="cauce-clave">
+      <caption class="visually-hidden">{{ cauce_t2 | strip_html }}</caption>
+      <thead>
+        <tr>
+          <td class="cauce-clave__esquina"></td>
+          <th scope="col" class="cauce-clave__nosotros">{{ block.settings.nosotros | default: shop.name }}</th>
+          <th scope="col" class="cauce-clave__otros">{{ block.settings.otros | default: 'Otros' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ cauce_filas_html }}
+      </tbody>
+    </table>
+  {%- elsif request.design_mode -%}
+    <p class="cauce-carrito__aviso">Agregá filas de ingredientes adentro de este bloque para que aparezca la tabla.</p>
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- liquid
+  assign cauce_n = 0
+  if cauce_t1 != blank and cauce_c1 != blank
+    assign cauce_n = cauce_n | plus: 1
+  endif
+  if cauce_t2 != blank and cauce_c2 != blank
+    assign cauce_n = cauce_n | plus: 1
+  endif
+  if cauce_t3 != blank and cauce_c3 != blank
+    assign cauce_n = cauce_n | plus: 1
+  endif
+  assign cauce_primera = true
+-%}
+
+<div class="cauce-pestanas-bloque" {{ block.shopify_attributes }}>
+  {%- if cauce_n > 0 -%}
+    {%- if block.settings.titulo != blank -%}
+      <h2 class="cauce-pestanas__titulo">{{ block.settings.titulo }}</h2>
+    {%- endif -%}
+    <cauce-tabs class="cauce-tabs cauce-pestanas">
+      <div
+        class="cauce-tabs__lista cauce-pestanas__lista"
+        role="tablist"
+        {% if block.settings.etiqueta != blank %}
+          aria-label="{{ block.settings.etiqueta | escape }}"
+        {% endif %}
+      >
+        {%- if cauce_t1 != blank and cauce_c1 != blank -%}
+          <button type="button" class="cauce-tabs__boton cauce-pestanas__boton" role="tab" id="CaucePestana-{{ cauce_id }}-1" aria-controls="CaucePestanaPanel-{{ cauce_id }}-1" aria-selected="{{ cauce_primera }}" tabindex="{% if cauce_primera %}0{% else %}-1{% endif %}">{{ cauce_t1 }}</button>
+          {%- assign cauce_primera = false -%}
+        {%- endif -%}
+        {%- if cauce_t2 != blank and cauce_c2 != blank -%}
+          <button type="button" class="cauce-tabs__boton cauce-pestanas__boton" role="tab" id="CaucePestana-{{ cauce_id }}-2" aria-controls="CaucePestanaPanel-{{ cauce_id }}-2" aria-selected="{{ cauce_primera }}" tabindex="{% if cauce_primera %}0{% else %}-1{% endif %}">{{ cauce_t2 }}</button>
+          {%- assign cauce_primera = false -%}
+        {%- endif -%}
+        {%- if cauce_t3 != blank and cauce_c3 != blank -%}
+          <button type="button" class="cauce-tabs__boton cauce-pestanas__boton" role="tab" id="CaucePestana-{{ cauce_id }}-3" aria-controls="CaucePestanaPanel-{{ cauce_id }}-3" aria-selected="{{ cauce_primera }}" tabindex="{% if cauce_primera %}0{% else %}-1{% endif %}">{{ cauce_t3 }}</button>
+          {%- assign cauce_primera = false -%}
+        {%- endif -%}
+      </div>
+
+      {%- assign cauce_primera = true -%}
+      {%- if cauce_t1 != blank and cauce_c1 != blank -%}
+        <div class="cauce-tabs__panel cauce-pestanas__panel rte" role="tabpanel" id="CaucePestanaPanel-{{ cauce_id }}-1" aria-labelledby="CaucePestana-{{ cauce_id }}-1"{% unless cauce_primera %} hidden{% endunless %}>{{ cauce_c1 }}</div>
+        {%- assign cauce_primera = false -%}
+      {%- endif -%}
+      {%- if cauce_t2 != blank and cauce_c2 != blank -%}
+        <div class="cauce-tabs__panel cauce-pestanas__panel rte" role="tabpanel" id="CaucePestanaPanel-{{ cauce_id }}-2" aria-labelledby="CaucePestana-{{ cauce_id }}-2"{% unless cauce_primera %} hidden{% endunless %}>{{ cauce_c2 }}</div>
+        {%- assign cauce_primera = false -%}
+      {%- endif -%}
+      {%- if cauce_t3 != blank and cauce_c3 != blank -%}
+        <div class="cauce-tabs__panel cauce-pestanas__panel rte" role="tabpanel" id="CaucePestanaPanel-{{ cauce_id }}-3" aria-labelledby="CaucePestana-{{ cauce_id }}-3"{% unless cauce_primera %} hidden{% endunless %}>{{ cauce_c3 }}</div>
+        {%- assign cauce_primera = false -%}
+      {%- endif -%}
+    </cauce-tabs>
+  {%- elsif request.design_mode -%}
+    <p class="cauce-carrito__aviso">Pestañas: cargá al menos un título con su contenido.</p>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "CAUCE · Pestañas",
+  "tag": null,
+  "blocks": [{ "type": "_cauce-ingrediente-clave" }],
+  "settings": [
+    {
+      "type": "text",
+      "id": "titulo",
+      "label": "Titulo arriba de la caja"
+    },
+    {
+      "type": "text",
+      "id": "etiqueta",
+      "label": "Nombre accesible del grupo"
+    },
+    {
+      "type": "header",
+      "content": "Pestaña 1"
+    },
+    {
+      "type": "text",
+      "id": "titulo_1",
+      "label": "Titulo"
+    },
+    {
+      "type": "html",
+      "id": "contenido_1",
+      "label": "Contenido (HTML)"
+    },
+    {
+      "type": "header",
+      "content": "Pestaña 2 · tabla de ingredientes"
+    },
+    {
+      "type": "paragraph",
+      "content": "Cada fila es un bloque \"Ingrediente clave\" adentro de este bloque."
+    },
+    {
+      "type": "text",
+      "id": "titulo_2",
+      "label": "Titulo",
+      "default": "Ingredientes clave"
+    },
+    {
+      "type": "text",
+      "id": "nosotros",
+      "label": "Encabezado de la columna propia"
+    },
+    {
+      "type": "text",
+      "id": "otros",
+      "label": "Encabezado de la otra columna",
+      "default": "Otros"
+    },
+    {
+      "type": "header",
+      "content": "Pestaña 3"
+    },
+    {
+      "type": "text",
+      "id": "titulo_3",
+      "label": "Titulo"
+    },
+    {
+      "type": "html",
+      "id": "contenido_3",
+      "label": "Contenido (HTML)"
+    }
+  ],
+  "presets": [
+    {
+      "name": "CAUCE · Pestañas",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

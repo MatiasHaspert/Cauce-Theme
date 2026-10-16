@@ -1,0 +1,117 @@
+{% comment %}
+  CAUCE: medios de pago locales.
+
+  Por que no se usa el block payment_badges del tema: ese block renderiza con el
+  filtro payment_type_svg_tag, que solo conoce el set fijo de Shopify (visa,
+  master, american_express, paypal, apple_pay, shop_pay, discover...). Mercado
+  Pago, Cabal y Naranja X no estan en esa lista, y la mitad de las que si estan
+  no operan en Argentina. Ver docs/DECISIONS.md D-012.
+
+  Fuentes de datos, en orden de prioridad:
+    1. settings.cauce_img_medios_pago  imagen subida por el comercio (tira oficial).
+       Si esta cargada, se usa y se ignora todo lo demas.
+    2. settings.cauce_medios_pago      lista separada por comas. Para cada marca,
+       en este orden:
+         a. SVG nativo de Shopify, si la marca esta en cauce_pagos_nativos.
+         b. Logo propio desde assets/, si la marca esta en cauce_pagos_logos.
+            El archivo tiene que llamarse cauce-pago-<marca><ext>, por ejemplo
+            assets/cauce-pago-mercadopago.svg. Si el archivo no existe, la imagen
+            sale rota: agregar la marca a cauce_pagos_logos recien cuando el SVG
+            este subido.
+         c. Chip tipografico, que es coherente con la regla de marca de no
+            saturar de sellos.
+
+  settings.cauce_cuotas = 0 oculta la linea de cuotas. Nunca se escribe un numero
+  de cuotas aca adentro.
+
+  Parametros:
+    alineacion  {string}  opcional: left | center | right. Default left.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_pagos_align = alineacion | default: 'left'
+  assign cauce_pagos_lista = settings.cauce_medios_pago | remove: ' ' | split: ','
+  assign cauce_pagos_nativos = 'visa,master,american_express,maestro,diners_club,jcb,elo' | split: ','
+  assign cauce_pagos_logos = 'mercadopago,cabal,naranja' | split: ','
+  assign cauce_pagos_logo_ext = '.svg'
+  # Ancho y alto nominales del logo propio. No tienen que coincidir con el
+  # viewBox real de cada SVG: el tamano final lo fija .cauce-pagos__logo
+  # (height fija, width auto). Estan solo para dar relacion de aspecto antes de
+  # que aplique el CSS y para no violar ImgWidthAndHeight.
+  assign cauce_pagos_logo_ancho = 120
+  assign cauce_pagos_logo_alto = 32
+-%}
+
+{%- if settings.cauce_img_medios_pago != blank
+    or cauce_pagos_lista.size > 0
+    or settings.cauce_cuotas > 0
+-%}
+  <div class="cauce-pagos cauce-pagos--{{ cauce_pagos_align }}">
+    {%- if settings.cauce_img_medios_pago != blank -%}
+      {%- liquid
+        assign cauce_pagos_alt = settings.cauce_img_medios_pago.alt
+        if cauce_pagos_alt == blank
+          assign cauce_pagos_alt = 'cauce.pdp.medios_pago_titulo' | t
+        endif
+      -%}
+      {{
+        settings.cauce_img_medios_pago
+        | image_url: width: 800
+        | image_tag: loading: 'lazy', class: 'cauce-pagos__tira', alt: cauce_pagos_alt
+      }}
+    {%- elsif cauce_pagos_lista.size > 0 -%}
+      <ul class="cauce-pagos__lista" role="list" aria-label="{{ 'cauce.pdp.medios_pago_titulo' | t }}">
+        {%- for cauce_pago in cauce_pagos_lista -%}
+          {%- liquid
+            assign cauce_pago_id = cauce_pago | strip | downcase
+            case cauce_pago_id
+              when 'mastercard'
+                assign cauce_pago_shopify = 'master'
+              when 'amex'
+                assign cauce_pago_shopify = 'american_express'
+              when 'diners'
+                assign cauce_pago_shopify = 'diners_club'
+              else
+                assign cauce_pago_shopify = cauce_pago_id
+            endcase
+
+            assign cauce_pago_clave = 'cauce.pagos.' | append: cauce_pago_id
+            assign cauce_pago_nombre = cauce_pago_clave | t
+            # Si el locale todavia no tiene la clave, el filtro t devuelve
+            # "Translation missing: ...". Antes eso se imprimia tal cual en la
+            # PDP; ahora cae al id humanizado.
+            if cauce_pago_nombre contains 'Translation missing'
+              assign cauce_pago_nombre = cauce_pago_id | replace: '_', ' ' | capitalize
+            endif
+
+            assign cauce_pago_archivo = 'cauce-pago-' | append: cauce_pago_id | append: cauce_pagos_logo_ext
+          -%}
+          <li class="cauce-pagos__item">
+            {%- if cauce_pagos_nativos contains cauce_pago_shopify -%}
+              {{ cauce_pago_shopify | payment_type_svg_tag: class: 'cauce-pagos__svg' }}
+              <span class="visually-hidden">{{ cauce_pago_nombre }}</span>
+            {%- elsif cauce_pagos_logos contains cauce_pago_id -%}
+              <img
+                src="{{ cauce_pago_archivo | asset_url }}"
+                alt="{{ cauce_pago_nombre | escape }}"
+                class="cauce-pagos__logo"
+                width="{{ cauce_pagos_logo_ancho }}"
+                height="{{ cauce_pagos_logo_alto }}"
+                loading="lazy"
+                decoding="async"
+              >
+            {%- else -%}
+              <span class="cauce-pagos__chip">{{ cauce_pago_nombre }}</span>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if settings.cauce_cuotas > 0 -%}
+      <p class="cauce-pagos__cuotas">
+        {{- 'cauce.pdp.cuotas' | t: cuotas: settings.cauce_cuotas -}}
+      </p>
+    {%- endif -%}
+  </div>
+{%- endif -%}

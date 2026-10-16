@@ -1,0 +1,448 @@
+{% comment %}
+  CAUCE — reseñas de clientes, con foto.
+
+  Un resumen arriba (promedio, cantidad y cuantas hay de cada puntaje) y abajo
+  una grilla de tarjetas: foto del cliente, estrellas, nombre, titulo y texto.
+  Es el bloque de reseñas de la PDP del aditivo dental. Ver D-075.
+
+  La tienda no tiene una app de reseñas, asi que las reseñas son bloques de la
+  seccion: se cargan a mano, una por una, cuando un cliente la manda y autoriza
+  a publicarla. Si mas adelante se instala una app, esta seccion se apaga y va
+  el bloque de la app en su lugar.
+
+  Cinco cosas que la seccion resuelve por construccion:
+
+  - El promedio, la cantidad y las barras se CALCULAN de las reseñas cargadas.
+    No hay un campo para escribirlos: "4,7 sobre 5.000 clientes" no se puede
+    tipear aca ni por error.
+  - Una reseña cuenta solo si esta completa: texto, autor y puntaje, y ninguno
+    con "[COMPLETAR". El puntaje arranca en "sin puntaje", no en 5: un bloque
+    recien agregado no suma cinco estrellas.
+  - Una reseña incompleta se dibuja SOLO dentro del editor de temas
+    (request.design_mode), para poder maquetar. En la tienda no sale. Y sin
+    ninguna reseña completa la seccion entera no se dibuja en la tienda: no
+    queda un titulo "Reseñas" sobre un bloque vacio.
+  - "Compra verificada" es un checkbox por reseña, apagado por defecto. Va solo
+    si hay un pedido que la respalde.
+  - Las primeras reseñas van a la vista y el resto adentro de un <details>: en
+    telefono, treinta tarjetas en una columna entierran el pie. Se abre sin JS.
+
+  No emite datos estructurados (AggregateRating): Google no los toma para
+  reseñas que el propio comercio carga sobre su producto, y declararlos seria
+  presentarlas como algo que no son.
+
+  ADVERTENCIA. Reseñas reales, de clientes reales, con su permiso. Una reseña
+  inventada o copiada de otra marca es publicidad engañosa (Ley 24.240 art. 4,
+  Dec. 274/2019) y motivo de baja de anuncios en Meta. Tampoco fotos de bocas
+  presentadas como antes y despues. El texto de una reseña es tambien un claim:
+  si un cliente escribe que el producto le curo algo, esa reseña no se publica
+  tal cual. El contenido vive en templates/*.json, no aca.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_n = 0
+  assign cauce_pend = 0
+  assign cauce_suma = 0
+  assign cauce_c5 = 0
+  assign cauce_c4 = 0
+  assign cauce_c3 = 0
+  assign cauce_c2 = 0
+  assign cauce_c1 = 0
+
+  comment
+    Primera pasada: que reseñas estan completas. Se guarda la posicion de cada
+    una ('c' completa, 'p' pendiente, 'x' vacia) para no repetir las mismas
+    condiciones en la pasada que dibuja.
+  endcomment
+  assign cauce_estados = ''
+  for block in section.blocks
+    assign cauce_puntaje = block.settings.puntaje | plus: 0
+    assign cauce_junto = block.settings.titulo | append: block.settings.texto | append: block.settings.autor
+
+    if block.settings.texto == blank and block.settings.titulo == blank and block.settings.autor == blank
+      assign cauce_estados = cauce_estados | append: 'x,'
+    elsif block.settings.texto == blank or block.settings.autor == blank or cauce_puntaje < 1 or cauce_junto contains '[COMPLETAR'
+      assign cauce_pend = cauce_pend | plus: 1
+      assign cauce_estados = cauce_estados | append: 'p,'
+    else
+      assign cauce_n = cauce_n | plus: 1
+      assign cauce_suma = cauce_suma | plus: cauce_puntaje
+      assign cauce_estados = cauce_estados | append: 'c,'
+      case cauce_puntaje
+        when 5
+          assign cauce_c5 = cauce_c5 | plus: 1
+        when 4
+          assign cauce_c4 = cauce_c4 | plus: 1
+        when 3
+          assign cauce_c3 = cauce_c3 | plus: 1
+        when 2
+          assign cauce_c2 = cauce_c2 | plus: 1
+        else
+          assign cauce_c1 = cauce_c1 | plus: 1
+      endcase
+    endif
+  endfor
+  assign cauce_estados = cauce_estados | split: ','
+
+  assign cauce_ver_pend = false
+  if request.design_mode and cauce_pend > 0
+    assign cauce_ver_pend = true
+  endif
+
+  assign cauce_hay = false
+  if cauce_n > 0 or cauce_ver_pend
+    assign cauce_hay = true
+  endif
+
+  if cauce_n > 0
+    assign cauce_promedio = cauce_suma | times: 10.0 | divided_by: cauce_n | round | divided_by: 10.0
+    assign cauce_promedio_txt = cauce_promedio | replace: '.', ','
+    assign cauce_promedio_pct = cauce_promedio | times: 20
+    assign cauce_etiqueta_cant = section.settings.etiqueta_varias
+    if cauce_n == 1
+      assign cauce_etiqueta_cant = section.settings.etiqueta_una
+    endif
+  endif
+
+  assign cauce_visibles = section.settings.visibles | plus: 0
+  assign cauce_estilo_foto = 'aspect-ratio: ' | append: section.settings.relacion
+  assign cauce_sizes = '(min-width: 990px) 380px, (min-width: 750px) 45vw, calc(100vw - 30px)'
+-%}
+
+{%- capture cauce_estrella -%}
+  <svg class="cauce-resenas__estrella" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2.6l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.6l-5.9 3.2 1.2-6.6-4.8-4.6 6.6-.9z"/></svg>
+{%- endcapture -%}
+{%- capture cauce_cinco -%}{{ cauce_estrella }}{{ cauce_estrella }}{{ cauce_estrella }}{{ cauce_estrella }}{{ cauce_estrella }}{%- endcapture -%}
+
+{%- if cauce_hay -%}
+  <div class="cauce-resenas color-{{ section.settings.color_scheme }} cauce-seccion">
+    <div
+      class="page-width cauce-resenas__inner"
+      style="--padding-top: {{ section.settings.padding_top }}px; --padding-bottom: {{ section.settings.padding_bottom }}px; --cauce-resenas-ancho: {{ section.settings.ancho_maximo }}px;"
+    >
+      {%- if section.settings.volanta != blank or section.settings.titulo != blank -%}
+        <div class="cauce-resenas__encabezado">
+          {%- if section.settings.volanta != blank -%}
+            <p class="cauce-eyebrow">{{ section.settings.volanta }}</p>
+          {%- endif -%}
+          {%- if section.settings.titulo != blank -%}
+            <h2 class="cauce-resenas__titulo {{ section.settings.heading_size }}">{{ section.settings.titulo }}</h2>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- if cauce_n > 0 -%}
+        <div class="cauce-resenas__resumen">
+          <div class="cauce-resenas__promedio">
+            <p class="cauce-resenas__numero">{{ cauce_promedio_txt }}</p>
+            <span
+              class="cauce-resenas__estrellas cauce-resenas__estrellas--promedio"
+              role="img"
+              aria-label="{{ cauce_promedio_txt }} {{ section.settings.etiqueta_de_cinco | escape }}"
+            >
+              <span class="cauce-resenas__fila-vacia">{{ cauce_cinco }}</span>
+              <span class="cauce-resenas__fila-llena" style="width: {{ cauce_promedio_pct }}%;">{{ cauce_cinco }}</span>
+            </span>
+            <p class="cauce-resenas__cantidad">{{ cauce_n }} {{ cauce_etiqueta_cant }}</p>
+          </div>
+
+          <ul class="cauce-resenas__barras" role="list">
+            {%- for cauce_i in (1..5) reversed -%}
+              {%- liquid
+                case cauce_i
+                  when 5
+                    assign cauce_ci = cauce_c5
+                  when 4
+                    assign cauce_ci = cauce_c4
+                  when 3
+                    assign cauce_ci = cauce_c3
+                  when 2
+                    assign cauce_ci = cauce_c2
+                  else
+                    assign cauce_ci = cauce_c1
+                endcase
+                assign cauce_ancho = cauce_ci | times: 100.0 | divided_by: cauce_n | round
+              -%}
+              <li class="cauce-resenas__barra">
+                <span class="cauce-resenas__barra-nombre">{{ cauce_i }} {{ cauce_estrella }}</span>
+                <span class="cauce-resenas__barra-pista" aria-hidden="true">
+                  <span class="cauce-resenas__barra-relleno" style="width: {{ cauce_ancho }}%;"></span>
+                </span>
+                <span class="cauce-resenas__barra-cuenta">{{ cauce_ci }}</span>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+
+      {%- if cauce_ver_pend and section.settings.aviso_editor != blank -%}
+        <p class="cauce-resenas__aviso">{{ section.settings.aviso_editor }}</p>
+      {%- endif -%}
+
+      {%- comment -%}
+        Segunda pasada. Las tarjetas se capturan una vez y se reparten en dos
+        listas: las primeras `visibles` a la vista y el resto adentro del
+        <details>. El contador solo avanza con las tarjetas que se dibujan.
+      {%- endcomment -%}
+      {%- liquid
+        assign cauce_dibujadas = 0
+        assign cauce_resto = ''
+      -%}
+      <ul class="cauce-resenas__grilla" role="list">
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign cauce_estado = cauce_estados[forloop.index0]
+            if cauce_estado == 'x'
+              continue
+            endif
+            if cauce_estado == 'p' and cauce_ver_pend == false
+              continue
+            endif
+            assign cauce_puntaje = block.settings.puntaje | plus: 0
+            assign cauce_alt = block.settings.alt | default: block.settings.imagen.alt
+            assign cauce_dibujadas = cauce_dibujadas | plus: 1
+          -%}
+          {%- capture cauce_tarjeta -%}
+            <li class="cauce-resenas__tarjeta{% if cauce_estado == 'p' %} cauce-resenas__tarjeta--pendiente{% endif %}" {{ block.shopify_attributes }}>
+              {%- if block.settings.imagen != blank -%}
+                {{
+                  block.settings.imagen
+                  | image_url: width: 900
+                  | image_tag:
+                    loading: 'lazy',
+                    widths: '320, 480, 640, 900',
+                    sizes: cauce_sizes,
+                    class: 'cauce-resenas__foto',
+                    style: cauce_estilo_foto,
+                    alt: cauce_alt
+                }}
+              {%- elsif cauce_estado == 'p' and block.settings.foto_pendiente != blank -%}
+                {%- render 'cauce-foto-pendiente',
+                  etiqueta: block.settings.foto_pendiente,
+                  relacion: section.settings.relacion,
+                  clase: 'cauce-resenas__foto'
+                -%}
+              {%- endif -%}
+
+              <div class="cauce-resenas__cuerpo">
+                {%- if cauce_puntaje > 0 -%}
+                  <span
+                    class="cauce-resenas__estrellas"
+                    role="img"
+                    aria-label="{{ cauce_puntaje }} {{ section.settings.etiqueta_de_cinco | escape }}"
+                  >
+                    {%- for cauce_i in (1..5) -%}
+                      <span class="cauce-resenas__punto{% if cauce_i > cauce_puntaje %} cauce-resenas__punto--vacio{% endif %}">{{ cauce_estrella }}</span>
+                    {%- endfor -%}
+                  </span>
+                {%- endif -%}
+
+                {%- if block.settings.autor != blank -%}
+                  <p class="cauce-resenas__autor">
+                    <span class="cauce-resenas__nombre">{{ block.settings.autor }}</span>
+                    {%- if block.settings.verificada and section.settings.etiqueta_verificada != blank -%}
+                      <span class="cauce-resenas__verificada">
+                        {%- render 'cauce-iconos', icono: 'chequeo' -%}
+                        {{ section.settings.etiqueta_verificada }}
+                      </span>
+                    {%- endif -%}
+                  </p>
+                {%- endif -%}
+
+                {%- if block.settings.titulo != blank -%}
+                  <h3 class="cauce-resenas__encabezado-tarjeta">{{ block.settings.titulo }}</h3>
+                {%- endif -%}
+
+                {%- if block.settings.texto != blank -%}
+                  <div class="cauce-resenas__texto">{{ block.settings.texto | newline_to_br }}</div>
+                {%- endif -%}
+
+                {%- if block.settings.fecha != blank -%}
+                  <p class="cauce-resenas__fecha">{{ block.settings.fecha }}</p>
+                {%- endif -%}
+              </div>
+            </li>
+          {%- endcapture -%}
+
+          {%- if cauce_dibujadas <= cauce_visibles -%}
+            {{ cauce_tarjeta }}
+          {%- else -%}
+            {%- assign cauce_resto = cauce_resto | append: cauce_tarjeta -%}
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+
+      {%- if cauce_resto != blank -%}
+        <details class="cauce-resenas__mas">
+          <summary class="cauce-resenas__mas-boton button button-secondary">
+            {{- section.settings.ver_mas -}}
+          </summary>
+          <ul class="cauce-resenas__grilla" role="list">
+            {{ cauce_resto }}
+          </ul>
+        </details>
+      {%- endif -%}
+
+      {%- if section.settings.pie != blank -%}
+        <div class="cauce-resenas__pie rte">{{ section.settings.pie }}</div>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "CAUCE · Reseñas",
+  "tag": "section",
+  "class": "cauce-section",
+  "max_blocks": 50,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Solo reseñas reales, de clientes reales y con su permiso. El promedio, la cantidad y las barras se calculan solos con las reseñas cargadas: no se escriben. Una reseña sin texto, sin autor, sin puntaje o con [COMPLETAR] se ve solo aca, en el editor; en la tienda no sale. Sin ninguna reseña completa, la seccion no se dibuja."
+    },
+
+    { "type": "header", "content": "Texto" },
+    { "type": "text", "id": "volanta", "label": "Volanta" },
+    { "type": "inline_richtext", "id": "titulo", "label": "Titulo" },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Tamano del titulo",
+      "options": [
+        { "value": "h2", "label": "Chico" },
+        { "value": "h1", "label": "Mediano" },
+        { "value": "h0", "label": "Grande" }
+      ],
+      "default": "h1"
+    },
+    { "type": "richtext", "id": "pie", "label": "Texto al pie" },
+
+    { "type": "header", "content": "Rotulos" },
+    { "type": "text", "id": "etiqueta_una", "label": "Cantidad, en singular", "default": "reseña" },
+    { "type": "text", "id": "etiqueta_varias", "label": "Cantidad, en plural", "default": "reseñas" },
+    {
+      "type": "text",
+      "id": "etiqueta_de_cinco",
+      "label": "Puntaje, para lectores de pantalla",
+      "info": "Se lee despues del numero: \"4 de 5 estrellas\".",
+      "default": "de 5 estrellas"
+    },
+    {
+      "type": "text",
+      "id": "etiqueta_verificada",
+      "label": "Sello de compra verificada",
+      "info": "Sale solo en las reseñas que tengan marcada la casilla.",
+      "default": "Compra verificada"
+    },
+    { "type": "text", "id": "ver_mas", "label": "Boton para ver el resto", "default": "Ver más reseñas" },
+    {
+      "type": "text",
+      "id": "aviso_editor",
+      "label": "Aviso dentro del editor",
+      "info": "Se ve solo aca, mientras haya reseñas sin completar."
+    },
+
+    { "type": "header", "content": "Grilla" },
+    {
+      "type": "range",
+      "id": "visibles",
+      "min": 3,
+      "max": 30,
+      "step": 3,
+      "label": "Reseñas a la vista",
+      "info": "El resto queda detras del boton.",
+      "default": 6
+    },
+    {
+      "type": "select",
+      "id": "relacion",
+      "label": "Relacion de aspecto de las fotos",
+      "options": [
+        { "value": "1 / 1", "label": "1:1 cuadrada" },
+        { "value": "4 / 5", "label": "4:5 vertical" },
+        { "value": "4 / 3", "label": "4:3" }
+      ],
+      "default": "4 / 5"
+    },
+
+    { "type": "header", "content": "Presentacion" },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "options": [
+        { "value": "background-1", "label": "Fondo" },
+        { "value": "background-2", "label": "Superficie" }
+      ],
+      "default": "background-1"
+    },
+    {
+      "type": "range",
+      "id": "ancho_maximo",
+      "min": 720,
+      "max": 1400,
+      "step": 40,
+      "unit": "px",
+      "label": "Ancho del bloque",
+      "default": 1200
+    },
+
+    { "type": "header", "content": "Espaciado" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8, "unit": "px", "label": "Arriba", "default": 72 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 160, "step": 8, "unit": "px", "label": "Abajo", "default": 72 }
+  ],
+  "blocks": [
+    {
+      "type": "resena",
+      "name": "Reseña",
+      "settings": [
+        {
+          "type": "select",
+          "id": "puntaje",
+          "label": "Puntaje",
+          "info": "El que puso el cliente. Sin puntaje, la reseña no se publica.",
+          "options": [
+            { "value": "0", "label": "Sin puntaje" },
+            { "value": "5", "label": "5 estrellas" },
+            { "value": "4", "label": "4 estrellas" },
+            { "value": "3", "label": "3 estrellas" },
+            { "value": "2", "label": "2 estrellas" },
+            { "value": "1", "label": "1 estrella" }
+          ],
+          "default": "0"
+        },
+        { "type": "text", "id": "autor", "label": "Nombre", "info": "Como el cliente quiera figurar: \"Camila R.\"" },
+        { "type": "text", "id": "titulo", "label": "Titulo", "info": "Opcional." },
+        { "type": "textarea", "id": "texto", "label": "Texto", "info": "Con las palabras del cliente." },
+        { "type": "text", "id": "fecha", "label": "Fecha", "info": "Opcional. Como texto: \"Septiembre de 2026\"." },
+        {
+          "type": "checkbox",
+          "id": "verificada",
+          "label": "Compra verificada",
+          "info": "Solo si hay un pedido de la tienda que la respalde.",
+          "default": false
+        },
+        { "type": "image_picker", "id": "imagen", "label": "Foto", "info": "La que mando el cliente, con su permiso. Opcional." },
+        { "type": "text", "id": "alt", "label": "Texto alternativo de la foto" },
+        {
+          "type": "text",
+          "id": "foto_pendiente",
+          "label": "Pedido de foto",
+          "info": "Recuadro que se ve solo en el editor mientras la reseña esta sin completar."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "CAUCE · Reseñas",
+      "blocks": [
+        { "type": "resena" },
+        { "type": "resena" },
+        { "type": "resena" }
+      ]
+    }
+  ]
+}
+{% endschema %}

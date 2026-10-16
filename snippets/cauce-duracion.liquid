@@ -1,0 +1,36 @@
+{% comment %}
+  CAUCE: duracion del suministro, calculada desde metafields.
+
+  Parametros:
+    producto  {object}  requerido. El producto del que se leen los metafields.
+    cantidad  {number}  opcional, default 1. Cuantas unidades lleva el cliente.
+
+  Metafields (namespace cauce, ver docs/METAFIELDS.md):
+    cauce.unidades_envase  number_integer  unidades que trae un envase
+                                           (capsulas, gomitas, sobres, usos)
+    cauce.dosis_diaria     number_integer  unidades que se consumen por dia
+
+  Si falta cualquiera de los dos no renderiza nada. Eso es deliberado: un formato
+  sin dosis diaria definida (por ejemplo un shampoo sin rendimiento medido) no
+  muestra duracion en vez de mostrar un numero inventado.
+
+  El texto sale de locales/es.json > cauce.pdp.duracion_dias. Nunca se
+  escribe la unidad aca adentro.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_envase = producto.metafields.cauce.unidades_envase.value | plus: 0
+  assign cauce_dosis = producto.metafields.cauce.dosis_diaria.value | plus: 0
+
+  assign cauce_cant = cantidad | plus: 0
+  if cauce_cant < 1
+    assign cauce_cant = 1
+  endif
+
+  if cauce_envase > 0 and cauce_dosis > 0
+    assign cauce_dias = cauce_envase | times: cauce_cant | divided_by: cauce_dosis
+    if cauce_dias > 0
+      echo 'cauce.pdp.duracion_dias' | t: dias: cauce_dias
+    endif
+  endif
+-%}

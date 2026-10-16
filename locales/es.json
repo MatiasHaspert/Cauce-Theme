@@ -350,5 +350,93 @@
       "success_moderated": "Comentario publicado y a la espera de moderación",
       "success": "Comentario publicado"
     }
+  },
+  "cauce": {
+    "marca": {
+      "nombre": "Cauce",
+      "descriptor": "Fórmulas de uso diario"
+    },
+    "footer": {
+      "horario": "Horario de atención: {{ horario }}"
+    },
+    "legal": {
+      "suplemento": "Este producto es un suplemento dietario. No reemplaza una alimentación variada.",
+      "consulta_medico": "Consultá a tu médico.",
+      "rnpa": "RNPA {{ numero }}",
+      "arrepentimiento_titulo": "Botón de arrepentimiento",
+      "libro_quejas_cta": "Ir al Libro de Quejas Online",
+      "data_fiscal_alt": "Data Fiscal AFIP",
+      "precio_iva": "Precios en pesos argentinos con IVA incluido.",
+      "defensa_consumidor": "Defensa de las y los consumidores. Para reclamos ingresá acá.",
+      "arrepentimiento_resumen": "Podés arrepentirte dentro de los {{ dias }} días corridos de recibido el producto."
+    },
+    "pdp": {
+      "duracion_dias": "{{ dias }} días de uso",
+      "envio_gratis_escalon": "Envío gratis",
+      "ahorro_escalon": "Ahorrás {{ monto }}",
+      "cuotas_escalon": "{{ cuotas }} cuotas sin interés de {{ monto }}",
+      "transferencia_escalon": "{{ monto }} con transferencia",
+      "medios_pago_titulo": "Medios de pago",
+      "cuotas": "Hasta {{ cuotas }} cuotas sin interés con tarjeta",
+      "packs_leyenda": "Elegí tu pack",
+      "precio_anterior": "Precio anterior"
+    },
+    "whatsapp": {
+      "flotante": "Escribinos por WhatsApp",
+      "linea_pregunta": "¿Dudas antes de comprar?",
+      "linea_link": "Escribinos por WhatsApp",
+      "pie": "Escribinos por WhatsApp",
+      "mensaje": "Hola, tengo una consulta.",
+      "mensaje_producto": "Hola, tengo una consulta sobre {{ producto }}."
+    },
+    "newsletter": {
+      "consentimiento": "Acepto recibir emails de CAUCE y que mis datos se traten según la Política de Privacidad (Ley 25.326). Puedo darme de baja cuando quiera.",
+      "exito": "Listo. Te vamos a escribir poco y sólo cuando valga la pena.",
+      "ver_politica": "Ver la Política de Privacidad.",
+      "email": "Correo electrónico",
+      "boton": "Suscribirse"
+    },
+    "pagos": {
+      "mercadopago": "Mercado Pago",
+      "visa": "Visa",
+      "mastercard": "Mastercard",
+      "amex": "American Express",
+      "cabal": "Cabal",
+      "naranja": "Naranja X",
+      "pagofacil": "Pago Fácil",
+      "rapipago": "Rapipago",
+      "transferencia": "Transferencia bancaria",
+      "efectivo": "Efectivo"
+    },
+    "carrito": {
+      "reaseguro_arrepentimiento": "{{ dias }} días de arrepentimiento",
+      "reaseguro_iva": "Precio final con IVA",
+      "reaseguro_envio": "Envío gratis a todo el país",
+      "envio_falta": "Te faltan [monto] para el envío gratis",
+      "envio_logrado": "Tenés el envío gratis",
+      "envio_progreso": "Progreso hacia el envío gratis",
+      "precio_por_dia": "{{ monto }} por día de uso",
+      "nudge_titulo": "Estás cerca del envío gratis",
+      "nudge_texto": "Con una unidad más de {{ producto }} el envío te sale gratis.",
+      "nudge_sumar": "Sumar",
+      "nudge_sumando": "Sumando…",
+      "nudge_sumar_aria": "Sumar una unidad de {{ producto }}",
+      "ahorro": "Ahorrás {{ monto }}",
+      "transferencia_ahorro": "Con transferencia ahorrás {{ monto }}",
+      "transferencia_off": "{{ pct }} % OFF",
+      "transferencia_codigo_html": "Cargá el código <code>{{ codigo }}</code> al finalizar la compra y elegí Transferencia bancaria.",
+      "vacio_titulo": "Tu carrito está vacío",
+      "vacio_texto": "Todavía no agregaste nada.",
+      "vacio_cta": "Ver los productos",
+      "nota": "Instrucciones especiales del pedido",
+      "descuentos": "Descuentos",
+      "subtotal": "Subtotal",
+      "impuestos_incluidos": "Precio final con IVA. El envío se calcula en la pantalla de pago.",
+      "impuestos_en_checkout": "Los impuestos y gastos de envío se calculan en la pantalla de pago.",
+      "checkout": "Pago seguro"
+    },
+    "form": {
+      "email": "Email"
+    }
   }
 }

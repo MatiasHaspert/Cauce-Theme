@@ -1,0 +1,86 @@
+{% comment %}
+  CAUCE — la home del testeo. Mientras se testea un solo producto no hay pagina
+  de inicio: quien entra a la raiz (o toca el logo) va directo a la ficha del
+  producto elegido. Ver D-081.
+
+  Por que en el tema y no en Shopify → Redirecciones de URL: Shopify no deja
+  redirigir la raiz "/".
+
+  - Se redirige con location.replace, asi el boton "atras" no vuelve a la home
+    vacia. Sin JS, el <meta refresh> de <noscript> hace lo mismo.
+  - En el editor de temas no redirige: muestra un aviso, para poder seguir
+    editando el resto del sitio.
+  - Si no hay producto elegido, no redirige y se ve un link a todos los productos.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_destino = section.settings.producto.url
+  if cauce_destino == blank
+    assign cauce_destino = section.settings.url
+  endif
+-%}
+
+<div class="cauce-redireccion cauce-seccion color-background-1">
+  <div class="page-width cauce-redireccion__inner">
+    {%- if cauce_destino != blank and request.design_mode == false -%}
+      <script>
+        window.location.replace({{ cauce_destino | json }});
+      </script>
+      <noscript>
+        <meta http-equiv="refresh" content="0; url={{ cauce_destino | escape }}">
+      </noscript>
+    {%- endif -%}
+
+    {%- if request.design_mode -%}
+      <p class="cauce-carrito__aviso">
+        {%- if cauce_destino != blank -%}
+          En la tienda, esta página redirige a {{ cauce_destino }}. En el editor no redirige.
+        {%- else -%}
+          Elegí el producto al que redirige la página de inicio. Sin producto, la página muestra solo el link de abajo.
+        {%- endif -%}
+      </p>
+    {%- endif -%}
+
+    <p class="cauce-redireccion__texto">
+      <a href="{{ cauce_destino | default: routes.all_products_collection_url }}">
+        {{- section.settings.texto_link | default: 'Ir a la tienda' -}}
+      </a>
+    </p>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "CAUCE · Redirección",
+  "tag": "section",
+  "class": "cauce-section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "La página de inicio redirige a este producto. Para volver a tener home, sacá esta sección y armá la página."
+    },
+    {
+      "type": "product",
+      "id": "producto",
+      "label": "Producto"
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "label": "O una URL",
+      "info": "Solo se usa si no hay producto elegido."
+    },
+    {
+      "type": "text",
+      "id": "texto_link",
+      "label": "Texto del link de respaldo",
+      "default": "Ir a la tienda"
+    }
+  ],
+  "presets": [
+    {
+      "name": "CAUCE · Redirección"
+    }
+  ]
+}
+{% endschema %}

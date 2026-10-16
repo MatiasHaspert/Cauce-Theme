@@ -1,0 +1,33 @@
+{% comment %}
+  CAUCE: recuadro que ocupa el lugar de una foto que todavia no existe.
+
+  Parametros:
+    etiqueta  {string}  requerido. Que foto va ahi y en que proporcion, tal como
+                        hay que producirla: "FOTO 4:5 — mano volcando la tapita
+                        en el bebedero". Sale del setting de la seccion.
+    relacion  {string}  opcional. aspect-ratio del recuadro, "4 / 5". Default 1 / 1.
+    clase     {string}  opcional. Clase extra, para que la seccion le de el mismo
+                        radio y tamano que a la foto real.
+
+  Por que no placeholder_svg_tag, que es lo que usan las otras secciones cauce-*:
+  el dibujo generico de Shopify no dice que foto falta, y esta pagina se arma
+  antes de producir las fotos. El recuadro tiene el tamano de la foto final, asi
+  el layout no se mueve cuando se carga, y la etiqueta es el pedido de produccion.
+
+  Sin etiqueta no dibuja nada: una seccion sin foto ni pedido no deja un hueco.
+
+  role="img" con la etiqueta como nombre accesible: para un lector de pantalla es
+  una imagen que falta, no un parrafo suelto. Estilos: cauce-brand.css, bloque 26.
+  Ver docs/DECISIONS.md D-074.
+{% endcomment %}
+
+{%- if etiqueta != blank -%}
+  <div
+    class="cauce-foto-pendiente{% if clase != blank %} {{ clase }}{% endif %}"
+    style="--cauce-foto-relacion: {{ relacion | default: '1 / 1' }};"
+    role="img"
+    aria-label="{{ etiqueta | strip_html | escape }}"
+  >
+    <span class="cauce-foto-pendiente__texto" aria-hidden="true">{{ etiqueta }}</span>
+  </div>
+{%- endif -%}

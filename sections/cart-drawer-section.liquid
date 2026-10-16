@@ -1,8 +1,136 @@
 {% # SRA target for /cart endpoints. The Section Rendering API provides the section wrapper. %}
-{% render 'cart-drawer', render_wrapper: false %}
+{% comment %}
+  CAUCE (D-081): esta seccion se renderiza ademas como seccion estatica desde
+  layout/theme.liquid ({% section 'cart-drawer-section' %}), asi que sus bloques
+  y settings viven en config/settings_data.json > current.sections y se editan
+  desde el editor de temas. El carrito CAUCE: snippets/cauce-carrito.liquid.
+{% endcomment %}
+{% render 'cart-drawer', render_wrapper: false, section: section %}
 
 {% schema %}
 {
-  "name": "t:names.cart_drawer"
+  "name": "CAUCE · Carrito",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "El carrito lateral. Los bloques se reordenan arrastrando; los del cuerpo y los del pie se ordenan por separado."
+    },
+    {
+      "type": "text",
+      "id": "heading_text",
+      "label": "Titulo",
+      "default": "Tu carrito",
+      "info": "[count] se reemplaza por la cantidad de productos."
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "options": [
+        { "value": "background-1", "label": "Fondo" },
+        { "value": "background-2", "label": "Superficie" },
+        { "value": "inverse", "label": "Oscuro" }
+      ],
+      "default": "background-1"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "trust_line",
+      "name": "Reaseguro",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Una sola linea, muteada, sin sellos. Los textos salen de los locales y de Configuracion del tema → CAUCE."
+        },
+        { "type": "checkbox", "id": "mostrar_arrepentimiento", "label": "Arrepentimiento", "default": true },
+        { "type": "checkbox", "id": "mostrar_iva", "label": "Precio con IVA", "default": true },
+        { "type": "checkbox", "id": "mostrar_envio", "label": "Envio", "default": false }
+      ]
+    },
+    {
+      "type": "progress_bar",
+      "name": "Barra de envio gratis",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "El monto sale de Configuracion del tema → CAUCE. Sin ese monto la barra no se muestra en la tienda."
+        }
+      ]
+    },
+    {
+      "type": "cart_items",
+      "name": "Productos",
+      "limit": 1,
+      "settings": [
+        { "type": "checkbox", "id": "mostrar_formato", "label": "Chip de presentacion (cauce.formato)", "default": true },
+        { "type": "checkbox", "id": "mostrar_precio_dia", "label": "Precio por dia de uso", "default": true }
+      ]
+    },
+    {
+      "type": "product_upsells",
+      "name": "Empujon de envio gratis",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Aparece solo cuando sumar una unidad mas alcanza para el envio gratis."
+        }
+      ]
+    },
+    {
+      "type": "legal_note",
+      "name": "Leyenda de suplemento",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "La leyenda de suplemento dietario en version compacta. No va si la tienda no vende suplementos."
+        }
+      ]
+    },
+    {
+      "type": "subtotals",
+      "name": "Totales",
+      "limit": 1,
+      "settings": [
+        { "type": "checkbox", "id": "mostrar_ahorro", "label": "Mostrar el ahorro", "default": true }
+      ]
+    },
+    {
+      "type": "payment_benefit",
+      "name": "Beneficio de pago",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Transferencia y cuotas de Configuracion del tema → CAUCE."
+        }
+      ]
+    },
+    {
+      "type": "checkout_btn",
+      "name": "Boton de pago",
+      "limit": 1,
+      "settings": [
+        { "type": "checkbox", "id": "mostrar_monto", "label": "Monto en el boton", "default": true },
+        { "type": "checkbox", "id": "mostrar_seguir", "label": "Seguir comprando", "default": true },
+        { "type": "checkbox", "id": "mostrar_pagos_rapidos", "label": "Botones de pago rapido", "default": false }
+      ]
+    },
+    {
+      "type": "payment_badges",
+      "name": "Medios de pago",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "La lista se edita en Configuracion del tema → CAUCE."
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}

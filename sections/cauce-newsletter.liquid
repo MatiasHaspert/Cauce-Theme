@@ -1,0 +1,163 @@
+{% comment %}
+  CAUCE — suscripcion con consentimiento explicito.
+
+  Existe porque ninguno de los cinco formularios de newsletter de Shrine pide
+  consentimiento: todos mandan contact[email] y una etiqueta fija. La Ley 25.326
+  exige consentimiento libre, expreso e informado para tratar datos personales, y
+  una casilla premarcada o ausente no lo es.
+
+  Como lo resuelve:
+  - casilla required, sin premarcar. El formulario no se envia sin ella.
+  - el texto del consentimiento dice para que se usan los datos, quien los trata y
+    como darse de baja. Vive en el locale, no aca, para poder auditarlo.
+  - la etiqueta que recibe el contacto deja constancia del consentimiento, asi el
+    dato queda trazable del lado de Shopify y no solo en el navegador.
+
+  El correo de contacto y el link a la politica de privacidad salen de settings.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_id = 'CauceNews-' | append: section.id
+  assign cauce_politica = section.settings.pagina_privacidad.url
+  if cauce_politica == blank
+    assign cauce_politica = shop.privacy_policy.url
+  endif
+-%}
+
+<div class="cauce-news color-{{ section.settings.color_scheme }} cauce-seccion">
+  <div
+    class="page-width cauce-news__inner"
+    style="--padding-top: {{ section.settings.padding_top }}px; --padding-bottom: {{ section.settings.padding_bottom }}px;"
+  >
+    <div class="cauce-news__texto">
+      {%- if section.settings.volanta != blank -%}
+        <p class="cauce-eyebrow">{{ section.settings.volanta }}</p>
+      {%- endif -%}
+      {%- if section.settings.titulo != blank -%}
+        <h2 class="cauce-news__titulo {{ section.settings.heading_size }}">{{ section.settings.titulo }}</h2>
+      {%- endif -%}
+      {%- if section.settings.bajada != blank -%}
+        <div class="cauce-news__bajada rte">{{ section.settings.bajada }}</div>
+      {%- endif -%}
+    </div>
+
+    {%- form 'customer', id: cauce_id, class: 'cauce-news__form' -%}
+      <input type="hidden" name="contact[tags]" value="newsletter, consentimiento-ley-25326">
+
+      <div class="cauce-news__campo">
+        <label class="cauce-news__label" for="{{ cauce_id }}-email">
+          {{- 'cauce.newsletter.email' | t -}}
+        </label>
+        <input
+          id="{{ cauce_id }}-email"
+          type="email"
+          name="contact[email]"
+          class="cauce-news__input"
+          value="{{ form.email }}"
+          autocorrect="off"
+          autocapitalize="off"
+          autocomplete="email"
+          placeholder="{{ 'cauce.newsletter.email' | t }}"
+          required
+          {% if form.errors %}
+            autofocus
+            aria-invalid="true"
+            aria-describedby="{{ cauce_id }}-error"
+          {% endif %}
+        >
+        {%- liquid
+          # El filtro t no puede ir despues de default: se aplicaria a la cadena entera
+          # y traduciria el texto del comercio, que da "Translation missing".
+          assign cauce_boton = section.settings.boton
+          if cauce_boton == blank
+            assign cauce_boton = 'cauce.newsletter.boton' | t
+          endif
+        -%}
+        <button type="submit" class="cauce-news__boton button" name="commit">
+          {{- cauce_boton -}}
+        </button>
+      </div>
+
+      <div class="cauce-news__consentimiento">
+        <input
+          id="{{ cauce_id }}-consent"
+          type="checkbox"
+          class="cauce-news__check"
+          required
+          aria-describedby="{{ cauce_id }}-consent-texto"
+        >
+        <label class="cauce-news__consent-label" for="{{ cauce_id }}-consent" id="{{ cauce_id }}-consent-texto">
+          {{ 'cauce.newsletter.consentimiento' | t }}
+          {%- if cauce_politica != blank %}
+            <a href="{{ cauce_politica }}">{{ 'cauce.newsletter.ver_politica' | t }}</a>
+          {%- endif -%}
+        </label>
+      </div>
+
+      {%- if form.errors -%}
+        <p class="cauce-news__error" id="{{ cauce_id }}-error" role="alert">
+          {% render 'cauce-iconos', icono: 'alerta' %}
+          {{ form.errors.translated_fields.email | capitalize }}
+          {{ form.errors.messages.email }}
+        </p>
+      {%- endif -%}
+
+      {%- if form.posted_successfully? -%}
+        <p class="cauce-news__exito" role="status">
+          {% render 'cauce-iconos', icono: 'visto' %}
+          {{ 'cauce.newsletter.exito' | t }}
+        </p>
+      {%- endif -%}
+    {%- endform -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "CAUCE · Suscripcion",
+  "tag": "section",
+  "class": "cauce-section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "La casilla de consentimiento es obligatoria y no se puede premarcar: Ley 25.326. El texto se edita en el archivo de traducciones, clave cauce.newsletter.consentimiento, para que quede en un solo lugar auditable."
+    },
+    { "type": "text", "id": "volanta", "label": "Volanta" },
+    { "type": "inline_richtext", "id": "titulo", "label": "Titulo", "default": "10 % en tu primer pedido" },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Tamano del titulo",
+      "options": [
+        { "value": "h2", "label": "Chico" },
+        { "value": "h1", "label": "Mediano" },
+        { "value": "h0", "label": "Grande" }
+      ],
+      "default": "h2"
+    },
+    { "type": "richtext", "id": "bajada", "label": "Bajada", "default": "<p>Suscribite y te mandamos el código. Después, pocos mails: fórmulas nuevas y un aviso cuando se te esté por terminar el frasco.</p>" },
+    { "type": "text", "id": "boton", "label": "Texto del boton", "default": "Suscribirme" },
+    {
+      "type": "page",
+      "id": "pagina_privacidad",
+      "label": "Politica de privacidad",
+      "info": "Si lo dejas vacio usa la politica de privacidad configurada en Shopify."
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "options": [
+        { "value": "background-1", "label": "Sedimento" },
+        { "value": "background-2", "label": "Sedimento 2" },
+        { "value": "inverse", "label": "Tinta" }
+      ],
+      "default": "background-2"
+    },
+    { "type": "header", "content": "Espaciado" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8, "unit": "px", "label": "Arriba", "default": 72 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 160, "step": 8, "unit": "px", "label": "Abajo", "default": 72 }
+  ],
+  "presets": [{ "name": "CAUCE · Suscripcion" }]
+}
+{% endschema %}

@@ -1,0 +1,250 @@
+{% comment %}
+  CAUCE — respaldo del producto: registro y formula a la vista.
+
+  Ocupa el lugar que en la pagina de referencia tiene el aval de un veterinario.
+  CAUCE no tiene un profesional que avale el aditivo, asi que el bloque muestra el
+  respaldo que si existe: el registro del producto, quien lo elabora, y que lleva
+  y que no lleva la formula. Ver docs/DECISIONS.md D-074.
+
+  Dos columnas: a la izquierda una ficha de datos (<dl>), a la derecha dos listas.
+
+  Tres cosas que la seccion resuelve por construccion:
+
+  - Tres tipos de bloque (`dato`, `lleva`, `no_lleva`) en el mismo orden del
+    editor pero dibujados en tres listas separadas, como los sellos de
+    cauce-ingredientes: se pueden reordenar sin que se mezclen.
+  - Un valor que contiene "[COMPLETAR" se dibuja con .cauce-pendiente. El numero
+    de registro y los datos del elaborador llegan del laboratorio: mientras
+    falten, el hueco tiene que verse, no disimularse.
+  - Una columna sin bloques no se dibuja y la otra ocupa todo el ancho.
+
+  ADVERTENCIA DE CLAIMS (SENASA, productos veterinarios). El registro se enuncia
+  como "Registrado en SENASA, certificado N.º …". Nunca "aprobado", "certificado"
+  ni "recomendado" por SENASA o por veterinarios. El texto vive entero en
+  templates/*.json. No escribas copy adentro de este archivo.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_n_datos = 0
+  assign cauce_n_lleva = 0
+  assign cauce_n_no = 0
+  for block in section.blocks
+    if block.type == 'dato' and block.settings.valor != blank
+      assign cauce_n_datos = cauce_n_datos | plus: 1
+    endif
+    if block.type == 'lleva' and block.settings.texto != blank
+      assign cauce_n_lleva = cauce_n_lleva | plus: 1
+    endif
+    if block.type == 'no_lleva' and block.settings.texto != blank
+      assign cauce_n_no = cauce_n_no | plus: 1
+    endif
+  endfor
+
+  assign cauce_n_listas = cauce_n_lleva | plus: cauce_n_no
+  assign cauce_hay = false
+  if cauce_n_datos > 0 or cauce_n_listas > 0 or section.settings.titulo != blank
+    assign cauce_hay = true
+  endif
+-%}
+
+{%- if cauce_hay -%}
+  <div class="cauce-respaldo color-{{ section.settings.color_scheme }} cauce-seccion">
+    <div
+      class="page-width cauce-respaldo__inner"
+      style="--padding-top: {{ section.settings.padding_top }}px; --padding-bottom: {{ section.settings.padding_bottom }}px; --cauce-respaldo-ancho: {{ section.settings.ancho_maximo }}px;"
+    >
+      {%- if section.settings.volanta != blank or section.settings.titulo != blank or section.settings.bajada != blank -%}
+        <div class="cauce-respaldo__encabezado">
+          {%- if section.settings.volanta != blank -%}
+            <p class="cauce-eyebrow">{{ section.settings.volanta }}</p>
+          {%- endif -%}
+          {%- if section.settings.titulo != blank -%}
+            <h2 class="cauce-respaldo__titulo {{ section.settings.heading_size }}">{{ section.settings.titulo }}</h2>
+          {%- endif -%}
+          {%- if section.settings.bajada != blank -%}
+            <div class="cauce-respaldo__bajada rte">{{ section.settings.bajada }}</div>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <div class="cauce-respaldo__grilla{% if cauce_n_datos == 0 or cauce_n_listas == 0 %} cauce-respaldo__grilla--una{% endif %}">
+        {%- if cauce_n_datos > 0 -%}
+          <div class="cauce-respaldo__ficha">
+            {%- if section.settings.ficha_titulo != blank -%}
+              <p class="cauce-respaldo__ficha-titulo">
+                {%- render 'cauce-iconos', icono: 'escudo' -%}
+                <span>{{ section.settings.ficha_titulo }}</span>
+              </p>
+            {%- endif -%}
+            <dl class="cauce-respaldo__datos">
+              {%- for block in section.blocks -%}
+                {%- if block.type != 'dato' or block.settings.valor == blank -%}
+                  {%- continue -%}
+                {%- endif -%}
+                <div class="cauce-respaldo__dato" {{ block.shopify_attributes }}>
+                  {%- if block.settings.etiqueta != blank -%}
+                    <dt class="cauce-respaldo__dato-etiqueta">{{ block.settings.etiqueta }}</dt>
+                  {%- endif -%}
+                  <dd class="cauce-respaldo__dato-valor">
+                    {%- if block.settings.valor contains '[COMPLETAR' -%}
+                      <span class="cauce-pendiente">{{ block.settings.valor }}</span>
+                    {%- else -%}
+                      {{ block.settings.valor }}
+                    {%- endif -%}
+                  </dd>
+                </div>
+              {%- endfor -%}
+            </dl>
+          </div>
+        {%- endif -%}
+
+        {%- if cauce_n_listas > 0 -%}
+          <div class="cauce-respaldo__listas">
+            {%- if cauce_n_lleva > 0 -%}
+              <div class="cauce-respaldo__grupo">
+                {%- if section.settings.lleva_titulo != blank -%}
+                  <h3 class="cauce-respaldo__grupo-titulo">{{ section.settings.lleva_titulo }}</h3>
+                {%- endif -%}
+                <ul class="cauce-respaldo__lista" role="list">
+                  {%- for block in section.blocks -%}
+                    {%- if block.type != 'lleva' or block.settings.texto == blank -%}
+                      {%- continue -%}
+                    {%- endif -%}
+                    <li class="cauce-respaldo__item" {{ block.shopify_attributes }}>
+                      {%- render 'cauce-iconos', icono: 'visto' -%}
+                      <span>{{ block.settings.texto }}</span>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- endif -%}
+
+            {%- if cauce_n_no > 0 -%}
+              <div class="cauce-respaldo__grupo">
+                {%- if section.settings.no_lleva_titulo != blank -%}
+                  <h3 class="cauce-respaldo__grupo-titulo">{{ section.settings.no_lleva_titulo }}</h3>
+                {%- endif -%}
+                <ul class="cauce-respaldo__lista cauce-respaldo__lista--no" role="list">
+                  {%- for block in section.blocks -%}
+                    {%- if block.type != 'no_lleva' or block.settings.texto == blank -%}
+                      {%- continue -%}
+                    {%- endif -%}
+                    <li class="cauce-respaldo__item" {{ block.shopify_attributes }}>
+                      {%- render 'cauce-iconos', icono: 'cruz' -%}
+                      <span>{{ block.settings.texto }}</span>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- if section.settings.pie != blank -%}
+        <div class="cauce-respaldo__pie rte">{{ section.settings.pie }}</div>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "CAUCE · Respaldo",
+  "tag": "section",
+  "class": "cauce-section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Registro del producto y formula a la vista. El registro se enuncia como \"Registrado en SENASA, certificado N.º …\": nunca \"aprobado\", \"certificado\" ni \"recomendado\". Un dato que falta se escribe [COMPLETAR: que falta] y sale marcado."
+    },
+
+    { "type": "header", "content": "Texto" },
+    { "type": "text", "id": "volanta", "label": "Volanta" },
+    { "type": "inline_richtext", "id": "titulo", "label": "Titulo" },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Tamano del titulo",
+      "options": [
+        { "value": "h2", "label": "Chico" },
+        { "value": "h1", "label": "Mediano" },
+        { "value": "h0", "label": "Grande" }
+      ],
+      "default": "h1"
+    },
+    { "type": "richtext", "id": "bajada", "label": "Bajada" },
+
+    { "type": "header", "content": "Ficha de datos" },
+    { "type": "text", "id": "ficha_titulo", "label": "Titulo de la ficha", "default": "Registro" },
+
+    { "type": "header", "content": "Listas" },
+    { "type": "text", "id": "lleva_titulo", "label": "Titulo de \"que lleva\"", "default": "Qué lleva" },
+    { "type": "text", "id": "no_lleva_titulo", "label": "Titulo de \"que no lleva\"", "default": "Qué no lleva" },
+
+    { "type": "richtext", "id": "pie", "label": "Texto al pie" },
+
+    { "type": "header", "content": "Presentacion" },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "options": [
+        { "value": "background-1", "label": "Fondo" },
+        { "value": "background-2", "label": "Superficie" },
+        { "value": "inverse", "label": "Oscuro" }
+      ],
+      "default": "background-1"
+    },
+    {
+      "type": "range",
+      "id": "ancho_maximo",
+      "min": 720,
+      "max": 1400,
+      "step": 40,
+      "unit": "px",
+      "label": "Ancho del bloque",
+      "default": 1120
+    },
+
+    { "type": "header", "content": "Espaciado" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8, "unit": "px", "label": "Arriba", "default": 72 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 160, "step": 8, "unit": "px", "label": "Abajo", "default": 72 }
+  ],
+  "blocks": [
+    {
+      "type": "dato",
+      "name": "Dato de la ficha",
+      "settings": [
+        { "type": "text", "id": "etiqueta", "label": "Etiqueta" },
+        { "type": "text", "id": "valor", "label": "Valor", "info": "Si falta, escribi [COMPLETAR: que falta]." }
+      ]
+    },
+    {
+      "type": "lleva",
+      "name": "Lleva",
+      "settings": [
+        { "type": "text", "id": "texto", "label": "Texto" }
+      ]
+    },
+    {
+      "type": "no_lleva",
+      "name": "No lleva",
+      "settings": [
+        { "type": "text", "id": "texto", "label": "Texto" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "CAUCE · Respaldo",
+      "blocks": [
+        { "type": "dato" },
+        { "type": "dato" },
+        { "type": "lleva" },
+        { "type": "no_lleva" }
+      ]
+    }
+  ]
+}
+{% endschema %}

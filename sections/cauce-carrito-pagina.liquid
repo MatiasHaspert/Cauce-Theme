@@ -1,0 +1,152 @@
+{% comment %}
+  CAUCE — /cart. Usa EL MISMO snippet que el drawer (snippets/cauce-carrito.liquid)
+  y los mismos tipos de bloque que sections/cart-drawer-section.liquid: /cart no
+  puede ser un segundo diseno que se desincroniza al primer cambio (D-046 §7).
+
+  Reemplaza a la seccion main-cart de Horizon en templates/cart.json (D-081). El
+  <cart-items-component> lleva el id de ESTA seccion, asi que los cambios de
+  cantidad vuelven a pedir esta misma seccion entera.
+
+  Que no va en /cart, y por que (D-046 §7): ni la grilla de "tambien te puede
+  gustar" -con un solo producto recomienda lo que ya esta en el carrito- ni un
+  alta de newsletter entre el total y el boton de pago.
+{% endcomment %}
+
+{%- capture cauce_hijos -%}
+  {% render 'cauce-carrito',
+    bloques: section.blocks,
+    contexto: 'pagina',
+    titulo: section.settings.titulo
+  %}
+{%- endcapture -%}
+
+<div
+  class="page-width cauce-carrito cauce-carrito--pagina cauce-seccion color-{{ section.settings.color_scheme }}"
+  style="--padding-top: {{ section.settings.padding_top }}px; --padding-bottom: {{ section.settings.padding_bottom }}px;"
+>
+  {% render 'cart-items-component',
+    children: cauce_hijos,
+    section_id: section.id
+  %}
+</div>
+
+{% schema %}
+{
+  "name": "CAUCE · Carrito (página)",
+  "tag": "section",
+  "class": "cauce-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "titulo",
+      "label": "Titulo",
+      "default": "Tu carrito"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "options": [
+        { "value": "background-1", "label": "Fondo" },
+        { "value": "background-2", "label": "Superficie" }
+      ],
+      "default": "background-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Espacio arriba",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Espacio abajo",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "blocks": [
+    {
+      "type": "trust_line",
+      "name": "Reaseguro",
+      "limit": 1,
+      "settings": [
+        { "type": "checkbox", "id": "mostrar_arrepentimiento", "label": "Arrepentimiento", "default": true },
+        { "type": "checkbox", "id": "mostrar_iva", "label": "Precio con IVA", "default": true },
+        { "type": "checkbox", "id": "mostrar_envio", "label": "Envio", "default": false }
+      ]
+    },
+    {
+      "type": "progress_bar",
+      "name": "Barra de envio gratis",
+      "limit": 1,
+      "settings": []
+    },
+    {
+      "type": "cart_items",
+      "name": "Productos",
+      "limit": 1,
+      "settings": [
+        { "type": "checkbox", "id": "mostrar_formato", "label": "Chip de presentacion (cauce.formato)", "default": true },
+        { "type": "checkbox", "id": "mostrar_precio_dia", "label": "Precio por dia de uso", "default": true },
+        { "type": "checkbox", "id": "mostrar_nota", "label": "Nota del pedido", "default": false }
+      ]
+    },
+    {
+      "type": "product_upsells",
+      "name": "Empujon de envio gratis",
+      "limit": 1,
+      "settings": []
+    },
+    {
+      "type": "legal_note",
+      "name": "Leyenda de suplemento",
+      "limit": 1,
+      "settings": []
+    },
+    {
+      "type": "subtotals",
+      "name": "Totales",
+      "limit": 1,
+      "settings": [
+        { "type": "checkbox", "id": "mostrar_ahorro", "label": "Mostrar el ahorro", "default": true }
+      ]
+    },
+    {
+      "type": "payment_benefit",
+      "name": "Beneficio de pago",
+      "limit": 1,
+      "settings": []
+    },
+    {
+      "type": "checkout_btn",
+      "name": "Boton de pago",
+      "limit": 1,
+      "settings": [
+        { "type": "checkbox", "id": "mostrar_monto", "label": "Monto en el boton", "default": true },
+        { "type": "checkbox", "id": "mostrar_seguir", "label": "Seguir comprando", "default": false },
+        { "type": "checkbox", "id": "mostrar_pagos_rapidos", "label": "Botones de pago rapido", "default": false }
+      ]
+    },
+    {
+      "type": "payment_badges",
+      "name": "Medios de pago",
+      "limit": 1,
+      "settings": []
+    }
+  ],
+  "presets": [
+    {
+      "name": "CAUCE · Carrito (página)"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,199 @@
+{% comment %}
+  CAUCE — preguntas frecuentes con datos estructurados FAQPage.
+
+  Fuente de contenido, en orden:
+    1. metafield cauce.faq del producto (lista de metaobjetos con los campos
+       pregunta y respuesta).
+    2. bloques propios de la seccion.
+
+  El JSON-LD se arma recorriendo exactamente la misma fuente que el HTML. No hay
+  forma de que el marcado declare una pregunta que no este visible en la pagina:
+  Google lo penaliza y, mas importante, seria declarar algo que el usuario no ve.
+
+  Las respuestas van al JSON-LD con strip_html y json, asi que un richtext con
+  comillas o saltos de linea no rompe el marcado.
+
+  Estas preguntas son de compra, no de salud. Cualquier pregunta del tipo "sirve
+  para X" convierte la seccion entera en claim terapeutico (Disp. ANMAT 4980/05).
+{% endcomment %}
+
+{%- liquid
+  assign cauce_prod = product
+  if section.settings.producto != blank
+    assign cauce_prod = section.settings.producto
+  endif
+
+  assign cauce_lista = cauce_prod.metafields.cauce.faq.value
+  assign cauce_desde_mf = false
+  if cauce_lista != blank and cauce_lista.size > 0
+    assign cauce_desde_mf = true
+  endif
+
+  assign cauce_hay = cauce_desde_mf
+  unless cauce_hay
+    for block in section.blocks
+      if block.settings.pregunta != blank and block.settings.respuesta != blank
+        assign cauce_hay = true
+        break
+      endif
+    endfor
+  endunless
+-%}
+
+{%- if cauce_hay -%}
+  <div class="cauce-faq color-{{ section.settings.color_scheme }} cauce-seccion">
+    <div
+      class="page-width cauce-faq__inner"
+      style="--padding-top: {{ section.settings.padding_top }}px; --padding-bottom: {{ section.settings.padding_bottom }}px;"
+    >
+      {%- if section.settings.volanta != blank -%}
+        <p class="cauce-eyebrow">{{ section.settings.volanta }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.titulo != blank -%}
+        <h2 class="cauce-faq__titulo {{ section.settings.heading_size }}">{{ section.settings.titulo }}</h2>
+      {%- endif -%}
+
+      <div class="cauce-faq__lista">
+        {%- if cauce_desde_mf -%}
+          {%- for cauce_item in cauce_lista -%}
+            {%- if cauce_item.pregunta != blank -%}
+              <details class="cauce-faq__item">
+                <summary class="cauce-faq__summary">
+                  <span class="cauce-faq__pregunta">{{ cauce_item.pregunta }}</span>
+                  {% render 'cauce-iconos', icono: 'caret', clase: 'cauce-faq__caret' %}
+                </summary>
+                <div class="cauce-faq__respuesta rte">{{ cauce_item.respuesta | metafield_tag }}</div>
+              </details>
+            {%- endif -%}
+          {%- endfor -%}
+        {%- else -%}
+          {%- for block in section.blocks -%}
+            {%- if block.settings.pregunta != blank and block.settings.respuesta != blank -%}
+              <details class="cauce-faq__item" {{ block.shopify_attributes }}>
+                <summary class="cauce-faq__summary">
+                  <span class="cauce-faq__pregunta">{{ block.settings.pregunta }}</span>
+                  {% render 'cauce-iconos', icono: 'caret', clase: 'cauce-faq__caret' %}
+                </summary>
+                <div class="cauce-faq__respuesta rte">{{ block.settings.respuesta }}</div>
+              </details>
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+      </div>
+
+      {%- if section.settings.pie != blank -%}
+        <div class="cauce-faq__pie rte">{{ section.settings.pie }}</div>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- if section.settings.emitir_schema -%}
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {%- assign cauce_primero = true -%}
+          {%- if cauce_desde_mf -%}
+            {%- for cauce_item in cauce_lista -%}
+              {%- if cauce_item.pregunta != blank -%}
+                {%- unless cauce_primero %},{% endunless -%}
+                {%- assign cauce_primero = false -%}
+                {
+                  "@type": "Question",
+                  "name": {{ cauce_item.pregunta | strip_html | json }},
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": {{ cauce_item.respuesta.value | strip_html | strip | json }}
+                  }
+                }
+              {%- endif -%}
+            {%- endfor -%}
+          {%- else -%}
+            {%- for block in section.blocks -%}
+              {%- if block.settings.pregunta != blank and block.settings.respuesta != blank -%}
+                {%- unless cauce_primero %},{% endunless -%}
+                {%- assign cauce_primero = false -%}
+                {
+                  "@type": "Question",
+                  "name": {{ block.settings.pregunta | strip_html | json }},
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": {{ block.settings.respuesta | strip_html | strip | json }}
+                  }
+                }
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+        ]
+      }
+    </script>
+  {%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "CAUCE · Preguntas",
+  "tag": "section",
+  "class": "cauce-section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Preguntas de COMPRA: envio, pago, devolucion, formato, como conservarlo. Ninguna pregunta puede ser del tipo «sirve para X» ni mencionar sintomas, patologias o medicamentos."
+    },
+    { "type": "text", "id": "volanta", "label": "Volanta" },
+    { "type": "inline_richtext", "id": "titulo", "label": "Titulo", "default": "Preguntas frecuentes" },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Tamano del titulo",
+      "options": [
+        { "value": "h2", "label": "Chico" },
+        { "value": "h1", "label": "Mediano" },
+        { "value": "h0", "label": "Grande" }
+      ],
+      "default": "h1"
+    },
+    { "type": "richtext", "id": "pie", "label": "Texto al pie" },
+    { "type": "product", "id": "producto", "label": "Producto", "info": "Solo hace falta fuera de una pagina de producto." },
+    {
+      "type": "checkbox",
+      "id": "emitir_schema",
+      "label": "Emitir datos estructurados FAQPage",
+      "info": "Marca las preguntas visibles como FAQPage para Google. Solo se emiten las que se ven en la pagina.",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "options": [
+        { "value": "background-1", "label": "Sedimento" },
+        { "value": "background-2", "label": "Sedimento 2" },
+        { "value": "inverse", "label": "Tinta" }
+      ],
+      "default": "background-1"
+    },
+    { "type": "header", "content": "Espaciado" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8, "unit": "px", "label": "Arriba", "default": 72 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 160, "step": 8, "unit": "px", "label": "Abajo", "default": 72 }
+  ],
+  "blocks": [
+    {
+      "type": "pregunta",
+      "name": "Pregunta",
+      "settings": [
+        { "type": "text", "id": "pregunta", "label": "Pregunta" },
+        { "type": "richtext", "id": "respuesta", "label": "Respuesta" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "CAUCE · Preguntas",
+      "blocks": [{ "type": "pregunta" }, { "type": "pregunta" }, { "type": "pregunta" }]
+    }
+  ]
+}
+{% endschema %}

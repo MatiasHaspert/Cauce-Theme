@@ -1,0 +1,50 @@
+{% comment %}
+  CAUCE — leyenda obligatoria de suplemento dietario.
+
+  Un solo lugar para el texto que exige el marco argentino (CAA art. 1381,
+  Disp. ANMAT 4980/05). Todas las secciones que necesiten la leyenda renderizan
+  este snippet en vez de repetirla, para que se pueda auditar y cambiar en bloque.
+
+  De donde sale el texto, en orden de prioridad:
+    1. el parametro que le pase quien renderiza (override puntual)
+    2. el setting global, editable desde Configuracion del tema > CAUCE > Legales
+    3. locales/es.json (cauce.legal.*), que es la red de contencion
+
+  El paso 3 existe para que vaciar el campo en el admin no borre una leyenda
+  obligatoria: si alguien lo deja en blanco, vuelve el texto por defecto del tema.
+  Nunca hay un claim escrito aca (regla 1 de docs/CLAIMS-AUDIT.md).
+
+  El numero de RNPA/RNE sale de settings.cauce_rnpa. Mientras este vacio se
+  muestra un placeholder visible: un dato legal faltante no puede pasar
+  desapercibido en un QA visual.
+
+  Parametros:
+    compacto   true para la version de una linea (footer, hero)
+    texto      override de la leyenda de suplemento
+    consulta   override de la frase de consulta medica
+    rnpa       override del numero; si no viene usa settings.cauce_rnpa
+{% endcomment %}
+
+{%- liquid
+  assign cauce_rnpa = rnpa | default: settings.cauce_rnpa
+
+  assign cauce_texto = texto | default: settings.cauce_disclaimer_texto
+  if cauce_texto == blank
+    assign cauce_texto = 'cauce.legal.suplemento' | t
+  endif
+
+  assign cauce_consulta = consulta | default: settings.cauce_disclaimer_consulta
+  if cauce_consulta == blank
+    assign cauce_consulta = 'cauce.legal.consulta_medico' | t
+  endif
+-%}
+
+<p class="cauce-disclaimer{% if compacto %} cauce-disclaimer--compacto{% endif %}">
+  {{ cauce_texto }}
+  {%- unless compacto %} {{ cauce_consulta }}{% endunless -%}
+  {%- if cauce_rnpa != blank %}
+    <span class="cauce-dato">{{ 'cauce.legal.rnpa' | t: numero: cauce_rnpa }}</span>
+  {%- else %}
+    {% comment %}<span class="cauce-pendiente">{% raw %}{{ PENDIENTE: RNPA/RNE }}{% endraw %}</span>{% endcomment %}
+  {%- endif -%}
+</p>

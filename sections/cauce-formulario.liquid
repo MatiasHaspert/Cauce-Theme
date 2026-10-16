@@ -1,0 +1,255 @@
+{% comment %}
+  CAUCE — formulario de contacto con campos configurables. Lo usan el boton de
+  arrepentimiento (Res. SCI 424/2020) y la pagina de contacto. En Shrine era la
+  seccion contact-form del tema; en Horizon pasa a ser propia (D-081).
+
+  Cada campo es un bloque. El formulario es el de contacto de Shopify, asi que
+  el pedido le llega al comercio por mail con todos los campos:
+    nombre ....... contact[name]
+    email ........ contact[email]   (Shopify lo exige para enviar)
+    telefono ..... contact[phone]
+    mensaje ...... contact[body]
+    cualquier otro: contact[<etiqueta>], que es como aparece en el mail.
+
+  Si el formulario no tiene un campo email, se agrega uno: sin email Shopify no
+  envia el mensaje.
+{% endcomment %}
+
+{%- liquid
+  assign cauce_form_id = 'CauceForm-' | append: section.id
+  assign cauce_tiene_email = false
+  for block in section.blocks
+    if block.settings.tipo == 'email'
+      assign cauce_tiene_email = true
+    endif
+  endfor
+-%}
+
+<div class="cauce-form cauce-seccion color-{{ section.settings.color_scheme }}">
+  <div
+    class="page-width cauce-form__inner"
+    style="--padding-top: {{ section.settings.padding_top }}px; --padding-bottom: {{ section.settings.padding_bottom }}px;"
+  >
+    {%- if section.settings.titulo != blank -%}
+      <h2 class="cauce-form__titulo {{ section.settings.heading_size }}">{{ section.settings.titulo }}</h2>
+    {%- endif -%}
+    {%- if section.settings.bajada != blank -%}
+      <div class="cauce-form__bajada rte">{{ section.settings.bajada }}</div>
+    {%- endif -%}
+
+    {%- form 'contact', id: cauce_form_id, class: 'cauce-form__form' -%}
+      {%- if form.posted_successfully? -%}
+        <p class="cauce-form__exito" role="status" tabindex="-1" autofocus>
+          {% render 'cauce-iconos', icono: 'visto' %}
+          <span>{{ section.settings.mensaje_exito }}</span>
+        </p>
+      {%- elsif form.errors -%}
+        <div class="cauce-form__error" role="alert" tabindex="-1" autofocus>
+          {% render 'cauce-iconos', icono: 'alerta' %}
+          <span>{{ section.settings.mensaje_error }}</span>
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.asunto != blank -%}
+        <input type="hidden" name="contact[Asunto]" value="{{ section.settings.asunto | escape }}">
+      {%- endif -%}
+
+      <div class="cauce-form__campos">
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign cauce_campo_id = cauce_form_id | append: '-' | append: block.id
+            case block.settings.tipo
+              when 'nombre'
+                assign cauce_name = 'contact[name]'
+                assign cauce_type = 'text'
+                assign cauce_auto = 'name'
+              when 'email'
+                assign cauce_name = 'contact[email]'
+                assign cauce_type = 'email'
+                assign cauce_auto = 'email'
+              when 'telefono'
+                assign cauce_name = 'contact[phone]'
+                assign cauce_type = 'tel'
+                assign cauce_auto = 'tel'
+              when 'mensaje'
+                assign cauce_name = 'contact[body]'
+                assign cauce_type = 'textarea'
+                assign cauce_auto = 'off'
+              else
+                assign cauce_name = 'contact[' | append: block.settings.etiqueta | append: ']'
+                assign cauce_type = 'text'
+                assign cauce_auto = 'off'
+            endcase
+            assign cauce_ancho = 'completo'
+            if block.settings.medio_ancho and cauce_type != 'textarea'
+              assign cauce_ancho = 'medio'
+            endif
+          -%}
+          <div class="cauce-form__campo cauce-form__campo--{{ cauce_ancho }}" {{ block.shopify_attributes }}>
+            <label for="{{ cauce_campo_id }}">
+              {{- block.settings.etiqueta -}}
+              {%- if block.settings.obligatorio %} <span aria-hidden="true">*</span>{% endif -%}
+            </label>
+            {%- if cauce_type == 'textarea' -%}
+              <textarea
+                id="{{ cauce_campo_id }}"
+                name="{{ cauce_name | escape }}"
+                rows="5"
+                {% if block.settings.obligatorio %}
+                  required
+                {% endif %}
+              >{{ form.body }}</textarea>
+            {%- else -%}
+              <input
+                id="{{ cauce_campo_id }}"
+                type="{{ cauce_type }}"
+                name="{{ cauce_name | escape }}"
+                autocomplete="{{ cauce_auto }}"
+                {% if block.settings.tipo == 'email' %}
+                  value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+                  spellcheck="false"
+                  autocapitalize="off"
+                {% elsif block.settings.tipo == 'nombre' %}
+                  value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}"
+                {% elsif block.settings.tipo == 'telefono' %}
+                  value="{{ form.phone }}"
+                {% endif %}
+                {% if block.settings.obligatorio %}
+                  required
+                  aria-required="true"
+                {% endif %}
+              >
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+
+        {%- unless cauce_tiene_email -%}
+          <div class="cauce-form__campo cauce-form__campo--completo">
+            <label for="{{ cauce_form_id }}-email">{{ 'cauce.form.email' | t }} <span aria-hidden="true">*</span></label>
+            <input id="{{ cauce_form_id }}-email" type="email" name="contact[email]" autocomplete="email" required aria-required="true">
+          </div>
+        {%- endunless -%}
+      </div>
+
+      {%- if section.settings.nota != blank -%}
+        <div class="cauce-form__nota rte">{{ section.settings.nota }}</div>
+      {%- endif -%}
+
+      <button type="submit" class="button cauce-form__boton">
+        {{- section.settings.boton | default: 'Enviar' -}}
+      </button>
+    {%- endform -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "CAUCE · Formulario",
+  "tag": "section",
+  "class": "cauce-section",
+  "settings": [
+    { "type": "inline_richtext", "id": "titulo", "label": "Titulo" },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Tamaño del titulo",
+      "options": [
+        { "value": "h2", "label": "Chico" },
+        { "value": "h1", "label": "Mediano" },
+        { "value": "h0", "label": "Grande" }
+      ],
+      "default": "h2"
+    },
+    { "type": "richtext", "id": "bajada", "label": "Bajada" },
+    {
+      "type": "text",
+      "id": "asunto",
+      "label": "Asunto del mail",
+      "info": "Llega como un campo mas. Sirve para separar los pedidos de arrepentimiento del resto."
+    },
+    { "type": "text", "id": "boton", "label": "Texto del boton", "default": "Enviar" },
+    { "type": "richtext", "id": "nota", "label": "Nota arriba del boton" },
+    {
+      "type": "text",
+      "id": "mensaje_exito",
+      "label": "Mensaje de envio correcto",
+      "default": "Recibimos tu mensaje. Te respondemos a la brevedad."
+    },
+    {
+      "type": "text",
+      "id": "mensaje_error",
+      "label": "Mensaje de error",
+      "default": "Revisá los datos marcados como obligatorios y volvé a enviar."
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "options": [
+        { "value": "background-1", "label": "Fondo" },
+        { "value": "background-2", "label": "Superficie" }
+      ],
+      "default": "background-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Espacio arriba",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Espacio abajo",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    }
+  ],
+  "blocks": [
+    {
+      "type": "campo",
+      "name": "Campo",
+      "settings": [
+        {
+          "type": "select",
+          "id": "tipo",
+          "label": "Tipo",
+          "options": [
+            { "value": "nombre", "label": "Nombre" },
+            { "value": "email", "label": "Email" },
+            { "value": "telefono", "label": "Telefono" },
+            { "value": "mensaje", "label": "Mensaje (texto largo)" },
+            { "value": "otro", "label": "Otro (texto corto)" }
+          ],
+          "default": "otro"
+        },
+        { "type": "text", "id": "etiqueta", "label": "Etiqueta", "default": "Campo" },
+        { "type": "checkbox", "id": "obligatorio", "label": "Obligatorio", "default": false },
+        {
+          "type": "checkbox",
+          "id": "medio_ancho",
+          "label": "Medio ancho en escritorio",
+          "default": true
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "CAUCE · Formulario",
+      "blocks": [
+        { "type": "campo", "settings": { "tipo": "nombre", "etiqueta": "Nombre", "obligatorio": true } },
+        { "type": "campo", "settings": { "tipo": "email", "etiqueta": "Email", "obligatorio": true } },
+        { "type": "campo", "settings": { "tipo": "mensaje", "etiqueta": "Mensaje", "obligatorio": true, "medio_ancho": false } }
+      ]
+    }
+  ]
+}
+{% endschema %}

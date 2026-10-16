@@ -1,0 +1,302 @@
+{% comment %}
+  CAUCE — pie de pagina. Una banda oscura con marca, menu, contacto y medios de
+  pago, y debajo el copyright y las politicas. La barra legal (cauce-legal-bar)
+  va pegada abajo, en el mismo footer-group, y las dos se leen como un solo
+  bloque de cierre (D-045).
+
+  En Shrine era la seccion footer con tres bloques propios agregados; en
+  Horizon pasa a ser una seccion entera de CAUCE (D-081). Lo que se conserva:
+
+  - Contacto lee los settings globales de CAUCE (email, telefono, WhatsApp,
+    horario, domicilio): son los mismos que publica la barra legal, se cargan
+    una vez y no pueden quedar distintos.
+  - Los medios de pago salen de cauce-medios-pago, no del payment_type_svg_tag
+    de Shopify, que no conoce Mercado Pago, Cabal ni Naranja X (D-012).
+  - Sin selector de pais ni de idioma (D-028).
+{% endcomment %}
+
+<div class="cauce-pie cauce-seccion color-{{ section.settings.color_scheme }}">
+  <div
+    class="page-width cauce-pie__inner"
+    style="--padding-top: {{ section.settings.padding_top }}px; --padding-bottom: {{ section.settings.padding_bottom }}px;"
+  >
+    <div class="cauce-pie__columnas">
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when 'marca' -%}
+            <div class="cauce-pie__columna cauce-pie__columna--marca" {{ block.shopify_attributes }}>
+              {%- if block.settings.imagen != blank -%}
+                <a class="cauce-pie__imagen" href="{{ routes.root_url }}" style="max-width: min(100%, {{ block.settings.ancho_imagen }}px);">
+                  {%- assign cauce_alt_marca = block.settings.imagen.alt | default: shop.name -%}
+                  {{
+                    block.settings.imagen
+                    | image_url: width: 600
+                    | image_tag: loading: 'lazy', widths: '150, 300, 450, 600', sizes: '270px', alt: cauce_alt_marca
+                  }}
+                </a>
+              {%- else -%}
+                <div class="cauce-pie__lockup">
+                  {% render 'cauce-logo', tamano: 'lg', descriptor: true, url: routes.root_url %}
+                </div>
+              {%- endif -%}
+              {%- if block.settings.texto != blank -%}
+                <div class="cauce-pie__texto rte">{{ block.settings.texto }}</div>
+              {%- endif -%}
+              {%- liquid
+                assign cauce_redes = false
+                if block.settings.instagram != blank or block.settings.facebook != blank or block.settings.tiktok != blank
+                  assign cauce_redes = true
+                endif
+              -%}
+              {%- if cauce_redes -%}
+                <ul class="cauce-pie__redes" role="list">
+                  {%- if block.settings.instagram != blank -%}
+                    <li>
+                      <a href="{{ block.settings.instagram }}" class="cauce-pie__red" target="_blank" rel="noopener">
+                        {% render 'cauce-iconos', icono: 'instagram' %}
+                        <span class="visually-hidden">Instagram</span>
+                      </a>
+                    </li>
+                  {%- endif -%}
+                  {%- if block.settings.facebook != blank -%}
+                    <li>
+                      <a href="{{ block.settings.facebook }}" class="cauce-pie__red" target="_blank" rel="noopener">
+                        {% render 'cauce-iconos', icono: 'facebook' %}
+                        <span class="visually-hidden">Facebook</span>
+                      </a>
+                    </li>
+                  {%- endif -%}
+                  {%- if block.settings.tiktok != blank -%}
+                    <li>
+                      <a href="{{ block.settings.tiktok }}" class="cauce-pie__red" target="_blank" rel="noopener">
+                        {% render 'cauce-iconos', icono: 'tiktok' %}
+                        <span class="visually-hidden">TikTok</span>
+                      </a>
+                    </li>
+                  {%- endif -%}
+                </ul>
+              {%- endif -%}
+            </div>
+
+          {%- when 'enlaces' -%}
+            <div class="cauce-pie__columna" {{ block.shopify_attributes }}>
+              {%- if block.settings.titulo != blank -%}
+                <h2 class="cauce-pie__cabecera">{{ block.settings.titulo }}</h2>
+              {%- endif -%}
+              {%- if block.settings.menu != blank -%}
+                <ul class="cauce-pie__menu" role="list">
+                  {%- for link in block.settings.menu.links -%}
+                    <li>
+                      <a href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.title }}</a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+            </div>
+
+          {%- when 'contacto' -%}
+            <div class="cauce-pie__columna cauce-pie__contacto" {{ block.shopify_attributes }}>
+              {%- if block.settings.titulo != blank -%}
+                <h2 class="cauce-pie__cabecera">{{ block.settings.titulo }}</h2>
+              {%- endif -%}
+              <p>
+                {%- if settings.cauce_email != blank -%}
+                  <a href="mailto:{{ settings.cauce_email }}">{{ settings.cauce_email }}</a>
+                {%- else -%}
+                  {% render 'cauce-dato-legal', valor: '', clave: 'email' %}
+                {%- endif -%}
+              </p>
+              <p>
+                {%- if settings.cauce_telefono != blank -%}
+                  <a href="tel:{{ settings.cauce_telefono | remove: ' ' | remove: '-' }}">{{ settings.cauce_telefono }}</a>
+                {%- else -%}
+                  {% render 'cauce-dato-legal', valor: '', clave: 'telefono' %}
+                {%- endif -%}
+              </p>
+              {%- comment -%}
+                WhatsApp va entre el telefono y el horario porque el horario vale
+                para los dos canales. Sin settings.cauce_whatsapp no se dibuja.
+              {%- endcomment -%}
+              {%- if settings.cauce_whatsapp != blank -%}
+                <p>{% render 'cauce-whatsapp', variante: 'pie' %}</p>
+              {%- endif -%}
+              {%- if settings.cauce_horario != blank -%}
+                <p class="cauce-pie__horario">
+                  {{- 'cauce.footer.horario' | t: horario: settings.cauce_horario -}}
+                </p>
+              {%- endif -%}
+              {%- if block.settings.mostrar_domicilio and settings.cauce_domicilio != blank -%}
+                <p class="cauce-pie__domicilio">{{ settings.cauce_domicilio }}</p>
+              {%- endif -%}
+            </div>
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+
+    {%- if section.settings.mostrar_pagos -%}
+      <div class="cauce-pie__pagos">
+        <span class="visually-hidden">{{ 'cauce.pdp.medios_pago_titulo' | t }}</span>
+        {% render 'cauce-medios-pago', alineacion: 'center' %}
+      </div>
+    {%- endif -%}
+
+    <div class="cauce-pie__base">
+      <small>&copy; {{ 'now' | date: '%Y' }}, {{ shop.name | link_to: routes.root_url }}</small>
+      {%- if section.settings.mostrar_politicas -%}
+        <ul class="cauce-pie__politicas" role="list">
+          {%- for policy in shop.policies -%}
+            {%- if policy != blank -%}
+              <li><small><a href="{{ policy.url }}">{{ policy.title }}</a></small></li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "CAUCE · Pie",
+  "tag": "section",
+  "class": "cauce-section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "info": "Oscuro deja el pie y la barra legal como un solo bloque (D-045).",
+      "options": [
+        { "value": "background-1", "label": "Fondo" },
+        { "value": "background-2", "label": "Superficie" },
+        { "value": "inverse", "label": "Oscuro" }
+      ],
+      "default": "inverse"
+    },
+    {
+      "type": "checkbox",
+      "id": "mostrar_pagos",
+      "label": "Mostrar medios de pago",
+      "info": "La lista se edita en Configuracion del tema → CAUCE.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "mostrar_politicas",
+      "label": "Mostrar las politicas de la tienda",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Espacio arriba",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Espacio abajo",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    }
+  ],
+  "blocks": [
+    {
+      "type": "marca",
+      "name": "Marca",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "imagen",
+          "label": "Logo",
+          "info": "Vacio: el lockup de CAUCE en texto."
+        },
+        {
+          "type": "range",
+          "id": "ancho_imagen",
+          "label": "Ancho del logo",
+          "min": 80,
+          "max": 400,
+          "step": 10,
+          "unit": "px",
+          "default": 270
+        },
+        {
+          "type": "richtext",
+          "id": "texto",
+          "label": "Texto"
+        },
+        {
+          "type": "url",
+          "id": "instagram",
+          "label": "Instagram"
+        },
+        {
+          "type": "url",
+          "id": "facebook",
+          "label": "Facebook"
+        },
+        {
+          "type": "url",
+          "id": "tiktok",
+          "label": "TikTok"
+        }
+      ]
+    },
+    {
+      "type": "enlaces",
+      "name": "Menu",
+      "settings": [
+        {
+          "type": "text",
+          "id": "titulo",
+          "label": "Titulo",
+          "default": "Ayuda"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu",
+          "default": "footer"
+        }
+      ]
+    },
+    {
+      "type": "contacto",
+      "name": "Contacto",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Email, telefono, WhatsApp y horario salen de Configuracion del tema → CAUCE. Son los mismos datos que publica la barra legal."
+        },
+        {
+          "type": "text",
+          "id": "titulo",
+          "label": "Titulo",
+          "default": "Contacto"
+        },
+        {
+          "type": "checkbox",
+          "id": "mostrar_domicilio",
+          "label": "Mostrar el domicilio",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "CAUCE · Pie"
+    }
+  ]
+}
+{% endschema %}

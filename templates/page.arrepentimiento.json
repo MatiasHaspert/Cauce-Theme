@@ -1,0 +1,120 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "intro": {
+      "type": "cauce-texto",
+      "settings": {
+        "volanta": "",
+        "titulo": "Botón de arrepentimiento",
+        "titulo_principal": true,
+        "heading_size": "h0",
+        "texto": "<p>Si te arrepentiste de tu compra, tenés 10 días corridos desde que recibiste el pedido para pedir la devolución del importe pagado, sin costo. Es un derecho que te da la Resolución SCI 424/2020 y el artículo 34 de la Ley 24.240.</p><p>No hace falta que expliques el motivo. Completá el formulario y te respondemos con las instrucciones para devolver el producto.</p><p>Vas a recibir la constancia de tu solicitud por email dentro de las 24 horas.</p>",
+        "html": "",
+        "ancho": "angosto",
+        "alineacion": "izquierda",
+        "color_scheme": "background-1",
+        "padding_top": 64,
+        "padding_bottom": 24
+      }
+    },
+    "form": {
+      "type": "cauce-formulario",
+      "settings": {
+        "titulo": "Solicitud de arrepentimiento",
+        "heading_size": "h2",
+        "bajada": "",
+        "asunto": "Arrepentimiento de compra",
+        "boton": "Enviar solicitud",
+        "nota": "",
+        "mensaje_exito": "Recibimos tu solicitud de arrepentimiento. Te llega la constancia por email dentro de las 24 horas.",
+        "mensaje_error": "Revisá los datos marcados como obligatorios y volvé a enviar.",
+        "color_scheme": "background-1",
+        "padding_top": 0,
+        "padding_bottom": 24
+      },
+      "blocks": {
+        "campo_1": {
+          "type": "campo",
+          "settings": {
+            "tipo": "nombre",
+            "etiqueta": "Nombre y apellido",
+            "obligatorio": true,
+            "medio_ancho": true
+          }
+        },
+        "campo_2": {
+          "type": "campo",
+          "settings": {
+            "tipo": "email",
+            "etiqueta": "Email",
+            "obligatorio": true,
+            "medio_ancho": true
+          }
+        },
+        "campo_3": {
+          "type": "campo",
+          "settings": {
+            "tipo": "otro",
+            "etiqueta": "Número de pedido",
+            "obligatorio": true,
+            "medio_ancho": true
+          }
+        },
+        "campo_4": {
+          "type": "campo",
+          "settings": {
+            "tipo": "telefono",
+            "etiqueta": "Teléfono",
+            "obligatorio": false,
+            "medio_ancho": true
+          }
+        },
+        "campo_5": {
+          "type": "campo",
+          "settings": {
+            "tipo": "mensaje",
+            "etiqueta": "Comentario (opcional, no hace falta dar un motivo)",
+            "obligatorio": false,
+            "medio_ancho": false
+          }
+        }
+      },
+      "block_order": [
+        "campo_1",
+        "campo_2",
+        "campo_3",
+        "campo_4",
+        "campo_5"
+      ]
+    },
+    "nota": {
+      "type": "cauce-texto",
+      "settings": {
+        "volanta": "",
+        "titulo": "",
+        "titulo_principal": false,
+        "heading_size": "h2",
+        "texto": "",
+        "html": "<h2>Qué pasa después</h2>\n  <ol>\n    <li>Te llega un email con la constancia de tu solicitud dentro de las 24 horas. Lo pide la Resolución SCI 424/2020.</li>\n    <li>Te escribimos con las instrucciones para devolver el producto. Los gastos de devolución corren por nuestra cuenta, como fija el artículo 34 de la Ley 24.240.</li>\n    <li>Cuando recibimos el producto te devolvemos el importe pagado. El plazo de reembolso es de hasta 3 días.</li>\n  </ol>\n  <p>Si el formulario no te funciona, escribinos a {% render 'cauce-dato-legal', valor: settings.cauce_email, clave: 'email' %} o llamanos al {% render 'cauce-dato-legal', valor: settings.cauce_telefono, clave: 'telefono' %}. Vale igual: la solicitud queda hecha por cualquiera de los tres medios.</p>",
+        "ancho": "angosto",
+        "alineacion": "izquierda",
+        "color_scheme": "background-1",
+        "padding_top": 0,
+        "padding_bottom": 64
+      }
+    }
+  },
+  "order": [
+    "intro",
+    "form",
+    "nota"
+  ]
+}

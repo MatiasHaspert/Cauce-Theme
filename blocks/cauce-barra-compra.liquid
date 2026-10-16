@@ -1,0 +1,96 @@
+{% comment %}
+  CAUCE — barra fija de compra. Aparece abajo de la pantalla cuando el bloque
+  de compra ya quedo arriba, y su boton vuelve al selector de packs (#comprar).
+  Reemplaza al sticky_atc de Shrine en modo "scroll" (D-074, D-081).
+
+  No agrega al carrito a proposito: con packs, agregar desde la barra seria
+  agregar un pack que la persona no esta viendo. Vuelve a la eleccion.
+
+  El cuando lo decide <cauce-barra-compra> (assets/cauce.js) con un
+  IntersectionObserver sobre el bloque de compra: se muestra mientras ese
+  bloque esta por encima de la pantalla. Sin JS la barra no aparece, que es la
+  degradacion correcta: el boton de compra sigue en su lugar.
+
+  El boton flotante de WhatsApp sube lo que la barra tapa (cauce.js, bloque 24
+  de cauce-brand.css).
+{% endcomment %}
+
+{%- liquid
+  assign product = closest.product
+  assign cauce_objetivo = 'cauce-comprar-' | append: section.id
+  assign cauce_destino = block.settings.destino | default: '#comprar'
+-%}
+
+<cauce-barra-compra
+  class="cauce-barra cauce-seccion color-{{ block.settings.color_scheme }}"
+  data-objetivo="{{ cauce_objetivo }}"
+  hidden
+  {{ block.shopify_attributes }}
+>
+  <div class="cauce-barra__inner">
+    {%- if block.settings.mostrar_producto and product != blank -%}
+      <div class="cauce-barra__producto">
+        {%- if product.featured_media -%}
+          {{
+            product.featured_media.preview_image
+            | image_url: width: 120
+            | image_tag: loading: 'lazy', class: 'cauce-barra__imagen', alt: '', width: 48, height: 48
+          }}
+        {%- endif -%}
+        <span class="cauce-barra__titulo">{{ product.title }}</span>
+      </div>
+    {%- endif -%}
+    <a class="cauce-barra__boton button" href="{{ cauce_destino }}">
+      {{- block.settings.boton_texto | default: 'Elegir mi pack' -}}
+    </a>
+  </div>
+</cauce-barra-compra>
+
+{% schema %}
+{
+  "name": "CAUCE · Barra de compra",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Aparece abajo de la pantalla cuando el bloque \"CAUCE · Packs y compra\" quedo arriba. El boton vuelve al selector de packs."
+    },
+    {
+      "type": "text",
+      "id": "boton_texto",
+      "label": "Texto del boton",
+      "default": "Elegir mi pack"
+    },
+    {
+      "type": "text",
+      "id": "destino",
+      "label": "Destino del boton",
+      "default": "#comprar",
+      "info": "#comprar es el ancla que va antes del selector de packs."
+    },
+    {
+      "type": "checkbox",
+      "id": "mostrar_producto",
+      "label": "Mostrar foto y nombre del producto en escritorio",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "options": [
+        { "value": "background-1", "label": "Fondo" },
+        { "value": "background-2", "label": "Superficie" },
+        { "value": "inverse", "label": "Oscuro" }
+      ],
+      "default": "background-1"
+    }
+  ],
+  "presets": [
+    {
+      "name": "CAUCE · Barra de compra",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

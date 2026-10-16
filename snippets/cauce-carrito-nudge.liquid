@@ -1,0 +1,104 @@
+{% comment %}
+  CAUCE — empujon de envio gratis. Ocupa el lugar del cross-sell.
+
+  De Numen (snippets/cart-cross-sell.liquid) se toma EL COMPORTAMIENTO: el boton
+  agrega la variante por AJAX y el carrito se re-renderiza sin salir del drawer, en
+  vez de mandar a la PDP. No se toma el criterio de match (familia olfativa) ni el
+  gancho (la variante decant mas barata): aca no hay ni una cosa ni la otra.
+
+  POR QUE ESTO Y NO UN CROSS-SELL. Con un solo SKU en catalogo un cross-sell no
+  tiene que ofrecer: la unica card posible seria el mismo producto que ya esta en
+  el carrito, dos centimetros abajo del boton "+" del stepper. Lo que si existe y
+  es verdad es el escalon de envio: si sumar UNA unidad mas cruza el umbral, hay
+  algo concreto que decir. Fuera de ese caso el bloque no se dibuja.
+
+  Reglas que lo mantienen honesto:
+
+  - Solo aparece cuando sumar una unidad ALCANZA para cruzar el umbral. Si falta
+    mas que eso, la barra de progreso ya dice cuanto: repetirlo en una card seria
+    presion sin informacion nueva.
+  - El monto que se muestra es item.variant.price, el precio de LISTA, porque es
+    exactamente lo que se le va a sumar a cart.items_subtotal_price, que es la base
+    de la barra. Si se mostrara el precio con descuento de linea, el numero de la
+    card y el de la barra no cerrarian.
+  - Entre varias lineas candidatas gana la mas barata: es la que menos le cuesta al
+    cliente, no la que mas factura.
+  - No promete ningun descuento. El envio gratis lo aplica Shopify por su regla de
+    envio; aca solo se informa el umbral que ya esta cargado en el tema.
+
+  Si el umbral no esta cargado, el bloque no existe (aviso solo en el editor).
+{% endcomment %}
+
+{%- liquid
+  assign cauce_umbral = settings.cauce_umbral_envio_gratis | times: 100
+  assign cauce_actual = cart.items_subtotal_price
+  assign cauce_hay = false
+  assign cauce_mejor = 0
+
+  comment
+    La comparacion es contra cauce_mejor, un numero, y no contra
+    cauce_elegido.variant.price: Liquid no corta la evaluacion de un `or` como lo
+    hace un lenguaje de programacion, asi que en la primera vuelta estaria
+    comparando un precio contra el price de un objeto que todavia es nil.
+  endcomment
+  if cauce_umbral > 0 and cart != empty and cauce_actual < cauce_umbral
+    for cauce_item in cart.items
+      unless cauce_item.variant.available
+        continue
+      endunless
+      assign cauce_precio = cauce_item.variant.price | plus: 0
+      assign cauce_proyectado = cauce_actual | plus: cauce_precio
+      if cauce_proyectado >= cauce_umbral
+        if cauce_hay == false
+          assign cauce_elegido = cauce_item
+          assign cauce_mejor = cauce_precio
+          assign cauce_hay = true
+        elsif cauce_precio < cauce_mejor
+          assign cauce_elegido = cauce_item
+          assign cauce_mejor = cauce_precio
+        endif
+      endif
+    endfor
+  endif
+-%}
+
+{%- if cauce_hay -%}
+  <div class="cauce-carrito__nudge">
+    <p class="cauce-carrito__nudge-titulo cauce-eyebrow">{{ 'cauce.carrito.nudge_titulo' | t }}</p>
+    <div class="cauce-carrito__nudge-card">
+      <span class="cauce-carrito__nudge-media" aria-hidden="true">
+        {%- if cauce_elegido.image -%}
+          <img
+            src="{{ cauce_elegido.image | image_url: width: 120 }}"
+            alt=""
+            loading="lazy"
+            width="48"
+            height="48"
+          >
+        {%- endif -%}
+      </span>
+      <span class="cauce-carrito__nudge-info">
+        <span class="cauce-carrito__nudge-texto">
+          {{- 'cauce.carrito.nudge_texto' | t: producto: cauce_elegido.product.title -}}
+        </span>
+        <span class="cauce-carrito__nudge-precio cauce-dato">{{ cauce_elegido.variant.price | money }}</span>
+      </span>
+      <button
+        type="button"
+        class="cauce-carrito__nudge-boton"
+        data-cauce-sumar="{{ cauce_elegido.variant.id }}"
+        data-cauce-url="{{ routes.cart_add_url }}"
+        data-cauce-sumando="{{ 'cauce.carrito.nudge_sumando' | t | escape }}"
+        aria-label="{{ 'cauce.carrito.nudge_sumar_aria' | t: producto: cauce_elegido.product.title | escape }}"
+      >
+        {%- render 'cauce-iconos', icono: 'mas', clase: 'cauce-carrito__nudge-icono' -%}
+        <span class="cauce-carrito__nudge-label">{{ 'cauce.carrito.nudge_sumar' | t }}</span>
+      </button>
+    </div>
+  </div>
+{%- elsif request.design_mode and settings.cauce_umbral_envio_gratis == blank -%}
+  <p class="cauce-carrito__aviso">
+    Empujón de envío gratis: necesita el monto de Configuración del tema → CAUCE →
+    Envíos. Aparece solo cuando sumar una unidad más alcanza para cruzarlo.
+  </p>
+{%- endif -%}
