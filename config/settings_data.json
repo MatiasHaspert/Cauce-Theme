@@ -194,7 +194,8 @@
           "medios"
         ]
       }
-    }
+    },
+    "cauce_carrito_vacio_url": "/products/aditivo-dental-perros"
   },
   "presets": {
     "Horizon": {

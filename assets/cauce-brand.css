@@ -87,10 +87,18 @@
   --cauce-carmin-claro: #E4899A;
 
   /* --- Tipografia ------------------------------------------------------- */
-  --cauce-font-logo:    'Archivo', var(--font-body--family, system-ui), sans-serif;
-  --cauce-font-titulo:  'Newsreader', Georgia, 'Times New Roman', serif;
-  --cauce-font-texto:   'Archivo', var(--font-body--family, system-ui), sans-serif;
-  --cauce-font-dato:    'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  /* Todo el sitio en DM Sans, como la PDP del aditivo dental (D-074, D-082).
+     Se carga desde layout/theme.liquid. En Shrine el sitio iba en Archivo,
+     Newsreader y DM Mono.
+
+     Los respaldos son literales y NO pueden ser var(--font-body--family): el
+     bloque 0b apunta esa variable de Horizon a estos tokens, y una variable
+     que se referencia a si misma (aunque sea en el respaldo) invalida a las
+     dos y la pagina cae en la fuente por defecto del navegador. */
+  --cauce-font-logo:    'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --cauce-font-titulo:  'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --cauce-font-texto:   'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --cauce-font-dato:    'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   /* El logo es Archivo con el eje de ancho al maximo (Expanded) + tracking.  */
   --cauce-logo-stretch: 125;
@@ -352,9 +360,9 @@
 .cauce-seccion :is(.h0, .h1, .h2, .h3, .h4, .h5) {
   font-family: var(--cauce-font-titulo);
   font-style: normal;
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1.1667;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   text-transform: none;
   color: inherit;
   word-break: break-word;
@@ -481,8 +489,8 @@ body {
 h1, h2, h3, h4,
 .h0, .h1, .h2, .h3, .h4 {
   font-family: var(--cauce-font-titulo);
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  letter-spacing: -0.015em;
 }
 
 /* ==========================================================================
@@ -530,7 +538,7 @@ h1, h2, h3, h4,
   margin-top: 0.5em;
 }
 
-/* Datos, lotes, etiquetas: DM Mono. */
+/* Datos, lotes, etiquetas: el token de datos, con numeros de ancho fijo. */
 .cauce-dato {
   font-family: var(--cauce-font-dato);
   font-weight: 400;
@@ -2783,10 +2791,8 @@ button.shopify-payment-button__button--unbranded {
   --cauce-linea-fuerte: rgba(15, 61, 36, 0.28);
   --cauce-linea-clara:  rgba(221, 240, 226, 0.22);
 
-  /* Toda la pagina en DM Sans. El logo se queda en Archivo: es el de CAUCE. */
-  --cauce-font-titulo: 'DM Sans', var(--font-body--family, system-ui), sans-serif;
-  --cauce-font-texto:  'DM Sans', var(--font-body--family, system-ui), sans-serif;
-  --cauce-font-dato:   'DM Sans', var(--font-body--family, system-ui), sans-serif;
+  /* Las fuentes ya no se pisan aca: DM Sans es la de todo el sitio desde
+     D-082 (bloque de tokens del principio). */
 
   /* Colores base de los esquemas CAUCE (bloque 0b). */
   --cauce-base-fondo-1:  var(--cauce-fondo);
@@ -2830,11 +2836,17 @@ button.shopify-payment-button__button--unbranded {
   background-color: var(--cauce-fondo);
 }
 
-/* Titulos en negrita y en VERDE BOSQUE. Newsreader iba en 400; DM Sans en 400
-   no se distingue del parrafo. Sobre las bandas oscuras heredan el blanco. */
-.plantilla--aditivo-dental :is(h1, h2, h3, h4, .h0, .h1, .h2, .h3, .h4) {
+/* Titulos en negrita: DM Sans en 400 no se distingue del parrafo. Era de esta
+   plantilla y desde D-082 vale para todo el sitio, con la misma especificidad
+   que tenia aca, asi el resto de las paginas se ve igual que la PDP. */
+:root :is(h1, h2, h3, h4, .h0, .h1, .h2, .h3, .h4) {
   font-weight: 700;
   letter-spacing: -0.015em;
+}
+
+/* En VERDE BOSQUE solo en esta plantilla. Sobre las bandas oscuras heredan el
+   blanco. */
+.plantilla--aditivo-dental :is(h1, h2, h3, h4, .h0, .h1, .h2, .h3, .h4) {
   color: var(--cauce-cauce);
 }
 

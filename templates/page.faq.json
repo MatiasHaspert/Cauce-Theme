@@ -69,7 +69,7 @@
           "type": "pregunta",
           "settings": {
             "pregunta": "¿Puedo devolver lo que compré?",
-            "respuesta": "<p>Sí. Tenés 30 días corridos desde que recibís el pedido para devolverlo, sin explicar por qué, con el frasco cerrado. Si compraste un pack, podés devolver los frascos que no abriste. Te devolvemos lo que pagaste por ellos y el envío de vuelta corre por nuestra cuenta.</p><p>Todos los detalles están en la <a href=\"/policies/refund-policy\">política de devoluciones</a>.</p>"
+            "respuesta": "<p>Sí. Tenés 30 días corridos desde que recibís el pedido para devolverlo, sin explicar por qué, con la botella cerrada. Si compraste un pack, podés devolver las botellas que no abriste. Te devolvemos lo que pagaste por ellos y el envío de vuelta corre por nuestra cuenta.</p><p>Todos los detalles están en la <a href=\"/policies/refund-policy\">política de devoluciones</a>.</p>"
           }
         },
         "p8": {
@@ -89,8 +89,8 @@
         "p10": {
           "type": "pregunta",
           "settings": {
-            "pregunta": "¿Dónde veo qué tiene el producto y cómo se toma?",
-            "respuesta": "<p>En la <a href=\"/products/acido-r-alfa-lipoico-de-maxima-potencia-apoyo-para-el-azucar-en-sangre\">página del Ácido R-Alfa Lipoico</a>: ahí están la composición, la cantidad por cápsula y cómo se toma.</p>"
+            "pregunta": "¿Dónde veo qué tiene Hocico Fresh y cómo se usa?",
+            "respuesta": "<p>En la <a href=\"/products/aditivo-dental-perros\">página de Hocico Fresh</a>: ahí están los ingredientes, cómo se usa y cuánto rinde cada botella.</p>"
           }
         },
         "p11": {

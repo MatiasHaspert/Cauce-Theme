@@ -57,7 +57,7 @@
       "type": "cauce-legal-bar",
       "settings": {
         "url_arrepentimiento_fallback": "shopify://pages/arrepentimiento",
-        "leyenda_suplemento": "fuera_aditivo",
+        "leyenda_suplemento": "nunca",
         "mostrar_defensa": true
       }
     }

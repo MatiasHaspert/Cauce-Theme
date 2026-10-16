@@ -80,25 +80,19 @@
 
       Las fuentes de Horizon (Configuracion del tema > Tipografia) quedan en una
       fuente de sistema, que no se descarga: las familias reales las pone
-      cauce-brand.css. Archivo se pide como variable con eje de ancho (wdth)
-      porque el logo usa Archivo Expanded y el cuerpo Archivo Regular.
+      cauce-brand.css.
 
-      La PDP del aditivo dental va entera en DM Sans (bloque 26) y no usa las
-      otras tres: en esa plantilla se pide solo DM Sans. Ver D-074.
+      Todo el sitio va en DM Sans, la tipografia de la PDP del aditivo dental
+      (D-074, D-082): el mismo pedido de Google Fonts, variable de 400 a 700 con
+      cursivas y eje de tamano optico. En Shrine el resto del sitio usaba
+      Archivo, Newsreader y DM Mono.
     {% endcomment %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    {%- if cauce_plantilla == 'aditivo-dental' -%}
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&display=swap"
-      >
-    {%- else -%}
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..600&family=Newsreader:opsz,wght@6..72,400&family=DM+Mono:wght@400&display=swap"
-      >
-    {%- endif -%}
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&display=swap"
+    >
     {{ 'cauce-brand.css' | asset_url | stylesheet_tag }}
     <script src="{{ 'cauce.js' | asset_url }}" defer="defer"></script>
   </head>

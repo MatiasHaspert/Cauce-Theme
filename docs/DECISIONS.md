@@ -4487,6 +4487,9 @@ demo).
   `sans-serif`, que no se descarga; las familias reales las ponen los tokens de CAUCE, que ahora
   también le dan la fuente a las piezas de Horizon. Se cargan como en Shrine: Archivo, Newsreader y
   DM Mono en el sitio, y en la PDP del aditivo solo DM Sans.
+
+  > **Superado el 2026-10-16 por D-082:** todo el sitio pasa a DM Sans, y se corrige un ciclo entre
+  > `--font-body--family` y los tokens de fuente que dejaba la página en la fuente del navegador.
 - **Locales.** Las claves `cauce.*` pasaron a `es.json` y `en.default.json`, solo las que se usan.
   Se borraron los 32 idiomas que trae Horizon y la tienda no publica, como D-007 en Shrine.
 
@@ -4558,6 +4561,8 @@ del aditivo (lo de Shrine, por defecto), en todas o en ninguna. Con el R-ALA fue
 leyenda diría algo falso en el carrito y en las páginas de ayuda; queda para que el comercio lo
 elija.
 
+> **Resuelto el 2026-10-16 en D-082:** la leyenda no va en ninguna página.
+
 ### 8. Cómo se verificó
 
 - `shopify theme check`: **0 errores**. Las advertencias que quedan son de archivos de Horizon y
@@ -4583,5 +4588,82 @@ elija.
   10 % de bienvenida y habla de frascos.
 - Si el R-ALA y Hormify siguen activos en la tienda, se ven con la plantilla de producto de
   Horizon, sin las secciones CAUCE.
+
+---
+
+## D-082 · 2026-10-16 · Todo el sitio en DM Sans, sin leyenda de suplemento y textos sin el R-ALA
+
+**Decisión.** Tres pedidos del comercio después de D-081, y la corrección de un error de D-081.
+
+### 1. La tipografía de la PDP del aditivo pasa a todo el sitio
+
+DM Sans en títulos, texto y datos, en todas las páginas: el carrito, el pie, la barra legal, las
+preguntas, el arrepentimiento y las páginas de Horizon (políticas, 404, búsqueda). Es lo que hacía
+el bloque 26 solo en `plantilla--aditivo-dental`, ahora en los tokens del principio de
+`cauce-brand.css`:
+
+| | Antes (Shrine y D-081) | Ahora |
+|---|---|---|
+| Títulos | Newsreader 400 | DM Sans 700, tracking −0.015em |
+| Texto | Archivo | DM Sans |
+| Datos (precios, chips) | DM Mono | DM Sans con números de ancho fijo |
+| Carga | Google Fonts: Archivo + Newsreader + DM Mono (DM Sans solo en la PDP) | Google Fonts: solo DM Sans, el mismo pedido de la PDP (400–700, cursivas, tamaño óptico) |
+
+La regla de los títulos en negrita se movió tal cual estaba en el bloque 26, con la misma
+especificidad (0,2,0) y en el mismo lugar del archivo, así cada página se comporta igual que la PDP.
+El color VERDE BOSQUE de los títulos sigue siendo solo de la plantilla del aditivo: se pidió la
+tipografía, no la paleta.
+
+**Las fuentes de Horizon** (Configuración del tema → Tipografía) quedan en la fuente de sistema
+`sans-serif`. **Alternativa descartada:** elegir DM Sans ahí. Horizon la bajaría de la CDN de
+Shopify (400, 500 y 700) además de la de Google, que es la que tiene el 600 que usa la PDP: dos
+descargas de la misma fuente. Para que el editor no confunda, esa pantalla lleva un aviso.
+
+### 2. El error de D-081: un ciclo entre variables
+
+En D-081 los tokens de fuente terminaban en `var(--font-body--family, system-ui)`, y el bloque 0b
+apuntaba `--font-body--family` de Horizon a esos mismos tokens. Dos variables que se referencian
+entre sí son inválidas las dos, aunque la referencia esté en el respaldo, y la página cae en la
+fuente por defecto del navegador. Ahora los respaldos son literales (`system-ui, -apple-system,
+'Segoe UI', sans-serif`) y quedó un chequeo que busca ciclos en todas las variables de
+`cauce-brand.css`: sin ciclos.
+
+### 3. La leyenda de suplemento dietario no va en ninguna página
+
+`cauce-legal-bar` → "Leyenda de suplemento dietario": **En ninguna página** (D-081 §7). La leyenda
+del carrito ya estaba apagada.
+
+**Lo que esto no resuelve.** El R-ALA sigue activo en la tienda: su ficha (con la plantilla de
+producto de Horizon) queda sin la leyenda que exige la Disp. ANMAT 4980/05. Si sigue a la venta
+durante el testeo, la leyenda tiene que volver ahí; si no, conviene pasarlo a borrador.
+
+### 4. Textos sin el R-ALA
+
+- **Preguntas, 7:** "con el frasco cerrado" y "los frascos que no abriste" pasan a "botella". La
+  política (30 días, envase cerrado, reintegro de lo que se devuelve) no cambia.
+- **Preguntas, 10:** "¿Dónde veo qué tiene Hocico Fresh y cómo se usa?", con el link a
+  `/products/aditivo-dental-perros` en vez de a la página del R-ALA.
+- **Suscripción** (`collection.json`): "fórmulas nuevas" y "el frasco" pasan a "novedades" y "la
+  botella". **El 10 % de bienvenida se dejó:** es una oferta comercial y la pregunta 6 la nombra.
+  Si el código no existe en Shopify → Descuentos, hay que sacarla de los dos lugares.
+
+### 5. Datos de la tienda
+
+El handle del producto se confirmó en la tienda: `aditivo-dental-perros`. Con eso quedan la
+redirección de la home y el botón del carrito vacío (`cauce_carrito_vacio_url`, que ahora va a la
+ficha y no a todos los productos, que incluyen el R-ALA).
+
+Se revisaron los ajustes de Shrine contra los de Horizon: logo, favicon, logo del pie, redes,
+datos legales y de contacto, medios de pago, cuotas, transferencia y envío ya estaban migrados
+(D-081). Lo que no se migró es contenido de demostración de Shrine en inglés: la página de
+contraseña, el popup de promoción (estaba apagado) y las etiquetas de las tarjetas de producto
+("BEST DEAL"). Los productos, sus fotos y metafields, las páginas, las políticas, los menús, los
+descuentos y los archivos son de la tienda y no del tema: no se migran porque no se movieron.
+
+### 6. Cómo se verificó
+
+`theme check` sin errores, el validador de settings sin problemas, el chequeo de ciclos sin ciclos,
+y los renders de prueba del bloque de compra y del carrito dan lo mismo que en D-081. **No se vio en
+Shopify.**
 
 ---

@@ -73,6 +73,10 @@
     "name": "t:names.typography",
     "settings": [
       {
+        "type": "paragraph",
+        "content": "CAUCE: la tipografía de la tienda es DM Sans y la define assets/cauce-brand.css. Las fuentes de esta pantalla quedan en Sans-serif para que no se descarguen dos veces: cambiarlas no cambia la letra del sitio. Ver docs/DECISIONS.md D-082."
+      },
+      {
         "type": "header",
         "content": "t:content.colors"
       },
