@@ -13,19 +13,12 @@
   "sections": {
     "pie": {
       "type": "cauce-pie",
-      "settings": {
-        "color_scheme": "inverse",
-        "mostrar_pagos": true,
-        "mostrar_politicas": true,
-        "padding_top": 64,
-        "padding_bottom": 24
-      },
       "blocks": {
         "marca": {
           "type": "marca",
           "settings": {
-            "imagen": "shopify://shop_images/10-lockup-vertical-negativo.png",
-            "ancho_imagen": 270,
+            "imagen": "shopify://shop_images/05-wordmark-descriptor-tinta.png",
+            "ancho_imagen": 310,
             "texto": "",
             "instagram": "https://www.instagram.com/cauce_argentina/",
             "facebook": "https://www.facebook.com/profile.php?id=61584527937079",
@@ -51,7 +44,14 @@
         "marca",
         "ayuda",
         "contacto"
-      ]
+      ],
+      "settings": {
+        "color_scheme": "inverse",
+        "mostrar_pagos": true,
+        "mostrar_politicas": true,
+        "padding_top": 64,
+        "padding_bottom": 24
+      }
     },
     "legales": {
       "type": "cauce-legal-bar",
