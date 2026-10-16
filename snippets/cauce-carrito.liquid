@@ -51,6 +51,18 @@
   assign cauce_titulo = titulo | default: 'Tu carrito'
   assign cauce_cuerpo = 'trust_line,progress_bar,cart_items,product_upsells,legal_note' | split: ','
 
+  comment
+    Respaldo (D-086): los bloques del drawer viven en config/settings_data.json,
+    y Shopify ya dejo dos veces ese archivo sin ellos. Sin bloques el carrito
+    quedaba con productos pero sin dibujar ninguno. Si llegan vacios se usan
+    las piezas de siempre con los valores por defecto del schema.
+  endcomment
+  if bloques.size > 0
+    assign cauce_tipos = bloques | map: 'type'
+  else
+    assign cauce_tipos = 'trust_line,progress_bar,cart_items,product_upsells,subtotals,checkout_btn,payment_badges' | split: ','
+  endif
+
   if settings.cauce_carrito_vacio_url != blank
     assign cauce_seguir_url = settings.cauce_carrito_vacio_url
   else
@@ -97,21 +109,26 @@
 
   {%- if bloques.size == 0 and request.design_mode -%}
     <p class="cauce-carrito__aviso">
-      El carrito no tiene bloques. Agregalos desde la sección del carrito en el editor de temas.
+      El carrito no tiene bloques: se muestran las piezas por defecto. Agregalos desde la sección del carrito en el editor de temas.
     </p>
   {%- endif -%}
 
   <div class="cauce-carrito__cuerpo cart-drawer__content">
-    {%- for block in bloques -%}
-      {%- unless cauce_cuerpo contains block.type -%}
+    {%- for tipo in cauce_tipos -%}
+      {%- unless cauce_cuerpo contains tipo -%}
         {%- continue -%}
       {%- endunless -%}
-      {%- case block.type -%}
+      {%- assign block = bloques | where: 'type', tipo | first -%}
+      {%- case tipo -%}
         {%- when 'trust_line' -%}
+          {%- liquid
+            assign cauce_arrepentimiento = block.settings.mostrar_arrepentimiento | default: true, allow_false: true
+            assign cauce_iva = block.settings.mostrar_iva | default: true, allow_false: true
+          -%}
           <div class="cauce-carrito__bloque" {{ block.shopify_attributes }}>
             {% render 'cauce-carrito-reaseguro',
-              arrepentimiento: block.settings.mostrar_arrepentimiento,
-              iva: block.settings.mostrar_iva,
+              arrepentimiento: cauce_arrepentimiento,
+              iva: cauce_iva,
               envio: block.settings.mostrar_envio
             %}
           </div>
@@ -122,6 +139,10 @@
           </div>
 
         {%- when 'cart_items' -%}
+          {%- liquid
+            assign cauce_formato = block.settings.mostrar_formato | default: true, allow_false: true
+            assign cauce_por_dia = block.settings.mostrar_precio_dia | default: true, allow_false: true
+          -%}
           <form
             action="{{ routes.cart_url }}"
             id="cart-form"
@@ -133,8 +154,8 @@
               {%- for item in cart.items -%}
                 {% render 'cauce-carrito-linea',
                   item: item,
-                  formato: block.settings.mostrar_formato,
-                  por_dia: block.settings.mostrar_precio_dia
+                  formato: cauce_formato,
+                  por_dia: cauce_por_dia
                 %}
               {%- endfor -%}
             </ul>
@@ -166,11 +187,12 @@
   </div>
 
   <div class="cauce-carrito__pie cart-drawer__summary">
-    {%- for block in bloques -%}
-      {%- if cauce_cuerpo contains block.type -%}
+    {%- for tipo in cauce_tipos -%}
+      {%- if cauce_cuerpo contains tipo -%}
         {%- continue -%}
       {%- endif -%}
-      {%- case block.type -%}
+      {%- assign block = bloques | where: 'type', tipo | first -%}
+      {%- case tipo -%}
         {%- when 'subtotals' -%}
           <div class="cauce-carrito__totales" {{ block.shopify_attributes }}>
             {%- if cart.cart_level_discount_applications.size > 0 -%}
@@ -205,7 +227,8 @@
               </text-component>
             </div>
 
-            {%- if block.settings.mostrar_ahorro -%}
+            {%- assign cauce_mostrar_ahorro = block.settings.mostrar_ahorro | default: true, allow_false: true -%}
+            {%- if cauce_mostrar_ahorro -%}
               {%- assign cauce_ahorro = cart.original_total_price | minus: cart.total_price -%}
               {%- if cauce_ahorro > 0 -%}
                 {%- assign cauce_ahorro_money = cauce_ahorro | money -%}
@@ -230,6 +253,10 @@
           </div>
 
         {%- when 'checkout_btn' -%}
+          {%- liquid
+            assign cauce_mostrar_monto = block.settings.mostrar_monto | default: true, allow_false: true
+            assign cauce_mostrar_seguir = block.settings.mostrar_seguir | default: true, allow_false: true
+          -%}
           <div class="cauce-carrito__ctas" {{ block.shopify_attributes }}>
             <button
               type="submit"
@@ -243,7 +270,7 @@
             >
               {% render 'cauce-iconos', icono: 'candado', clase: 'cauce-icono--cta' %}
               <span>{{ 'cauce.carrito.checkout' | t }}</span>
-              {%- if block.settings.mostrar_monto -%}
+              {%- if cauce_mostrar_monto -%}
                 <span class="cauce-carrito__cta-sep" aria-hidden="true"></span>
                 <span class="cauce-carrito__cta-monto">{{ cart.total_price | money }}</span>
               {%- endif -%}
@@ -254,7 +281,7 @@
                 {{ content_for_additional_checkout_buttons }}
               </div>
             {%- endif -%}
-            {%- if block.settings.mostrar_seguir -%}
+            {%- if cauce_mostrar_seguir -%}
               {%- if cauce_drawer -%}
                 <button type="button" class="cauce-carrito__seguir" on:click="#cart-drawer/close">
                   {{ 'actions.continue_shopping' | t }}

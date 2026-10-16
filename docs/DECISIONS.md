@@ -4852,3 +4852,48 @@ por defecto); un conflicto de texto ahí suele ser solo de forma.
 
 ---
 
+
+## D-086 · 2026-10-16 · El carrito lateral no mostraba productos: Shopify rechazaba `settings_data.json`
+
+**Qué pasaba.** En caucearg.com, al agregar el aditivo el carrito se abría sin ningún producto. El
+agregado funcionaba (`/cart/add.js` devolvía la línea y `/cart` la mostraba), pero el drawer llegaba
+con el cuerpo y el pie vacíos: la sección `cart-drawer-section` no tenía bloques.
+
+**La causa.** Shopify nunca aceptó el `config/settings_data.json` del repo, ni el de D-081/D-082 ni
+el de D-085. Las cuatro fuentes estaban en `sans-serif_n4` / `sans-serif_n7`, un handle que no
+existe: el de la fuente de sistema es **`sans_serif_n4`** / **`sans_serif_n7`**, con guion bajo
+([documentación de fuentes de Shopify](https://shopify.dev/docs/storefronts/themes/architecture/settings/fonts)).
+La integración de GitHub descarta sin avisar en el repo el archivo que no valida, así que el tema
+publicado se quedó con el `settings_data.json` de fábrica de Horizon. Eso corrige lo que D-085
+creyó: el commit del bot de las 9:02 no *borró* los ajustes, exportó lo único que Shopify tenía.
+
+Se comprobó bajando el tema publicado (`shopify theme pull`): es idéntico al repo salvo
+`settings_data.json` (sin los 9 bloques del carrito, sin ningún `cauce_*`, sin favicon, sin
+`auto_open_cart_drawer`) y un comentario de cabecera en `locales/es.schema.json`. O sea que además
+del carrito, en la tienda faltaban los datos de la Ley 24.240 del pie y la barra legal, el botón de
+WhatsApp, la paleta, los radios y los botones en mayúscula.
+
+**Decisión.**
+
+1. Las cuatro fuentes pasan a `sans_serif_n4` / `sans_serif_n7`. Es la misma fuente de sistema que
+   se buscaba en D-081; las familias reales las siguen poniendo los tokens de CAUCE (DM Sans, D-082).
+2. **Respaldo en `snippets/cauce-carrito.liquid`.** Si la sección llega sin bloques, el carrito usa
+   las piezas de siempre (reaseguro, barra de envío, productos, empujón, totales, botón de pago y
+   medios de pago) con los valores por defecto del schema. Pasó dos veces que los bloques del drawer
+   desaparecieran de `settings_data.json`, y sin ellos el carrito cobra pero no muestra qué. En el
+   editor sigue el aviso, ahora diciendo que se ven las piezas por defecto. Con bloques no cambia
+   nada: se recorren en el orden del editor y los apagados no se dibujan.
+
+**Alternativa descartada:** mover el drawer a un grupo de secciones JSON (sus bloques quedarían en un
+archivo propio y no en `settings_data.json`). Es más robusto, pero cambia el id de la sección que
+pide el JS de Horizon por la Section Rendering API y hoy no hacía falta.
+
+**Para lo que sigue:** después de cada push a `main` que toque `config/`, confirmar que llegó
+(`shopify theme pull --only config/settings_data.json` del tema publicado, o mirar los errores de la
+integración en el admin). `shopify theme check` no valida los handles de fuente.
+
+**Cómo se verificó.** Reproducido en la tienda con un carrito de prueba: `/cart/add.js` con
+`sections=cart-drawer-section` devolvía 1 producto y una sección con 0 líneas. `shopify theme
+check`: 0 errores.
+
+---
