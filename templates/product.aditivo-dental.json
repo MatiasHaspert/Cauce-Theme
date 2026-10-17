@@ -534,6 +534,7 @@
         "n2",
         "n3"
       ],
+      "disabled": true,
       "settings": {
         "volanta": "",
         "titulo": "La fórmula, a la vista",
@@ -547,8 +548,7 @@
         "ancho_maximo": 1120,
         "padding_top": 72,
         "padding_bottom": 40
-      },
-      "disabled": true
+      }
     },
     "ingredientes": {
       "type": "cauce-fichas",
@@ -852,6 +852,7 @@
             "etiqueta": "Mes 1",
             "titulo": "Empieza la rutina",
             "texto": "<p>Aliento fresco desde el día 1. Los activos comienzan a trabajar acumulativamente en encías y dientes desde el primer sorbo.</p>",
+            "imagen": "shopify://shop_images/landing3.png",
             "alt": "",
             "foto_pendiente": "FOTO 1:1 — una persona con su perro y la botella de Hocico Fresh a la vista."
           }
@@ -860,8 +861,9 @@
           "type": "mes",
           "settings": {
             "etiqueta": "Mes 2",
-            "titulo": "[COMPLETAR: título del mes 2]",
-            "texto": "<p>[COMPLETAR: texto del mes 2]</p>",
+            "titulo": "Resultados claramente visibles",
+            "texto": "<p>Placa y sarro reducidos a simple vista. Encías más saludables. El veterinario lo nota en la próxima revisión.</p>",
+            "imagen": "shopify://shop_images/2_1_ea4be5e7-c5cb-4ba5-b065-b67174bf79a3.avif",
             "alt": "",
             "foto_pendiente": "FOTO 1:1 — una persona abrazando a su perro, al aire libre."
           }
@@ -870,8 +872,9 @@
           "type": "mes",
           "settings": {
             "etiqueta": "Mes 3+",
-            "titulo": "[COMPLETAR: título del mes 3+]",
-            "texto": "<p>[COMPLETAR: texto del mes 3+]</p>",
+            "titulo": "Salud oral consolidada",
+            "texto": "<p>Con uso continuo los resultados se mantienen y la acumulación futura se previene. Tu mascota sonríe más limpia.</p>",
+            "imagen": "shopify://shop_images/3_c918c42e-d0bf-4e0c-90c8-f51194fb36d0.avif",
             "alt": "",
             "foto_pendiente": "FOTO 1:1 — primer plano de un perro contento, con la boca abierta."
           }
